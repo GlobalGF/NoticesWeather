@@ -1,0 +1,26 @@
+[
+  {
+    "id": "boe-rss",
+    "name": "BOE",
+    "scope": "state",
+    "region": "es",
+    "type": "rss",
+    "url": "https://www.boe.es/rss/boe.php"
+  },
+  {
+    "id": "junta-andalucia-subvenciones",
+    "name": "Junta de Andalucia",
+    "scope": "autonomous-community",
+    "region": "andalucia",
+    "type": "rss",
+    "url": "https://juntadeandalucia.es/servicios/rss/subvenciones.xml"
+  },
+  {
+    "id": "diputacion-valencia-bop",
+    "name": "BOP Valencia",
+    "scope": "province",
+    "region": "valencia",
+    "type": "html",
+    "url": "https://bop.dival.es/"
+  }
+]

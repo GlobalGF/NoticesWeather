@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-03-05T15:36:15.788772+00:00",
+  "items": [
+    {
+      "source_id": "boe-rss",
+      "issuer_scope": "state",
+      "issuer_name": "BOE",
+      "region": "es",
+      "bulletin_name": "BOE",
+      "title": "Resolución de 19 de febrero de 2026, de la Dirección General de Calidad y Evaluación Ambiental, por la que se formula declaración de impacto ambiental del proyecto «Modificación del proyecto de la planta de almacenamiento de energía Glauco Almacena, de 50,9 MW, y su infraestructura de evacuación, en la provincia de Girona».",
+      "summary": "III. Otras disposiciones - MINISTERIO PARA LA TRANSICIÓN ECOLÓGICA Y EL RETO DEMOGRÁFICO - Impacto ambiental - Referencia: BOE-A-2026-5203 - KBytes: 2229 - Páginas: 16",
+      "program_code": null,
+      "amount_eur": null,
+      "currency": "EUR",
+      "published_at": "2026-03-04T23:00:00+00:00",
+      "deadline_at": null,
+      "application_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-5203",
+      "source_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-5203",
+      "status": "open",
+      "raw_payload": {
+        "title": "Resolución de 19 de febrero de 2026, de la Dirección General de Calidad y Evaluación Ambiental, por la que se formula declaración de impacto ambiental del proyecto «Modificación del proyecto de la planta de almacenamiento de energía Glauco Almacena, de 50,9 MW, y su infraestructura de evacuación, en la provincia de Girona».",
+        "summary": "III. Otras disposiciones - MINISTERIO PARA LA TRANSICIÓN ECOLÓGICA Y EL RETO DEMOGRÁFICO - Impacto ambiental - Referencia: BOE-A-2026-5203 - KBytes: 2229 - Páginas: 16",
+        "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-5203",
+        "published": "2026-03-04T23:00:00+00:00",
+        "source_type": "rss"
+      },
+      "source_hash": "781f624a43cc78f0a7445bec37edd6d31e6da1c25f2a3ac0032d504bce26c9d3"
+    },
+    {
+      "source_id": "boe-rss",
+      "issuer_scope": "state",
+      "issuer_name": "BOE",
+      "region": "es",
+      "bulletin_name": "BOE",
+      "title": "Anuncio de formalización de contratos de: Dirección General del Servicio Exterior. Objeto: SUM-25/004 Suministro de archivo vertical para almacenamiento de bienes culturales en el Ministerio de Asuntos Exteriores, Unión Europea y Cooperación. Expediente: 2025SXB00095.",
+      "summary": "V. Anuncios. - A. Contratación del Sector Público - MINISTERIO DE ASUNTOS EXTERIORES, UNIÓN EUROPEA Y COOPERACIÓN - Referencia: BOE-B-2026-6664 - KBytes: 205 - Páginas: 2",
+      "program_code": null,
+      "amount_eur": null,
+      "currency": "EUR",
+      "published_at": "2026-03-04T23:00:00+00:00",
+      "deadline_at": null,
+      "application_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-B-2026-6664",
+      "source_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-B-2026-6664",
+      "status": "open",
+      "raw_payload": {
+        "title": "Anuncio de formalización de contratos de: Dirección General del Servicio Exterior. Objeto: SUM-25/004 Suministro de archivo vertical para almacenamiento de bienes culturales en el Ministerio de Asuntos Exteriores, Unión Europea y Cooperación. Expediente: 2025SXB00095.",
+        "summary": "V. Anuncios. - A. Contratación del Sector Público - MINISTERIO DE ASUNTOS EXTERIORES, UNIÓN EUROPEA Y COOPERACIÓN - Referencia: BOE-B-2026-6664 - KBytes: 205 - Páginas: 2",
+        "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-B-2026-6664",
+        "published": "2026-03-04T23:00:00+00:00",
+        "source_type": "rss"
+      },
+      "source_hash": "fccbfcbc406e9546f6c37271cc4848ab9ca87eca0897c60bf76b0f79eee26fe5"
+    }
+  ]
+}

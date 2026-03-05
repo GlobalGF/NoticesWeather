@@ -1,0 +1,1 @@
+console.log("Seed script placeholder: populate municipalities, tariffs and solar_metrics in Supabase.");

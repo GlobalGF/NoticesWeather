@@ -1,0 +1,22 @@
+{
+  "source_hash": "sha256(source_id|title|source_url)",
+  "source_id": "boe-rss",
+  "issuer_scope": "state",
+  "issuer_name": "BOE",
+  "region": "es",
+  "bulletin_name": "BOE",
+  "title": "Ayudas para instalaciones de autoconsumo fotovoltaico",
+  "summary": "Convocatoria de subvenciones para energia solar en edificios residenciales.",
+  "program_code": "nextgen-autoconsumo",
+  "amount_eur": 1800.0,
+  "currency": "EUR",
+  "published_at": "2026-03-05T09:00:00+00:00",
+  "deadline_at": "2026-05-31T23:59:59+00:00",
+  "application_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-1234",
+  "source_url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-1234",
+  "status": "open",
+  "raw_payload": {
+    "source_type": "rss",
+    "title": "Ayudas para instalaciones de autoconsumo fotovoltaico"
+  }
+}
