@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "municipio": "Madrid",
+      "provincia": "Madrid",
+      "ibi_pct": 50,
+      "ibi_anos": 3,
+      "icio_pct": 95,
+      "icio_anos": 1,
+      "condiciones": "Instalacion de autoconsumo legalizada y solicitud en plazo.",
+      "source_url": "https://example.ayuntamiento.es/ordenanza-fiscal"
+    },
+    {
+      "municipio": "Valencia",
+      "provincia": "Valencia",
+      "ibi_pct": 50,
+      "ibi_anos": 5,
+      "icio_pct": 80,
+      "icio_anos": 1,
+      "condiciones": "Aplicable segun ordenanza municipal vigente.",
+      "source_url": "https://example.valencia.es/ordenanza"
+    }
+  ]
+}

@@ -121,9 +121,19 @@ Matriz TTL actual:
 
 ## Modelos de datos SQL
 
+- Dataset estructurado de municipios (seed): `data/queries/municipios_espana_dataset.sql`
+- Dataset de radiacion solar por provincia: `data/queries/radiacion_solar_provincial_dataset.sql`
+- Dataset de subvenciones solares por CCAA: `data/queries/subvenciones_solares_ccaa_dataset.sql`
+- Dataset de bonificaciones IBI por municipio: `data/queries/bonificaciones_ibi_municipios_dataset.sql`
+- Dataset dividido por partes (import masivo): `data/queries/municipios_parts/municipios_espana_dataset_part_*.sql`
+- Esquema pSEO solar completo: `data/queries/pseo_solar_schema.sql`
+- Extension de crecimiento (tablas clave + vistas canonicas): `data/queries/pseo_growth_extensions.sql`
+- Snapshot materializado para paginas dinamicas: `data/queries/pseo_solar_snapshot.sql`
 - Subvenciones publicas: `data/queries/public_subsidies.sql`
 - Compatibilidad hardware solar/EV/baterias: `data/queries/hardware_compatibility.sql`
 - Indice de slugs pSEO: `data/queries/pseo_slug_index.sql`
+- Orden recomendado de ejecucion SQL: `data/queries/SQL_APPLY_ORDER.md`
+- Playbook de automatizacion de datos: `docs/data-automation-playbook.md`
 
 ## Comandos
 
@@ -135,6 +145,7 @@ npm run typecheck
 npm run seo:phase-report
 npm run seo:go-no-go
 npm run seo:go-no-go:csv -- --file docs/seo-metrics-weekly.example.csv
+npm run generate:municipios:parts
 npm run validate:slugs
 npm run sync:slugs
 npm run generate:pseo-index

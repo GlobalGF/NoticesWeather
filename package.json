@@ -11,13 +11,19 @@
     "seed": "tsx scripts/seed.ts",
     "generate:pseo-index": "tsx scripts/generate-pseo-index.ts",
     "generate:seo-slugs": "tsx scripts/generate-seo-slugs.ts",
+    "generate:municipios:parts": "tsx scripts/split-municipios-sql.ts",
     "seo:phase-report": "tsx scripts/seo-phase-report.ts",
     "seo:go-no-go": "tsx scripts/seo-go-no-go.ts",
     "seo:go-no-go:csv": "tsx scripts/seo-go-no-go-csv.ts",
     "validate:slugs": "tsx scripts/validate-slugs.ts",
     "sync:slugs": "tsx scripts/sync-municipios-slugs.ts",
     "subsidies:scrape": "python scripts/python/subsidies_scraper.py",
-    "subsidies:install": "python -m pip install -r scripts/python/requirements.txt"
+    "subsidies:install": "python -m pip install -r scripts/python/requirements.txt",
+    "geo:pvgis:generate": "python scripts/python/geo_pvgis_pipeline.py",
+    "geo:pvgis:test": "python scripts/python/geo_pvgis_pipeline.py --limit 50",
+    "bonificaciones:generate:sql": "python scripts/python/ibi_icio_to_sql.py",
+    "esios:generate:sql": "python scripts/python/esios_to_sql.py",
+    "compatibilidad:generate:sql": "python scripts/python/compatibility_csv_to_sql.py"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
