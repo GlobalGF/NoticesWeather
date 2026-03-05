@@ -1,5 +1,5 @@
 {
-  "name": "pSEO Solar España – Master ETL v2",
+  "name": "My workflow 2",
   "nodes": [
     {
       "parameters": {
@@ -12,15 +12,15 @@
           ]
         }
       },
-      "id": "sched-geo",
-      "name": "CRON – GEO mensual",
+      "id": "5484c95f-1391-4403-a078-112d3db15d48",
+      "name": "CRON â€” GEO mensual",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        120,
-        200
+        0,
+        0
       ],
-      "notes": "Ejecuta GEO_INGEST + PVGIS_ENRICH el día 1 de cada mes a las 03:00"
+      "notes": "Ejecuta GEO_INGEST + PVGIS_ENRICH el dÃ­a 1 de cada mes a las 03:00"
     },
     {
       "parameters": {
@@ -33,13 +33,13 @@
           ]
         }
       },
-      "id": "sched-esios",
-      "name": "CRON – ESIOS diario",
+      "id": "38ebffba-639a-4405-a4a6-ea9f527c0555",
+      "name": "CRON â€” ESIOS diario",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        120,
-        360
+        0,
+        160
       ]
     },
     {
@@ -53,71 +53,71 @@
           ]
         }
       },
-      "id": "sched-bonif",
-      "name": "CRON – Bonificaciones semanal",
+      "id": "3d5de674-6784-4447-b014-996f19e618d6",
+      "name": "CRON â€” Bonificaciones semanal",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        120,
-        520
+        0,
+        320
       ]
     },
     {
       "parameters": {},
-      "id": "manual-trigger",
+      "id": "42597af3-7e2d-4b24-abd4-b661df78ffbd",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        120,
-        680
+        0,
+        480
       ]
     },
     {
       "parameters": {
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\n// ══════════════════════════════════════════════\n// INIT – Variables globales de entorno\n// ══════════════════════════════════════════════\nconst env = {\n  SUPABASE_URL: $env.SUPABASE_URL || 'https://YOUR_PROJECT.supabase.co',\n  SUPABASE_SERVICE_ROLE_KEY: $env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_KEY',\n  ESIOS_API_TOKEN: $env.ESIOS_API_TOKEN || 'YOUR_ESIOS_TOKEN',\n  GEO_SOURCE_CSV_URL: $env.GEO_SOURCE_CSV_URL || '',\n  IBI_ICIO_JSON_URL: $env.IBI_ICIO_JSON_URL || '',\n  COMPATIBILIDAD_CSV_URL: $env.COMPATIBILIDAD_CSV_URL || '',\n  PVGIS_BASE_URL: $env.PVGIS_BASE_URL || 'https://re.jrc.ec.europa.eu/api/v5_2',\n  BATCH_SIZE: parseInt($env.BATCH_SIZE || '50'),\n  DRY_RUN: ($env.DRY_RUN || 'false') === 'true',\n  STRICT_PROD: ($env.STRICT_PROD || 'true') === 'true',\n  AI_TO_STAGING_ONLY: ($env.AI_TO_STAGING_ONLY || 'true') === 'true',\n  AI_BASE_URL: $env.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n  AI_API_KEY: $env.AI_API_KEY || '',\n  AI_MODEL: $env.AI_MODEL || 'gpt-4o-mini'\n};\n\nstaticData.strictAlerts = [];\nstaticData.deadLetters = [];\n\nconst runId = `run_${Date.now()}`;\nconsole.log(JSON.stringify({ stage: 'INIT', runId, env: { ...env, SUPABASE_SERVICE_ROLE_KEY: '***', ESIOS_API_TOKEN: '***', AI_API_KEY: env.AI_API_KEY ? '***' : '' } }));\n\nreturn [{ json: { ...env, runId, startedAt: new Date().toISOString() } }];"
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\n\nconst env = {\n  SUPABASE_URL: $env.SUPABASE_URL || 'https://YOUR_PROJECT.supabase.co',\n  SUPABASE_SERVICE_ROLE_KEY: $env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_KEY',\n  ESIOS_API_TOKEN: $env.ESIOS_API_TOKEN || 'YOUR_ESIOS_TOKEN',\n  GEO_SOURCE_CSV_URL: $env.GEO_SOURCE_CSV_URL || '',\n  IBI_ICIO_JSON_URL: $env.IBI_ICIO_JSON_URL || '',\n  COMPATIBILIDAD_CSV_URL: $env.COMPATIBILIDAD_CSV_URL || '',\n  PVGIS_BASE_URL: $env.PVGIS_BASE_URL || 'https://re.jrc.ec.europa.eu/api/v5_2',\n  BATCH_SIZE: parseInt($env.BATCH_SIZE || '50', 10),\n  DRY_RUN: ($env.DRY_RUN || 'false') === 'true',\n  STRICT_PROD: ($env.STRICT_PROD || 'true') === 'true',\n  AI_TO_STAGING_ONLY: ($env.AI_TO_STAGING_ONLY || 'true') === 'true',\n  AI_BASE_URL: $env.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n  AI_API_KEY: $env.AI_API_KEY || '',\n  AI_MODEL: $env.AI_MODEL || 'gpt-4o-mini'\n};\n\nstaticData.strictAlerts = [];\nstaticData.deadLetters = [];\n\nconst runId = `run_${Date.now()}`;\nconsole.log(JSON.stringify({\n  stage: 'INIT',\n  runId,\n  env: {\n    ...env,\n    SUPABASE_SERVICE_ROLE_KEY: '***',\n    ESIOS_API_TOKEN: '***',\n    AI_API_KEY: env.AI_API_KEY ? '***' : ''\n  }\n}));\n\nreturn [{ json: { ...env, runId, startedAt: new Date().toISOString() } }];"
       },
-      "id": "init-env",
-      "name": "INIT – Env & Config",
+      "id": "926d7886-3078-40ee-8227-7dfc0a57a96d",
+      "name": "INIT â€” Env & Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        360,
-        440
+        240,
+        240
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nconsole.log(JSON.stringify({ stage: 'GEO_INGEST_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'GEO_INGEST' } }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// GEO_INGEST â€” Descarga municipios desde INE CSV\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// TODO: El CSV del INE (diccionario24.xlsx) requiere conversiÃ³n.\n// Alternativa directa: usar la API REST del INE o un CSV preprocesado.\n// Endpoint de respaldo: https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/t20/e245/municipios?nult=1\n\nconst ctx = $input.first().json;\nconsole.log(JSON.stringify({ stage: 'GEO_INGEST_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'GEO_INGEST' } }];"
       },
-      "id": "geo-start",
-      "name": "GEO – Start",
+      "id": "5edae9f6-232e-4ade-a413-189acb3859aa",
+      "name": "GEO â€” Start",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        620,
-        200
+        512,
+        0
       ]
     },
     {
       "parameters": {
         "url": "={{ $json.GEO_SOURCE_CSV_URL || 'data:text/plain,' }}",
         "options": {
-          "timeout": 30000,
           "response": {
             "response": {
               "responseFormat": "text"
             }
-          }
+          },
+          "timeout": 30000
         }
       },
-      "id": "geo-fetch-csv",
-      "name": "GEO – Fetch CSV",
+      "id": "63a700db-8ecc-410f-bbf8-55ce6c48a9f0",
+      "name": "GEO â€” Fetch CSV",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        860,
-        200
+        752,
+        0
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -125,42 +125,42 @@
     },
     {
       "parameters": {
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst ctx = $('INIT – Env & Config').first().json;\nconst raw = $input.first().json.data || $input.first().json.body || '';\n\nfunction slugify(text) {\n  return (text || '')\n    .toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9\\s-]/g, '')\n    .trim().replace(/\\s+/g, '-');\n}\nfunction parseNum(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : null; }\nfunction parseIntSafe(v) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; }\n\nasync function callAiJson(promptText) {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST', url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: { model: ctx.AI_MODEL, response_format: { type: 'json_object' },\n        messages: [{ role: 'system', content: 'Devuelve JSON valido y compacto.' }, { role: 'user', content: promptText }] },\n      json: true\n    });\n    const parsed = JSON.parse(resp.choices?.[0]?.message?.content || '{}');\n    return parsed.items || parsed.municipios || [];\n  } catch (e) { console.warn(JSON.stringify({ stage: 'GEO_AI_FALLBACK_ERROR', error: e.message })); return []; }\n}\n\nasync function aiCompleteGeoRow(row) {\n  if (!ctx.AI_API_KEY) return null;\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST', url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: { model: ctx.AI_MODEL, response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Rellena solo lo que falte y no inventes si no hay señal suficiente.' },\n          { role: 'user', content: 'Completa SOLO campos faltantes para este municipio de Espana. Devuelve {\"item\":{nombre_municipio,nombre_provincia,nombre_comunidad,latitud,longitud,poblacion,cod_ine}}. Entrada: ' + JSON.stringify(row) }\n        ] },\n      json: true\n    });\n    const parsed = JSON.parse(resp.choices?.[0]?.message?.content || '{}');\n    return parsed.item || parsed;\n  } catch (e) { console.warn(JSON.stringify({ stage: 'GEO_AI_ROW_ENRICH_ERROR', error: e.message })); return null; }\n}\n\nasync function upsertDeadLetter(records, stage) {\n  if (!records.length) return;\n  try {\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify(records.map(r => ({ run_id: ctx.runId, stage, payload: JSON.stringify(r), error: r._error || 'unknown', created_at: new Date().toISOString() })))\n    });\n  } catch (e) { console.warn(JSON.stringify({ stage: 'DEAD_LETTER_UPSERT_ERROR', error: e.message })); }\n}\n\nlet rows = [];\nif (raw && String(raw).trim().length > 0) {\n  try {\n    const parsed = JSON.parse(raw);\n    rows = Array.isArray(parsed) ? parsed : parsed.data || parsed.municipios || [];\n  } catch (e) {\n    const lines = String(raw).split('\\n').filter(l => l.trim());\n    if (lines.length >= 2) {\n      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, '_'));\n      rows = lines.slice(1).map(line => {\n        const vals = line.split(','); const obj = {};\n        headers.forEach((h, i) => obj[h] = (vals[i] || '').trim()); return obj;\n      });\n    }\n  }\n}\n\n// FIX: AI_TO_STAGING_ONLY – si la fuente oficial está vacía y AI genera datos, van a _staging\nconst targetSuffix = ctx.AI_TO_STAGING_ONLY ? '_staging' : '';\n\nif (!rows.length) {\n  const aiRows = await callAiJson('Genera 200 municipios de Espana con campos: nombre_municipio, nombre_provincia, nombre_comunidad, latitud, longitud, poblacion, cod_ine. Devuelve {\"items\":[...]}');\n  console.log(JSON.stringify({ stage: 'GEO_AI_FALLBACK_USED', generated: aiRows.length, targetSuffix }));\n  if (ctx.STRICT_PROD) {\n    staticData.strictAlerts = staticData.strictAlerts || [];\n    staticData.strictAlerts.push({ stage: 'GEO', reason: 'Fuente oficial vacía', aiDraftCount: aiRows.length, timestamp: new Date().toISOString() });\n    return [];\n  }\n  rows = aiRows;\n}\n\nconst deadLetters = [];\nconst valid = [];\nlet aiRowEnriched = 0;\nconst MAX_AI_ROW_ENRICH = 80;\n\nfor (const row of rows) {\n  let nombre = row.nombre_municipio || row.nombre || row.municipio || '';\n  let provincia = row.nombre_provincia || row.provincia || '';\n  let comunidad = row.nombre_comunidad || row.comunidad || '';\n  let latitud = parseNum(row.latitud ?? row.lat);\n  let longitud = parseNum(row.longitud ?? row.lon);\n  let poblacion = parseIntSafe(row.poblacion);\n  let codIne = String(row.cod_ine || row.codigo_ine || row.id || '').padStart(5, '0');\n\n  const needsAi = !nombre || !provincia || !comunidad || latitud === null || longitud === null || poblacion === null || !codIne;\n  if (needsAi && ctx.AI_API_KEY && aiRowEnriched < MAX_AI_ROW_ENRICH) {\n    const ai = await aiCompleteGeoRow({ nombre_municipio: nombre, nombre_provincia: provincia, nombre_comunidad: comunidad, latitud, longitud, poblacion, cod_ine: codIne, raw: row });\n    if (ai) {\n      nombre = nombre || ai.nombre_municipio || '';\n      provincia = provincia || ai.nombre_provincia || '';\n      comunidad = comunidad || ai.nombre_comunidad || '';\n      latitud = latitud ?? parseNum(ai.latitud ?? ai.lat);\n      longitud = longitud ?? parseNum(ai.longitud ?? ai.lon);\n      poblacion = poblacion ?? parseIntSafe(ai.poblacion);\n      codIne = codIne || String(ai.cod_ine || '').padStart(5, '0');\n      aiRowEnriched++;\n    }\n  }\n\n  if (!nombre || !provincia) { deadLetters.push({ ...row, _error: 'Falta nombre o provincia' }); continue; }\n\n  valid.push({\n    cod_ine: codIne || null,\n    nombre_municipio: nombre,\n    nombre_provincia: provincia,\n    nombre_comunidad: comunidad || null,\n    latitud, longitud,\n    slug: slugify(nombre + '-' + provincia),\n    poblacion,\n    _aiGenerated: needsAi,\n    _targetSuffix: targetSuffix\n  });\n}\n\nawait upsertDeadLetter(deadLetters, 'GEO_PARSE');\nconsole.log(JSON.stringify({ stage: 'GEO_PARSE', total: rows.length, valid: valid.length, deadLetters: deadLetters.length, aiRowEnriched }));\nreturn valid.map(v => ({ json: { ...ctx, record: v } }));"
+        "jsCode": "let staticDataStore = {};\ntry {\n  if (typeof $getWorkflowStaticData === 'function') {\n    staticDataStore = $getWorkflowStaticData('global') || {};\n  }\n} catch (e) {\n  staticDataStore = {};\n}\n\nfunction buildCtxFromEnv() {\n  return {\n    SUPABASE_URL: $env.SUPABASE_URL || '',\n    SUPABASE_SERVICE_ROLE_KEY: $env.SUPABASE_SERVICE_ROLE_KEY || '',\n    ESIOS_API_TOKEN: $env.ESIOS_API_TOKEN || '',\n    GEO_SOURCE_CSV_URL: $env.GEO_SOURCE_CSV_URL || '',\n    IBI_ICIO_JSON_URL: $env.IBI_ICIO_JSON_URL || '',\n    COMPATIBILIDAD_CSV_URL: $env.COMPATIBILIDAD_CSV_URL || '',\n    PVGIS_BASE_URL: $env.PVGIS_BASE_URL || 'https://re.jrc.ec.europa.eu/api/v5_2',\n    BATCH_SIZE: parseInt($env.BATCH_SIZE || '50', 10),\n    DRY_RUN: ($env.DRY_RUN || 'false') === 'true',\n    STRICT_PROD: ($env.STRICT_PROD || 'true') === 'true',\n    AI_TO_STAGING_ONLY: ($env.AI_TO_STAGING_ONLY || 'true') === 'true',\n    AI_BASE_URL: $env.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n    AI_API_KEY: $env.AI_API_KEY || '',\n    AI_MODEL: $env.AI_MODEL || 'gpt-4o-mini',\n  };\n}\n\nfunction resolveInitCtx() {\n  const possibleNodeNames = [\n    'INIT – Env & Config',\n    'INIT - Env & Config',\n    'INIT â€” Env & Config',\n  ];\n\n  for (const name of possibleNodeNames) {\n    try {\n      const data = $(name).first().json;\n      if (data && typeof data === 'object') return data;\n    } catch (_) {}\n  }\n\n  const firstInput = $input.first()?.json || {};\n  return {\n    ...buildCtxFromEnv(),\n    ...firstInput,\n    runId: firstInput.runId || `run_${Date.now()}`,\n    startedAt: firstInput.startedAt || new Date().toISOString(),\n  };\n}\n\nconst ctx = resolveInitCtx();\nconst first = $input.first()?.json || {};\nconst raw = first.data || first.body || '';\n\nfunction slugify(text) {\n  return (text || '')\n    .toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9\\s-]/g, '')\n    .trim().replace(/\\s+/g, '-');\n}\n\nfunction parseNum(v) {\n  const n = parseFloat(v);\n  return Number.isFinite(n) ? n : null;\n}\n\nfunction parseIntSafe(v) {\n  const n = parseInt(v, 10);\n  return Number.isFinite(n) ? n : null;\n}\n\nasync function callAiJson(promptText) {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: {\n        Authorization: 'Bearer ' + ctx.AI_API_KEY,\n        'Content-Type': 'application/json',\n      },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Devuelve JSON valido y compacto.' },\n          { role: 'user', content: promptText },\n        ],\n      },\n      json: true,\n    });\n\n    const content = resp?.choices?.[0]?.message?.content || '{}';\n    const parsed = JSON.parse(content);\n    return parsed.items || parsed.municipios || [];\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'GEO_AI_FALLBACK_ERROR', error: e.message }));\n    return [];\n  }\n}\n\nasync function aiCompleteGeoRow(row) {\n  if (!ctx.AI_API_KEY) return null;\n  try {\n    const prompt =\n      'Completa SOLO campos faltantes para este municipio de Espana. ' +\n      'Devuelve {\"item\":{nombre_municipio,nombre_provincia,nombre_comunidad,latitud,longitud,poblacion,cod_ine}}. ' +\n      'Entrada: ' + JSON.stringify(row);\n\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: {\n        Authorization: 'Bearer ' + ctx.AI_API_KEY,\n        'Content-Type': 'application/json',\n      },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Rellena solo lo que falte y no inventes si no hay senal suficiente.' },\n          { role: 'user', content: prompt },\n        ],\n      },\n      json: true,\n    });\n\n    const content = resp?.choices?.[0]?.message?.content || '{}';\n    const parsed = JSON.parse(content);\n    return parsed.item || parsed;\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'GEO_AI_ROW_ENRICH_ERROR', error: e.message }));\n    return null;\n  }\n}\n\nasync function upsertDeadLetter(records, stage) {\n  if (!records.length) return;\n  if (!ctx.SUPABASE_URL || !ctx.SUPABASE_SERVICE_ROLE_KEY) return;\n\n  try {\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: {\n        apikey: ctx.SUPABASE_SERVICE_ROLE_KEY,\n        Authorization: `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n        'Content-Type': 'application/json',\n        Prefer: 'return=minimal',\n      },\n      body: JSON.stringify(\n        records.map((r) => ({\n          run_id: ctx.runId,\n          stage,\n          payload: JSON.stringify(r),\n          error: r._error || 'unknown',\n          created_at: new Date().toISOString(),\n        }))\n      ),\n    });\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'DEAD_LETTER_UPSERT_ERROR', error: e.message }));\n  }\n}\n\nlet rows = [];\nif (raw && String(raw).trim().length > 0) {\n  try {\n    const parsed = JSON.parse(raw);\n    rows = Array.isArray(parsed) ? parsed : parsed.data || parsed.municipios || [];\n  } catch (e) {\n    const lines = String(raw).split('\\n').filter((l) => l.trim());\n    if (lines.length >= 2) {\n      const headers = lines[0]\n        .split(',')\n        .map((h) => h.trim().toLowerCase().replace(/[^a-z_]/g, '_'));\n\n      rows = lines.slice(1).map((line) => {\n        const vals = line.split(',');\n        const obj = {};\n        headers.forEach((h, i) => {\n          obj[h] = (vals[i] || '').trim();\n        });\n        return obj;\n      });\n    }\n  }\n}\n\nconst targetSuffix = ctx.AI_TO_STAGING_ONLY ? '_staging' : '';\n\nif (!rows.length) {\n  const aiRows = await callAiJson(\n    'Genera 200 municipios de Espana con campos: nombre_municipio, nombre_provincia, nombre_comunidad, latitud, longitud, poblacion, cod_ine. Devuelve {\"items\":[...]}.'\n  );\n\n  console.log(JSON.stringify({ stage: 'GEO_AI_FALLBACK_USED', generated: aiRows.length, targetSuffix }));\n\n  if (ctx.STRICT_PROD) {\n    staticDataStore.strictAlerts = staticDataStore.strictAlerts || [];\n    staticDataStore.strictAlerts.push({\n      stage: 'GEO',\n      reason: 'Fuente oficial vacia',\n      aiDraftCount: aiRows.length,\n      timestamp: new Date().toISOString(),\n    });\n    return [];\n  }\n\n  rows = aiRows;\n}\n\nconst deadLetters = [];\nconst valid = [];\nlet aiRowEnriched = 0;\nconst MAX_AI_ROW_ENRICH = 80;\n\nfor (const row of rows) {\n  let nombre = row.nombre_municipio || row.nombre || row.municipio || '';\n  let provincia = row.nombre_provincia || row.provincia || '';\n  let comunidad = row.nombre_comunidad || row.comunidad || '';\n  let latitud = parseNum(row.latitud ?? row.lat);\n  let longitud = parseNum(row.longitud ?? row.lon);\n  let poblacion = parseIntSafe(row.poblacion);\n\n  let codIne = String(row.cod_ine || row.codigo_ine || row.id || '').trim();\n  codIne = codIne ? codIne.padStart(5, '0') : '';\n\n  const needsAi =\n    !nombre ||\n    !provincia ||\n    !comunidad ||\n    latitud === null ||\n    longitud === null ||\n    poblacion === null ||\n    !codIne;\n\n  if (needsAi && ctx.AI_API_KEY && aiRowEnriched < MAX_AI_ROW_ENRICH) {\n    const ai = await aiCompleteGeoRow({\n      nombre_municipio: nombre,\n      nombre_provincia: provincia,\n      nombre_comunidad: comunidad,\n      latitud,\n      longitud,\n      poblacion,\n      cod_ine: codIne,\n      raw: row,\n    });\n\n    if (ai) {\n      nombre = nombre || ai.nombre_municipio || ai.nombre || ai.municipio || '';\n      provincia = provincia || ai.nombre_provincia || ai.provincia || '';\n      comunidad = comunidad || ai.nombre_comunidad || ai.comunidad || '';\n      latitud = latitud ?? parseNum(ai.latitud ?? ai.lat);\n      longitud = longitud ?? parseNum(ai.longitud ?? ai.lon);\n      poblacion = poblacion ?? parseIntSafe(ai.poblacion);\n\n      if (!codIne) {\n        const aiCod = String(ai.cod_ine || ai.codigo_ine || '').trim();\n        codIne = aiCod ? aiCod.padStart(5, '0') : '';\n      }\n\n      aiRowEnriched += 1;\n    }\n  }\n\n  if (!nombre || !provincia) {\n    deadLetters.push({ ...row, _error: 'Falta nombre o provincia' });\n    continue;\n  }\n\n  valid.push({\n    cod_ine: codIne || null,\n    nombre_municipio: nombre,\n    nombre_provincia: provincia,\n    nombre_comunidad: comunidad || null,\n    latitud,\n    longitud,\n    slug: slugify(nombre + '-' + provincia),\n    poblacion,\n    _aiGenerated: needsAi,\n    _targetSuffix: targetSuffix,\n  });\n}\n\nawait upsertDeadLetter(deadLetters, 'GEO_PARSE');\n\nstaticDataStore.deadLetters = staticDataStore.deadLetters || [];\nif (deadLetters.length) {\n  staticDataStore.deadLetters.push(...deadLetters);\n}\n\nconsole.log(\n  JSON.stringify({\n    stage: 'GEO_PARSE',\n    total: rows.length,\n    valid: valid.length,\n    deadLetters: deadLetters.length,\n    aiRowEnriched,\n  })\n);\n\nreturn valid.map((v) => ({ json: { ...ctx, record: v } }));"
       },
-      "id": "geo-parse",
-      "name": "GEO – Parse & Slugify",
+      "id": "09b6d3fb-de92-4015-8280-dea91fd2a87b",
+      "name": "GEO â€” Parse & Slugify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1100,
-        200
+        992,
+        0
       ]
     },
     {
       "parameters": {
-        "batchSize": "={{ $('INIT – Env & Config').first().json.BATCH_SIZE }}",
+        "batchSize": "={{ $('INIT â€” Env & Config').first().json.BATCH_SIZE }}",
         "options": {}
       },
-      "id": "geo-batch",
-      "name": "GEO – Split Batches",
+      "id": "01a46de4-9346-47be-9470-0d535bd75811",
+      "name": "GEO â€” Split Batches",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1340,
-        200
+        1232,
+        0
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\n\nif (ctx.DRY_RUN) { console.log(JSON.stringify({ stage: 'GEO_UPSERT_DRYRUN', count: items.length })); return items; }\n\n// FIX: AI_TO_STAGING_ONLY – redirige tabla destino si los datos vienen de IA\nconst firstItem = items[0]?.json?.record;\nconst suffix = firstItem?._aiGenerated && ctx.AI_TO_STAGING_ONLY ? '_staging' : '';\nconst tabla = `municipios_dataset_es${suffix}`;\n\nconst records = items.map(i => {\n  const r = i.json.record;\n  return {\n    municipio: r.nombre_municipio,\n    provincia: r.nombre_provincia,\n    comunidad_autonoma: r.nombre_comunidad || '',\n    poblacion: r.poblacion || null,\n    latitud: r.latitud || null,\n    longitud: r.longitud || null,\n    codigo_postal: null,\n    slug: r.slug\n  };\n});\n\nconst response = await $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/${tabla}?on_conflict=slug`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'GEO_UPSERT', tabla, batchSize: records.length, status: response.statusCode || 200 }));\nreturn items;"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// GEO â€” Upsert municipios_dataset_es en Supabase\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\n\nif (ctx.DRY_RUN) {\n  console.log(JSON.stringify({ stage: 'GEO_UPSERT_DRYRUN', count: items.length }));\n  return items;\n}\n\nconst records = items.map(i => {\n  const r = i.json.record;\n  return {\n    municipio: r.nombre_municipio,\n    provincia: r.nombre_provincia,\n    comunidad_autonoma: r.nombre_comunidad || '',\n    poblacion: r.poblacion || null,\n    latitud: r.latitud || null,\n    longitud: r.longitud || null,\n    codigo_postal: null,\n    slug: r.slug\n  };\n});\n\nconst response = await $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/municipios_dataset_es?on_conflict=slug`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'GEO_UPSERT', batchSize: records.length, status: response.statusCode || 200 }));\nreturn items;"
       },
-      "id": "geo-upsert",
-      "name": "GEO – Upsert municipios_dataset_es",
+      "id": "771d21f2-3c49-4755-aa48-128d549385c0",
+      "name": "GEO â€” Upsert municipios_dataset_es",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1580,
-        200
+        1472,
+        0
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -168,28 +168,28 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN) return items;\n\nconst slugRecords = items.map(i => ({\n  slug: i.json.record.slug,\n  municipio: i.json.record.nombre_municipio\n}));\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/slugs_seo_municipios_espana_es?on_conflict=slug`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(slugRecords)\n});\n\nconsole.log(JSON.stringify({ stage: 'SLUGS_UPSERT', count: slugRecords.length }));\nreturn items;"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// GEO â€” Upsert slugs_seo_municipios_espana_es\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\n\nif (ctx.DRY_RUN) return items;\n\nconst slugRecords = items.map(i => ({\n  slug: i.json.record.slug,\n  municipio: i.json.record.nombre_municipio\n}));\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/slugs_seo_municipios_espana_es?on_conflict=slug`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(slugRecords)\n});\n\nconsole.log(JSON.stringify({ stage: 'SLUGS_UPSERT', count: slugRecords.length }));\nreturn items;"
       },
-      "id": "geo-slugs",
-      "name": "GEO – Upsert slugs_seo",
+      "id": "bf0a7689-18e2-4ec7-a6a3-203e56234189",
+      "name": "GEO â€” Upsert slugs_seo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1820,
-        200
+        1712,
+        0
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'PVGIS_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'PVGIS_ENRICH' } }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// PVGIS_ENRICH â€” Recuperar coords Ãºnicas de Supabase\n// y enriquecer con radiaciÃ³n solar\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'PVGIS_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'PVGIS_ENRICH' } }];"
       },
-      "id": "pvgis-start",
-      "name": "PVGIS – Start",
+      "id": "ca2227bc-983e-4666-a0a5-40709449f1af",
+      "name": "PVGIS â€” Start",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2060,
-        200
+        512,
+        160
       ]
     },
     {
@@ -210,26 +210,26 @@
         },
         "options": {}
       },
-      "id": "pvgis-fetch-coords",
-      "name": "PVGIS – Fetch coords from Supabase",
+      "id": "9550a8a7-fa8c-40d7-9b80-b16d78c0df94",
+      "name": "PVGIS â€” Fetch coords from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2300,
-        200
+        752,
+        160
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst municipios = $input.first().json;\n\nconst seen = new Map();\nconst unique = [];\n\nfor (const m of (Array.isArray(municipios) ? municipios : [])) {\n  const lat = parseFloat(m.latitud || 0).toFixed(4);\n  const lon = parseFloat(m.longitud || 0).toFixed(4);\n  const provincia = m.provincia || '';\n  const key = `${provincia}:${lat}:${lon}`;\n  if (!seen.has(key) && lat !== '0.0000') {\n    seen.set(key, true);\n    unique.push({ ...ctx, lat, lon, provincia });\n  }\n}\n\nconsole.log(JSON.stringify({ stage: 'PVGIS_DEDUPE', total: municipios.length, unique: unique.length }));\nreturn unique.map(u => ({ json: u }));"
+        "jsCode": "// PVGIS â€” Deduplicar por provincia (lat/lon redondeados)\n// Cache por coordenada redondeada a 4 decimales\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst municipios = $input.first().json;\n\nconst seen = new Map();\nconst unique = [];\n\nfor (const m of (Array.isArray(municipios) ? municipios : [])) {\n  const lat = parseFloat(m.latitud || 0).toFixed(4);\n  const lon = parseFloat(m.longitud || 0).toFixed(4);\n  const provincia = m.provincia || '';\n  const key = `${provincia}:${lat}:${lon}`;\n  if (!seen.has(key) && lat !== '0.0000') {\n    seen.set(key, true);\n    unique.push({ ...ctx, lat, lon, provincia });\n  }\n}\n\nconsole.log(JSON.stringify({ stage: 'PVGIS_DEDUPE', total: municipios.length, unique: unique.length }));\nreturn unique.map(u => ({ json: u }));"
       },
-      "id": "pvgis-dedupe",
-      "name": "PVGIS – Dedupe coords",
+      "id": "f44b95d4-23d8-46e7-9e27-e121b7b82dab",
+      "name": "PVGIS â€” Dedupe coords",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2540,
-        200
+        992,
+        160
       ]
     },
     {
@@ -237,13 +237,13 @@
         "batchSize": 5,
         "options": {}
       },
-      "id": "pvgis-batch",
-      "name": "PVGIS – Batch 5",
+      "id": "476b22fa-46d8-4f9e-9e72-671dcd8f04c3",
+      "name": "PVGIS â€” Batch 5",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        2780,
-        200
+        1232,
+        160
       ]
     },
     {
@@ -253,57 +253,57 @@
           "timeout": 20000
         }
       },
-      "id": "pvgis-api",
-      "name": "PVGIS – API Call",
+      "id": "acdaf741-227a-4fa0-b2b2-238ff7485511",
+      "name": "PVGIS â€” API Call",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3020,
-        200
+        1472,
+        160
       ],
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 10000,
-      "notes": "Rate limit PVGIS: máx 30 req/min. Con batch=5 y wait 2s es seguro."
+      "notes": "Rate limit PVGIS: mÃ¡x 30 req/min. Con batch=5 y wait 2s es seguro."
     },
     {
       "parameters": {
-        "amount": 2,
-        "unit": "seconds"
+        "amount": 2
       },
-      "id": "pvgis-wait",
-      "name": "PVGIS – Rate Limit Wait",
+      "id": "72682d55-b045-4dd1-9795-1400e4a09021",
+      "name": "PVGIS â€” Rate Limit Wait",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        3260,
-        200
+        1712,
+        160
+      ],
+      "webhookId": "def6e516-fbb7-435f-bb11-4574e75cd665"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PVGIS â€” Parsear respuesta y preparar upsert en radiacion_solar_provincial_es\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  try {\n    const pvgisData = item.json;\n    const outputs = pvgisData.outputs || {};\n    const totals = outputs.totals || {};\n\n    const provincia = item.json.provincia || 'desconocida';\n    const eYear = totals.fixed?.E_y || null;\n    const hYear = totals.fixed?.H_i_opt || totals.fixed?.['H(i)_y'] || null;\n\n    const record = {\n      provincia,\n      horas_sol_anuales: eYear ? Math.round(eYear) : 1800,\n      irradiacion_kwh_m2: hYear ? Math.round(hYear * 10) / 10 : 1600.0,\n      produccion_media_panel_1kw: eYear ? Math.round(eYear * 10) / 10 : 1400.0\n    };\n\n    if (!ctx.DRY_RUN) results.push({ json: { ...ctx, record } });\n    else console.log(JSON.stringify({ stage: 'PVGIS_DRYRUN', record }));\n  } catch (e) {\n    console.error(JSON.stringify({ stage: 'PVGIS_PARSE_ERROR', error: e.message }));\n  }\n}\n\nreturn results;"
+      },
+      "id": "d9694426-d818-4ffc-94bd-ac6750f137fc",
+      "name": "PVGIS â€” Parse & Map",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        160
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  try {\n    const pvgisData = item.json;\n    const outputs = pvgisData.outputs || {};\n    const totals = outputs.totals || {};\n    const provincia = item.json.provincia || 'desconocida';\n    const eYear = totals.fixed?.E_y || null;\n    const hYear = totals.fixed?.H_i_opt || totals.fixed?.['H(i)_y'] || null;\n\n    const record = {\n      provincia,\n      horas_sol_anuales: eYear ? Math.round(eYear) : 1800,\n      irradiacion_kwh_m2: hYear ? Math.round(hYear * 10) / 10 : 1600.0,\n      produccion_media_panel_1kw: eYear ? Math.round(eYear * 10) / 10 : 1400.0\n    };\n\n    if (!ctx.DRY_RUN) results.push({ json: { ...ctx, record } });\n    else console.log(JSON.stringify({ stage: 'PVGIS_DRYRUN', record }));\n  } catch (e) {\n    console.error(JSON.stringify({ stage: 'PVGIS_PARSE_ERROR', error: e.message }));\n  }\n}\nreturn results;"
+        "jsCode": "// PVGIS â€” Upsert radiacion_solar_provincial_es\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\nconst records = items.map(i => i.json.record);\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/radiacion_solar_provincial_es?on_conflict=provincia`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'PVGIS_UPSERT', count: records.length }));\nreturn items;"
       },
-      "id": "pvgis-parse",
-      "name": "PVGIS – Parse & Map",
+      "id": "beed5056-1675-436f-b3de-59a5ef157ba5",
+      "name": "PVGIS â€” Upsert radiacion_solar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3500,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\nconst records = items.map(i => i.json.record);\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/radiacion_solar_provincial_es?on_conflict=provincia`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'PVGIS_UPSERT', count: records.length }));\nreturn items;"
-      },
-      "id": "pvgis-upsert",
-      "name": "PVGIS – Upsert radiacion_solar",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3740,
-        200
+        2192,
+        160
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -311,36 +311,36 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'BONIF_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'BONIFICACIONES_INGEST' } }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// BONIFICACIONES_INGEST â€” Carga IBI/ICIO desde JSON\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'BONIF_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'BONIFICACIONES_INGEST' } }];"
       },
-      "id": "bonif-start",
-      "name": "BONIF – Start",
+      "id": "36a48ffc-9f2f-4e45-9b2c-4016ea4bf7ef",
+      "name": "BONIF â€” Start",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        620,
-        520
+        512,
+        320
       ]
     },
     {
       "parameters": {
         "url": "={{ $json.IBI_ICIO_JSON_URL || 'data:application/json,%7B%22bonificaciones%22%3A%5B%5D%7D' }}",
         "options": {
-          "timeout": 30000,
           "response": {
             "response": {
               "responseFormat": "json"
             }
-          }
+          },
+          "timeout": 30000
         }
       },
-      "id": "bonif-fetch",
-      "name": "BONIF – Fetch JSON",
+      "id": "b82dcff9-555a-41af-8df9-9ee6a3f41970",
+      "name": "BONIF â€” Fetch JSON",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        860,
-        520
+        752,
+        320
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -348,42 +348,42 @@
     },
     {
       "parameters": {
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst ctx = $('INIT – Env & Config').first().json;\nconst data = $input.first().json;\nlet rows = Array.isArray(data) ? data : data.bonificaciones || data.data || [];\n\nfunction parsePct(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }\nfunction parseYears(v) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : 0; }\nfunction normalizeTipo(v) { return String(v || '').trim().toUpperCase(); }\n\nasync function upsertDeadLetter(records, stage) {\n  if (!records.length) return;\n  try {\n    await $helpers.httpRequest({\n      method: 'POST', url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify(records.map(r => ({ run_id: ctx.runId, stage, payload: JSON.stringify(r), error: r._error || 'unknown', created_at: new Date().toISOString() })))\n    });\n  } catch (e) { console.warn('dead_letter_error: ' + e.message); }\n}\n\nasync function aiBonifFallback() {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST', url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: { model: ctx.AI_MODEL, response_format: { type: 'json_object' },\n        messages: [{ role: 'system', content: 'Devuelve JSON valido.' }, { role: 'user', content: 'Genera 120 registros de bonificaciones municipales en Espana con campos municipio, provincia, tipo(IBI|ICIO), porcentaje_bonificacion, anios_bonificacion, condiciones. Devuelve {\"items\":[...]}.' }] },\n      json: true\n    });\n    return JSON.parse(resp.choices?.[0]?.message?.content || '{}').items || [];\n  } catch (e) { console.warn(JSON.stringify({ stage: 'BONIF_AI_FALLBACK_ERROR', error: e.message })); return []; }\n}\n\nif (!rows.length) {\n  const aiRows = await aiBonifFallback();\n  console.log(JSON.stringify({ stage: 'BONIF_AI_FALLBACK_USED', generated: aiRows.length }));\n  if (ctx.STRICT_PROD) {\n    staticData.strictAlerts = staticData.strictAlerts || [];\n    staticData.strictAlerts.push({ stage: 'BONIF', reason: 'Fuente JSON oficial vacía', aiDraftCount: aiRows.length, timestamp: new Date().toISOString() });\n    return [];\n  }\n  rows = aiRows;\n}\n\nconst ibi = []; const icio = []; const dead = [];\n\nfor (const row of rows) {\n  const municipio = String(row.municipio || '').trim();\n  const provincia = String(row.provincia || '').trim();\n  const tipo = normalizeTipo(row.tipo);\n  const porcentaje = parsePct(row.porcentaje_bonificacion || row.porcentaje);\n  const duracion = parseYears(row.anios_bonificacion || row.duracion_anos || row.anios);\n  const condiciones = String(row.condiciones || '').trim();\n\n  if (!municipio || !provincia || !tipo) { dead.push({ ...row, _error: 'Campos obligatorios faltantes' }); continue; }\n\n  const record = { municipio, provincia, porcentaje_bonificacion: porcentaje, duracion_anos: duracion, condiciones };\n  if (tipo === 'IBI') ibi.push(record);\n  else if (tipo === 'ICIO') icio.push(record);\n  else dead.push({ ...row, _error: 'Tipo desconocido: ' + tipo });\n}\n\nawait upsertDeadLetter(dead, 'BONIF_PARSE');\nconsole.log(JSON.stringify({ stage: 'BONIF_PARSE', total: rows.length, ibi: ibi.length, icio: icio.length, dead: dead.length }));\n\nconst out = [];\nfor (const r of ibi) out.push({ json: { ...ctx, record: r, tabla: 'bonificaciones_ibi_municipios_es' } });\nfor (const r of icio) out.push({ json: { ...ctx, record: r, tabla: 'bonificaciones_icio_municipios_es' } });\nreturn out;"
+        "jsCode": "// BONIF - Parse IBI/ICIO + fallback IA + completado por fila\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst data = $input.first().json;\nlet rows = Array.isArray(data) ? data : data.bonificaciones || data.data || [];\n\nfunction parsePct(v) {\n  const n = parseFloat(v);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction parseYears(v) {\n  const n = parseInt(v, 10);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction normalizeTipo(v) {\n  return String(v || '').trim().toUpperCase();\n}\n\nasync function aiBonifFallback() {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Devuelve JSON valido.' },\n          { role: 'user', content: 'Genera 120 registros de bonificaciones municipales en Espana con campos municipio, provincia, tipo(IBI|ICIO), porcentaje_bonificacion, anios_bonificacion, condiciones. Devuelve {\"items\":[...]}.' }\n        ]\n      },\n      json: true\n    });\n    const content = resp.choices?.[0]?.message?.content || '{}';\n    return JSON.parse(content).items || [];\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'BONIF_AI_FALLBACK_ERROR', error: e.message }));\n    return [];\n  }\n}\n\nasync function aiCompleteBonifRow(row) {\n  if (!ctx.AI_API_KEY) return null;\n  try {\n    const prompt = 'Completa SOLO campos faltantes para bonificacion municipal en Espana. Devuelve {\"item\":{municipio,provincia,tipo,porcentaje_bonificacion,anios_bonificacion,condiciones}}. Entrada: ' + JSON.stringify(row);\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Rellena solo faltantes y mantente conservador.' },\n          { role: 'user', content: prompt }\n        ]\n      },\n      json: true\n    });\n    const content = resp.choices?.[0]?.message?.content || '{}';\n    const parsed = JSON.parse(content);\n    return parsed.item || parsed;\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'BONIF_AI_ROW_ENRICH_ERROR', error: e.message }));\n    return null;\n  }\n}\n\nif (!rows.length) {\n  const aiRows = await aiBonifFallback();\n  console.log(JSON.stringify({ stage: 'BONIF_AI_FALLBACK_USED', generated: aiRows.length }));\n  if (ctx.STRICT_PROD) {\n    $workflow.staticData.strictAlerts = $workflow.staticData.strictAlerts || [];\n    $workflow.staticData.strictAlerts.push({ stage: 'BONIF', reason: 'Fuente JSON oficial vacia o no disponible', aiDraftCount: aiRows.length, timestamp: new Date().toISOString() });\n    return [];\n  }\n  rows = aiRows;\n}\n\nconst ibi = [];\nconst icio = [];\nconst dead = [];\nlet aiRowEnriched = 0;\nconst MAX_AI_ROW_ENRICH = 80;\n\nfor (const row of rows) {\n  let municipio = String(row.municipio || '').trim();\n  let provincia = String(row.provincia || '').trim();\n  let tipo = normalizeTipo(row.tipo);\n  let porcentaje = parsePct(row.porcentaje_bonificacion || row.porcentaje);\n  let duracion = parseYears(row.anios_bonificacion || row.duracion_anos || row.anios);\n  let condiciones = String(row.condiciones || '').trim();\n\n  const needsAi = !municipio || !provincia || !tipo || (!porcentaje && !duracion && !condiciones);\n  if (needsAi && ctx.AI_API_KEY && aiRowEnriched < MAX_AI_ROW_ENRICH) {\n    const ai = await aiCompleteBonifRow({ municipio, provincia, tipo, porcentaje_bonificacion: porcentaje, anios_bonificacion: duracion, condiciones, raw: row });\n    if (ai) {\n      municipio = municipio || String(ai.municipio || '').trim();\n      provincia = provincia || String(ai.provincia || '').trim();\n      tipo = tipo || normalizeTipo(ai.tipo);\n      porcentaje = porcentaje || parsePct(ai.porcentaje_bonificacion || ai.porcentaje);\n      duracion = duracion || parseYears(ai.anios_bonificacion || ai.duracion_anos || ai.anios);\n      condiciones = condiciones || String(ai.condiciones || '').trim();\n      aiRowEnriched += 1;\n    }\n  }\n\n  if (!municipio || !provincia || !tipo) {\n    dead.push({ ...row, _error: 'Campos obligatorios faltantes' });\n    continue;\n  }\n\n  const record = {\n    municipio,\n    provincia,\n    porcentaje_bonificacion: porcentaje,\n    duracion_anos: duracion,\n    condiciones\n  };\n\n  if (tipo === 'IBI') ibi.push(record);\n  else if (tipo === 'ICIO') icio.push(record);\n  else dead.push({ ...row, _error: 'Tipo desconocido: ' + tipo });\n}\n\nif (dead.length) {\n  $workflow.staticData.deadLetters = $workflow.staticData.deadLetters || [];\n  $workflow.staticData.deadLetters.push(...dead);\n}\n\nconsole.log(JSON.stringify({ stage: 'BONIF_PARSE', total: rows.length, ibi: ibi.length, icio: icio.length, dead: dead.length, aiRowEnriched }));\nconst out = [];\nfor (const r of ibi) out.push({ json: { ...ctx, record: r, tabla: 'bonificaciones_ibi_municipios_es' } });\nfor (const r of icio) out.push({ json: { ...ctx, record: r, tabla: 'bonificaciones_icio_municipios_es' } });\nreturn out;"
       },
-      "id": "bonif-parse",
-      "name": "BONIF – Parse IBI/ICIO",
+      "id": "89a0929b-c937-46ee-b748-1971e1aaf50f",
+      "name": "BONIF â€” Parse IBI/ICIO",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1100,
-        520
+        992,
+        320
       ]
     },
     {
       "parameters": {
-        "batchSize": "={{ $('INIT – Env & Config').first().json.BATCH_SIZE }}",
+        "batchSize": "={{ $('INIT â€” Env & Config').first().json.BATCH_SIZE }}",
         "options": {}
       },
-      "id": "bonif-batch",
-      "name": "BONIF – Split Batches",
+      "id": "eb0736d1-5beb-43cb-8779-f67fd3e42451",
+      "name": "BONIF â€” Split Batches",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1340,
-        520
+        1232,
+        320
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\nconst byTable = {};\nfor (const item of items) {\n  const t = item.json.tabla;\n  if (!byTable[t]) byTable[t] = [];\n  byTable[t].push(item.json.record);\n}\n\nfor (const [tabla, records] of Object.entries(byTable)) {\n  await $helpers.httpRequest({\n    method: 'POST',\n    url: `${ctx.SUPABASE_URL}/rest/v1/${tabla}?on_conflict=municipio,provincia`,\n    headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },\n    body: JSON.stringify(records)\n  });\n  console.log(JSON.stringify({ stage: 'BONIF_UPSERT', tabla, count: records.length }));\n}\nreturn items;"
+        "jsCode": "// BONIF â€” Upsert dinÃ¡mico IBI o ICIO\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\n// Agrupar por tabla\nconst byTable = {};\nfor (const item of items) {\n  const t = item.json.tabla;\n  if (!byTable[t]) byTable[t] = [];\n  byTable[t].push(item.json.record);\n}\n\nfor (const [tabla, records] of Object.entries(byTable)) {\n  await $helpers.httpRequest({\n    method: 'POST',\n    url: `${ctx.SUPABASE_URL}/rest/v1/${tabla}?on_conflict=municipio,provincia`,\n    headers: {\n      'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n      'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n      'Content-Type': 'application/json',\n      'Prefer': 'resolution=merge-duplicates,return=minimal'\n    },\n    body: JSON.stringify(records)\n  });\n  console.log(JSON.stringify({ stage: 'BONIF_UPSERT', tabla, count: records.length }));\n}\n\nreturn items;"
       },
-      "id": "bonif-upsert",
-      "name": "BONIF – Upsert IBI/ICIO",
+      "id": "38c92db7-2afd-4b1a-a137-bf2fbb4f48e9",
+      "name": "BONIF â€” Upsert IBI/ICIO",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1580,
-        520
+        1472,
+        320
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -391,15 +391,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst dateStr = yesterday.toISOString().split('T')[0];\nconsole.log(JSON.stringify({ stage: 'ESIOS_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'ESIOS_INGEST', fecha: dateStr } }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// ESIOS_INGEST â€” Precios de electricidad\n// API ESIOS REE: https://api.esios.ree.es\n// Indicador 1001 = PVPC horario\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'ESIOS_START', runId: ctx.runId }));\n\n// Calcular rango de fechas: ayer\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst dateStr = yesterday.toISOString().split('T')[0];\n\nreturn [{ json: { ...ctx, subflow: 'ESIOS_INGEST', fecha: dateStr } }];"
       },
-      "id": "esios-start",
-      "name": "ESIOS – Start",
+      "id": "02182aae-d7fc-4aa8-a644-03e86033d329",
+      "name": "ESIOS â€” Start",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        620,
-        680
+        512,
+        480
       ]
     },
     {
@@ -426,42 +426,43 @@
           "timeout": 30000
         }
       },
-      "id": "esios-fetch",
-      "name": "ESIOS – Fetch PVPC",
+      "id": "5c5a5a9f-cd1d-44c0-96d1-150bf89f3b50",
+      "name": "ESIOS â€” Fetch PVPC",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        860,
-        680
+        752,
+        480
       ],
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 10000
+      "waitBetweenTries": 10000,
+      "notes": "TODO: TambiÃ©n descargar indicadores 10211, 10213, 10215 para tarifas 2.0TD, 3.0TD. Indicador 805 = GeneraciÃ³n solar."
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst data = $input.first().json;\nconst values = data.indicator?.values || [];\nconst fecha = ctx.fecha;\n\nif (!values.length) {\n  console.warn(JSON.stringify({ stage: 'ESIOS_EMPTY', fecha }));\n  // FIX: registrar en dead_letters en lugar de retornar silencioso\n  try {\n    await $helpers.httpRequest({\n      method: 'POST', url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify([{ run_id: ctx.runId, stage: 'ESIOS_EMPTY', payload: JSON.stringify({ fecha }), error: 'API devolvió 0 valores', created_at: new Date().toISOString() }])\n    });\n  } catch (_) {}\n  return [];\n}\n\nconst precios = values.map(v => v.value / 1000);\nconst precio_medio = precios.reduce((a, b) => a + b, 0) / precios.length;\nconst precio_min = Math.min(...precios);\nconst precio_max = Math.max(...precios);\n\nconst record = {\n  fecha,\n  tarifa_codigo: 'pvpc_2_0td',\n  precio_kwh_media: Math.round(precio_medio * 100000) / 100000,\n  precio_kwh_min: Math.round(precio_min * 100000) / 100000,\n  precio_kwh_max: Math.round(precio_max * 100000) / 100000,\n  fuente: 'esios',\n  indicador_id: '1001'\n};\n\nconsole.log(JSON.stringify({ stage: 'ESIOS_PARSE', fecha, precio_medio: record.precio_kwh_media }));\nreturn [{ json: { ...ctx, record } }];"
+        "jsCode": "// ESIOS â€” Parsear respuesta de precios PVPC\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst data = $input.first().json;\n\nconst values = data.indicator?.values || [];\nconst fecha = ctx.fecha;\n\nif (!values.length) {\n  console.warn(JSON.stringify({ stage: 'ESIOS_EMPTY', fecha }));\n  return [];\n}\n\nconst precios = values.map(v => v.value / 1000);\nconst precio_medio = precios.reduce((a, b) => a + b, 0) / precios.length;\nconst precio_min = Math.min(...precios);\nconst precio_max = Math.max(...precios);\n\nconst record = {\n  fecha,\n  tarifa_codigo: 'pvpc_2_0td',\n  precio_kwh_media: Math.round(precio_medio * 100000) / 100000,\n  precio_kwh_min: Math.round(precio_min * 100000) / 100000,\n  precio_kwh_max: Math.round(precio_max * 100000) / 100000,\n  fuente: 'esios',\n  indicador_id: '1001'\n};\n\nconsole.log(JSON.stringify({ stage: 'ESIOS_PARSE', fecha, precio_medio: record.precio_kwh_media }));\nreturn [{ json: { ...ctx, record } }];"
       },
-      "id": "esios-parse",
-      "name": "ESIOS – Parse Precios",
+      "id": "5dbdf135-e161-4eb9-b5dc-7867c0f4a19b",
+      "name": "ESIOS â€” Parse Precios",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1100,
-        680
+        992,
+        480
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst item = $input.first();\nif (!item || ctx.DRY_RUN) return $input.all();\nconst record = item.json.record;\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/tarifas_electricas_espana_es?on_conflict=compania,tarifa`,\n  headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },\n  body: JSON.stringify([{ compania: 'ESIOS', tarifa: 'PVPC 2.0TD', precio_kwh_dia: record.precio_kwh_media, precio_kwh_noche: record.precio_kwh_media, precio_kwh_valle: record.precio_kwh_media, tipo_tarifa: 'regulada-pvpc' }])\n});\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/precios_electricidad_es?on_conflict=fecha,tarifa_codigo`,\n  headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },\n  body: JSON.stringify([record])\n});\n\nconsole.log(JSON.stringify({ stage: 'ESIOS_UPSERT', fecha: record.fecha }));\nreturn $input.all();"
+        "jsCode": "// ESIOS â€” Upsert tarifas_electricas_espana_es + precios_electricidad_es\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst item = $input.first();\nif (!item || ctx.DRY_RUN) return $input.all();\n\nconst record = item.json.record;\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/tarifas_electricas_espana_es?on_conflict=compania,tarifa`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify([{\n    compania: 'ESIOS',\n    tarifa: 'PVPC 2.0TD',\n    precio_kwh_dia: record.precio_kwh_media,\n    precio_kwh_noche: record.precio_kwh_media,\n    precio_kwh_valle: record.precio_kwh_media,\n    tipo_tarifa: 'regulada-pvpc'\n  }])\n});\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/precios_electricidad_es?on_conflict=fecha,tarifa_codigo`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify([record])\n});\n\nconsole.log(JSON.stringify({ stage: 'ESIOS_UPSERT', fecha: record.fecha }));\nreturn $input.all();"
       },
-      "id": "esios-upsert",
-      "name": "ESIOS – Upsert tarifas",
+      "id": "8f7c5903-0621-4445-b520-c928490709ec",
+      "name": "ESIOS â€” Upsert tarifas",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1340,
-        680
+        1232,
+        480
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -469,36 +470,36 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'COMPAT_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'COMPATIBILIDAD_INGEST' } }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// COMPATIBILIDAD_INGEST â€” Inversor + BaterÃ­a + Cargador EV\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'COMPAT_START', runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: 'COMPATIBILIDAD_INGEST' } }];"
       },
-      "id": "compat-start",
-      "name": "COMPAT – Start",
+      "id": "66b1aed1-f774-4b35-bfcd-63f7e47e9fca",
+      "name": "COMPAT â€” Start",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        620,
-        840
+        512,
+        640
       ]
     },
     {
       "parameters": {
         "url": "={{ $json.COMPATIBILIDAD_CSV_URL || 'data:text/plain,' }}",
         "options": {
-          "timeout": 30000,
           "response": {
             "response": {
               "responseFormat": "text"
             }
-          }
+          },
+          "timeout": 30000
         }
       },
-      "id": "compat-fetch",
-      "name": "COMPAT – Fetch CSV",
+      "id": "a105af93-526b-4569-be40-caf1937f3efb",
+      "name": "COMPAT â€” Fetch CSV",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        860,
-        840
+        752,
+        640
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -506,42 +507,42 @@
     },
     {
       "parameters": {
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst ctx = $('INIT – Env & Config').first().json;\nconst raw = $input.first().json.data || $input.first().json.body || '';\n\nfunction toBool(v) { const s = String(v || '').trim().toLowerCase(); return s === 'true' || s === '1' || s === 'si' || s === 'yes'; }\n\nasync function upsertDeadLetter(records, stage) {\n  if (!records.length) return;\n  try {\n    await $helpers.httpRequest({\n      method: 'POST', url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify(records.map(r => ({ run_id: ctx.runId, stage, payload: JSON.stringify(r), error: r._error || 'unknown', created_at: new Date().toISOString() })))\n    });\n  } catch (e) { console.warn('dead_letter_error: ' + e.message); }\n}\n\nasync function aiCompatFallback() {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST', url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: { model: ctx.AI_MODEL, response_format: { type: 'json_object' },\n        messages: [{ role: 'system', content: 'Devuelve JSON valido.' }, { role: 'user', content: 'Genera 60 combinaciones de compatibilidad con campos inversor, bateria, cargador_ev, compatible(boolean). Devuelve {\"items\":[...]}.' }] },\n      json: true\n    });\n    return JSON.parse(resp.choices?.[0]?.message?.content || '{}').items || [];\n  } catch (e) { console.warn(JSON.stringify({ stage: 'COMPAT_AI_FALLBACK_ERROR', error: e.message })); return []; }\n}\n\nlet records = [];\nconst dead = [];\n\nconst lines = String(raw).split('\\n').filter(l => l.trim());\nif (lines.length >= 2) {\n  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, '_'));\n  for (const line of lines.slice(1)) {\n    const vals = line.split(',');\n    const obj = {};\n    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());\n    const inversor = String(obj.inversor || '').trim();\n    const bateria = String(obj.bateria || '').trim();\n    const cargadorEv = String(obj.cargador_ev || '').trim();\n    if (!inversor || !bateria || !cargadorEv) { dead.push({ ...obj, _error: 'Clave compuesta incompleta' }); continue; }\n    records.push({ inversor, bateria, cargador_ev: cargadorEv, compatible: toBool(obj.compatible) });\n  }\n}\n\nif (!records.length) {\n  const aiRecords = await aiCompatFallback();\n  console.log(JSON.stringify({ stage: 'COMPAT_AI_FALLBACK_USED', generated: aiRecords.length }));\n  if (ctx.STRICT_PROD) {\n    staticData.strictAlerts = staticData.strictAlerts || [];\n    staticData.strictAlerts.push({ stage: 'COMPAT', reason: 'Fuente CSV oficial vacía', aiDraftCount: aiRecords.length, timestamp: new Date().toISOString() });\n    return [];\n  }\n  records = aiRecords.map(r => ({ inversor: String(r.inversor||'').trim(), bateria: String(r.bateria||'').trim(), cargador_ev: String(r.cargador_ev||'').trim(), compatible: !!r.compatible })).filter(r => r.inversor && r.bateria && r.cargador_ev);\n}\n\nawait upsertDeadLetter(dead, 'COMPAT_PARSE');\nconsole.log(JSON.stringify({ stage: 'COMPAT_PARSE', valid: records.length, dead: dead.length }));\nreturn records.map(r => ({ json: { ...ctx, record: r } }));"
+        "jsCode": "// COMPAT - Parse CSV + fallback IA + completado por fila\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst raw = $input.first().json.data || $input.first().json.body || '';\n\nfunction toBool(v) {\n  const s = String(v || '').trim().toLowerCase();\n  return s === 'true' || s === '1' || s === 'si' || s === 'yes';\n}\n\nasync function aiCompatFallback() {\n  if (!ctx.AI_API_KEY) return [];\n  try {\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Devuelve JSON valido.' },\n          { role: 'user', content: 'Genera 60 combinaciones de compatibilidad con campos inversor, bateria, cargador_ev, compatible(boolean). Devuelve {\"items\":[...]}.' }\n        ]\n      },\n      json: true\n    });\n    const content = resp.choices?.[0]?.message?.content || '{}';\n    return JSON.parse(content).items || [];\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'COMPAT_AI_FALLBACK_ERROR', error: e.message }));\n    return [];\n  }\n}\n\nasync function aiCompleteCompatRow(row) {\n  if (!ctx.AI_API_KEY) return null;\n  try {\n    const prompt = 'Completa SOLO campos faltantes para compatibilidad de equipos solares. Devuelve {\"item\":{inversor,bateria,cargador_ev,compatible}}. Entrada: ' + JSON.stringify(row);\n    const resp = await $helpers.httpRequest({\n      method: 'POST',\n      url: ctx.AI_BASE_URL,\n      headers: { Authorization: 'Bearer ' + ctx.AI_API_KEY, 'Content-Type': 'application/json' },\n      body: {\n        model: ctx.AI_MODEL,\n        response_format: { type: 'json_object' },\n        messages: [\n          { role: 'system', content: 'Rellena solo faltantes y evita inventar marcas no presentes.' },\n          { role: 'user', content: prompt }\n        ]\n      },\n      json: true\n    });\n    const content = resp.choices?.[0]?.message?.content || '{}';\n    const parsed = JSON.parse(content);\n    return parsed.item || parsed;\n  } catch (e) {\n    console.warn(JSON.stringify({ stage: 'COMPAT_AI_ROW_ENRICH_ERROR', error: e.message }));\n    return null;\n  }\n}\n\nlet records = [];\nconst dead = [];\nlet aiRowEnriched = 0;\nconst MAX_AI_ROW_ENRICH = 80;\n\nconst lines = String(raw).split('\\n').filter(l => l.trim());\nif (lines.length >= 2) {\n  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, '_'));\n\n  for (const line of lines.slice(1)) {\n    const vals = line.split(',');\n    const obj = {};\n    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());\n\n    let inversor = String(obj.inversor || '').trim();\n    let bateria = String(obj.bateria || '').trim();\n    let cargadorEv = String(obj.cargador_ev || '').trim();\n    let compatible = toBool(obj.compatible);\n\n    if ((!inversor || !bateria || !cargadorEv) && ctx.AI_API_KEY && aiRowEnriched < MAX_AI_ROW_ENRICH) {\n      const ai = await aiCompleteCompatRow({ inversor, bateria, cargador_ev: cargadorEv, compatible, raw: obj });\n      if (ai) {\n        inversor = inversor || String(ai.inversor || '').trim();\n        bateria = bateria || String(ai.bateria || '').trim();\n        cargadorEv = cargadorEv || String(ai.cargador_ev || '').trim();\n        if (obj.compatible === undefined || obj.compatible === null || String(obj.compatible).trim() === '') {\n          compatible = !!ai.compatible;\n        }\n        aiRowEnriched += 1;\n      }\n    }\n\n    if (!inversor || !bateria || !cargadorEv) {\n      dead.push({ ...obj, _error: 'Clave compuesta incompleta' });\n      continue;\n    }\n\n    records.push({\n      inversor,\n      bateria,\n      cargador_ev: cargadorEv,\n      compatible\n    });\n  }\n}\n\nif (!records.length) {\n  const aiRecords = await aiCompatFallback();\n  console.log(JSON.stringify({ stage: 'COMPAT_AI_FALLBACK_USED', generated: aiRecords.length }));\n  if (ctx.STRICT_PROD) {\n    $workflow.staticData.strictAlerts = $workflow.staticData.strictAlerts || [];\n    $workflow.staticData.strictAlerts.push({ stage: 'COMPAT', reason: 'Fuente CSV oficial vacia o no disponible', aiDraftCount: aiRecords.length, timestamp: new Date().toISOString() });\n    return [];\n  }\n  records = aiRecords;\n}\n\nif (dead.length) {\n  $workflow.staticData.deadLetters = $workflow.staticData.deadLetters || [];\n  $workflow.staticData.deadLetters.push(...dead);\n}\n\nrecords = records.map(r => ({\n  inversor: String(r.inversor || '').trim(),\n  bateria: String(r.bateria || '').trim(),\n  cargador_ev: String(r.cargador_ev || '').trim(),\n  compatible: !!r.compatible\n})).filter(r => r.inversor && r.bateria && r.cargador_ev);\n\nconsole.log(JSON.stringify({ stage: 'COMPAT_PARSE', valid: records.length, dead: dead.length, aiRowEnriched }));\nreturn records.map(r => ({ json: { ...ctx, record: r } }));"
       },
-      "id": "compat-parse",
-      "name": "COMPAT – Parse CSV",
+      "id": "b37fc876-dbb2-4cc1-9525-713e1d2639dc",
+      "name": "COMPAT â€” Parse CSV",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1100,
-        840
+        992,
+        640
       ]
     },
     {
       "parameters": {
-        "batchSize": "={{ $('INIT – Env & Config').first().json.BATCH_SIZE }}",
+        "batchSize": "={{ $('INIT â€” Env & Config').first().json.BATCH_SIZE }}",
         "options": {}
       },
-      "id": "compat-batch",
-      "name": "COMPAT – Split Batches",
+      "id": "e61a67dd-e8ef-4892-9e6e-8e85bae3de0f",
+      "name": "COMPAT â€” Split Batches",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1340,
-        840
+        1232,
+        640
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\nconst records = items.map(i => i.json.record);\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/compatibilidad_inversor_bateria_cargador_ev_es?on_conflict=inversor,bateria,cargador_ev`,\n  headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'COMPAT_UPSERT', count: records.length }));\nreturn items;"
+        "jsCode": "// COMPAT â€” Upsert compatibilidad_inversor_bateria_cargador_ev_es\nconst ctx = $('INIT â€” Env & Config').first().json;\nconst items = $input.all();\nif (ctx.DRY_RUN || !items.length) return items;\n\nconst records = items.map(i => i.json.record);\n\nawait $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/compatibilidad_inversor_bateria_cargador_ev_es?on_conflict=inversor,bateria,cargador_ev`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json',\n    'Prefer': 'resolution=merge-duplicates,return=minimal'\n  },\n  body: JSON.stringify(records)\n});\n\nconsole.log(JSON.stringify({ stage: 'COMPAT_UPSERT', count: records.length }));\nreturn items;"
       },
-      "id": "compat-upsert",
-      "name": "COMPAT – Upsert compatibilidad",
+      "id": "0b844582-1fed-4076-b481-d47deeaa884d",
+      "name": "COMPAT â€” Upsert compatibilidad",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1580,
-        840
+        1472,
+        640
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -549,112 +550,97 @@
     },
     {
       "parameters": {
-        "mode": "waitForAll",
-        "numberInputs": 4,
-        "options": {}
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// REBUILD â€” municipios_energia + pseo_url_index + pseo_slug_index\n// Este paso se ejecuta siempre al final del flujo maestro\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $('INIT â€” Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'REBUILD_START', runId: ctx.runId }));\n\nif (ctx.DRY_RUN) {\n  console.log(JSON.stringify({ stage: 'REBUILD_DRYRUN', msg: 'Skipped â€” DRY_RUN=true' }));\n  return [{ json: ctx }];\n}\n\n// â”€â”€ 1. Rebuild municipios_energia â”€â”€\n// Hace un JOIN entre municipios_dataset_es, radiacion_solar_provincial_es y tarifas_electricas_espana_es\nconst rpcMunicipiosEnergia = await $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/rpc/rebuild_municipios_energia`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({})\n});\nconsole.log(JSON.stringify({ stage: 'REBUILD_municipios_energia', status: rpcMunicipiosEnergia.statusCode || 'ok' }));\n\n// â”€â”€ 2. Rebuild pseo_url_index â”€â”€\nconst rpcUrlIndex = await $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/rpc/rebuild_pseo_url_index`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({})\n});\nconsole.log(JSON.stringify({ stage: 'REBUILD_pseo_url_index', status: rpcUrlIndex.statusCode || 'ok' }));\n\n// â”€â”€ 3. Rebuild pseo_slug_index â”€â”€\nconst rpcSlugIndex = await $helpers.httpRequest({\n  method: 'POST',\n  url: `${ctx.SUPABASE_URL}/rest/v1/rpc/rebuild_pseo_slug_index`,\n  headers: {\n    'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n    'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({})\n});\nconsole.log(JSON.stringify({ stage: 'REBUILD_pseo_slug_index', status: rpcSlugIndex.statusCode || 'ok' }));\n\nreturn [{ json: { ...ctx, stage: 'REBUILD_DONE', completedAt: new Date().toISOString() } }];\n\n// â•â• NOTA: Si no tienes RPCs definidas en Supabase, usa estas funciones SQL:\n// CREATE OR REPLACE FUNCTION rebuild_municipios_energia() RETURNS void AS $$\n//   INSERT INTO municipios_energia (municipio, provincia, slug, irradiacion_kwh_m2, precio_kwh, ahorro_estimado_anual)\n//   SELECT m.nombre_municipio, m.nombre_provincia, m.slug,\n//          r.irradiacion_anual_kwh_m2, t.precio_medio_kwh,\n//          (r.irradiacion_anual_kwh_m2 * 4 * 0.20 * t.precio_medio_kwh) as ahorro_estimado\n//   FROM municipios_dataset_es m\n//   LEFT JOIN radiacion_solar_provincial_es r ON r.provincia = m.nombre_provincia\n//   LEFT JOIN LATERAL (SELECT precio_medio_kwh FROM tarifas_electricas_espana_es ORDER BY fecha DESC LIMIT 1) t ON true\n//   ON CONFLICT (slug) DO UPDATE SET irradiacion_kwh_m2=EXCLUDED.irradiacion_kwh_m2,\n//     precio_kwh=EXCLUDED.precio_kwh, ahorro_estimado_anual=EXCLUDED.ahorro_estimado_anual;\n// $$ LANGUAGE SQL;"
       },
-      "id": "merge-wait-all",
-      "name": "MERGE – Wait All Subflows",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [
-        3980,
-        520
-      ],
-      "notes": "FIX: Espera a que terminen BONIF, ESIOS, COMPAT y PVGIS antes de REBUILD. Evita race condition."
-    },
-    {
-      "parameters": {
-        "jsCode": "const ctx = $('INIT – Env & Config').first().json;\nconsole.log(JSON.stringify({ stage: 'REBUILD_START', runId: ctx.runId }));\n\nif (ctx.DRY_RUN) { console.log(JSON.stringify({ stage: 'REBUILD_DRYRUN' })); return [{ json: ctx }]; }\n\nasync function callRpc(name) {\n  try {\n    const r = await $helpers.httpRequest({\n      method: 'POST',\n      url: `${ctx.SUPABASE_URL}/rest/v1/rpc/${name}`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },\n      body: JSON.stringify({})\n    });\n    console.log(JSON.stringify({ stage: `REBUILD_${name}`, status: r.statusCode || 'ok' }));\n  } catch (e) {\n    // FIX: no fallar silencioso – registra en dead_letters\n    console.error(JSON.stringify({ stage: `REBUILD_${name}_ERROR`, error: e.message }));\n    await $helpers.httpRequest({\n      method: 'POST', url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify([{ run_id: ctx.runId, stage: `REBUILD_${name}`, payload: '{}', error: e.message, created_at: new Date().toISOString() }])\n    }).catch(() => {});\n  }\n}\n\nawait callRpc('rebuild_municipios_energia');\nawait callRpc('rebuild_pseo_url_index');\nawait callRpc('rebuild_pseo_slug_index');\n\nreturn [{ json: { ...ctx, stage: 'REBUILD_DONE', completedAt: new Date().toISOString() } }];\n\n/*\n── SQL sugerido para las RPCs ──────────────────────────────────────────\nCREATE OR REPLACE FUNCTION rebuild_municipios_energia() RETURNS void AS $$\n  INSERT INTO municipios_energia (municipio, provincia, slug, irradiacion_kwh_m2, precio_kwh, ahorro_estimado_anual)\n  SELECT m.nombre_municipio, m.nombre_provincia, m.slug,\n         r.irradiacion_kwh_m2,\n         t.precio_kwh_media,\n         ROUND((r.irradiacion_kwh_m2 * 4 * 0.80 * t.precio_kwh_media)::numeric, 2) AS ahorro_estimado_anual\n  FROM municipios_dataset_es m\n  LEFT JOIN radiacion_solar_provincial_es r ON r.provincia = m.nombre_provincia\n  LEFT JOIN LATERAL (\n    SELECT precio_kwh_media FROM precios_electricidad_es\n    ORDER BY fecha DESC LIMIT 1\n  ) t ON true\n  ON CONFLICT (slug) DO UPDATE SET\n    irradiacion_kwh_m2 = EXCLUDED.irradiacion_kwh_m2,\n    precio_kwh = EXCLUDED.precio_kwh,\n    ahorro_estimado_anual = EXCLUDED.ahorro_estimado_anual,\n    updated_at = now();\n$$ LANGUAGE SQL;\n*/"
-      },
-      "id": "rebuild-indexes",
-      "name": "REBUILD – Indexes & Derived Tables",
+      "id": "f62d276f-e00d-4387-9453-2318b9002704",
+      "name": "REBUILD â€” Indexes & Derived Tables",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4220,
-        520
+        2432,
+        320
       ]
     },
     {
       "parameters": {
-        "jsCode": "// FIX: on_conflict ahora incluye columna de conflicto explícita (slug)\nconst ctx = $('INIT – Env & Config').first().json;\nif (ctx.DRY_RUN) return [{ json: ctx }];\n\ntry {\n  const data = await $helpers.httpRequest({\n    method: 'GET',\n    url: `${ctx.SUPABASE_URL}/rest/v1/municipios_energia?select=municipio,provincia,slug,irradiacion_kwh_m2,precio_kwh&limit=10000`,\n    headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}` }\n  });\n\n  const municipios = Array.isArray(data) ? data : [];\n\n  if (!municipios.length) {\n    console.warn(JSON.stringify({ stage: 'ESTIMACIONES_EMPTY', msg: 'municipios_energia vacía – ¿REBUILD falló?' }));\n    await $helpers.httpRequest({\n      method: 'POST', url: `${ctx.SUPABASE_URL}/rest/v1/etl_dead_letters`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },\n      body: JSON.stringify([{ run_id: ctx.runId, stage: 'ESTIMACIONES_EMPTY', payload: '{}', error: 'municipios_energia vacía tras REBUILD', created_at: new Date().toISOString() }])\n    }).catch(() => {});\n    return [{ json: ctx }];\n  }\n\n  const estimaciones = municipios.map(m => ({\n    municipio: m.municipio,\n    provincia: m.provincia,\n    slug: m.slug,\n    potencia_instalada_kwp: 4,\n    produccion_anual_kwh: Math.round((m.irradiacion_kwh_m2 || 1300) * 4 * 0.80),\n    precio_kwh_referencia: m.precio_kwh || 0.15,\n    ahorro_bruto_anual_eur: Math.round((m.irradiacion_kwh_m2 || 1300) * 4 * 0.80 * (m.precio_kwh || 0.15)),\n    payback_estimado_anios: Math.round(6000 / Math.max((m.irradiacion_kwh_m2 || 1300) * 4 * 0.80 * (m.precio_kwh || 0.15), 1)),\n    actualizado_en: new Date().toISOString()\n  }));\n\n  // FIX: on_conflict especifica columna explícita\n  for (let i = 0; i < estimaciones.length; i += 500) {\n    const batch = estimaciones.slice(i, i + 500);\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: `${ctx.SUPABASE_URL}/rest/v1/estimaciones_ahorro_anual_es?on_conflict=slug`,\n      headers: { 'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },\n      body: JSON.stringify(batch)\n    });\n  }\n\n  console.log(JSON.stringify({ stage: 'ESTIMACIONES_UPSERT', count: estimaciones.length }));\n} catch (e) {\n  console.error(JSON.stringify({ stage: 'ESTIMACIONES_ERROR', error: e.message }));\n}\n\nreturn [{ json: ctx }];"
+        "jsCode": "// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n// FINAL REPORT â€” Logging estructurado + Dead Letters\n// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\nconst ctx = $input.first().json;\nconst deadLetters = $workflow.staticData.deadLetters || [];\nconst strictAlerts = $workflow.staticData.strictAlerts || [];\n\nconst report = {\n  runId: ctx.runId,\n  completedAt: new Date().toISOString(),\n  startedAt: ctx.startedAt,\n  dryRun: ctx.DRY_RUN,\n  deadLetterCount: deadLetters.length,\n  deadLetterSample: deadLetters.slice(0, 5),\n  strictAlertCount: strictAlerts.length,\n  strictAlertSample: strictAlerts.slice(0, 5),\n  status: strictAlerts.length ? 'WARNING_STRICT_PROD' : 'SUCCESS'\n};\n\nconsole.log(JSON.stringify({ stage: 'FINAL_REPORT', report }));\n\n// Limpiar dead letters de estado estÃ¡tico\n$workflow.staticData.deadLetters = [];\n$workflow.staticData.strictAlerts = [];\n\nreturn [{ json: report }];"
       },
-      "id": "estimaciones-upsert",
-      "name": "ESTIMACIONES – Upsert ahorro_anual",
+      "id": "6c59dfe2-297c-4b49-a6f9-41bc08aa8edb",
+      "name": "FINAL â€” Report & Dead Letters",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4460,
-        520
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst ctx = $input.first().json;\nconst strictAlerts = staticData.strictAlerts || [];\n\nconst report = {\n  runId: ctx.runId,\n  completedAt: new Date().toISOString(),\n  startedAt: ctx.startedAt,\n  dryRun: ctx.DRY_RUN,\n  strictAlertCount: strictAlerts.length,\n  strictAlertSample: strictAlerts.slice(0, 5),\n  status: strictAlerts.length ? 'WARNING_STRICT_PROD' : 'SUCCESS',\n  note: 'Dead letters persistidos en tabla etl_dead_letters de Supabase'\n};\n\nconsole.log(JSON.stringify({ stage: 'FINAL_REPORT', report }));\n\nstaticData.strictAlerts = [];\nstaticData.deadLetters = [];\n\nreturn [{ json: report }];"
-      },
-      "id": "final-report",
-      "name": "FINAL – Report & Dead Letters",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4700,
-        520
+        2672,
+        320
       ]
     },
     {
       "parameters": {},
-      "id": "error-trigger",
+      "id": "4ef6242d-0527-4de3-b824-75084cd31675",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        120,
-        980
+        0,
+        784
       ]
     },
     {
       "parameters": {
-        "jsCode": "const error = $input.first().json;\n\nconst alert = {\n  runId: error.execution?.id || 'unknown',\n  workflow: error.workflow?.name || 'pSEO Solar ETL',\n  node: error.execution?.lastNodeExecuted || 'unknown',\n  error: error.execution?.error?.message || JSON.stringify(error),\n  timestamp: new Date().toISOString(),\n  severity: 'ERROR'\n};\n\nconsole.error(JSON.stringify({ stage: 'ERROR_ALERT', alert }));\n\n// TODO: Conectar con Slack/email/webhook de alertas\n// await $helpers.httpRequest({ method: 'POST', url: 'https://hooks.slack.com/...', body: JSON.stringify({ text: JSON.stringify(alert) }) });\n\nreturn [{ json: alert }];"
+        "jsCode": "// ERROR HANDLER â€” Alerta estructurada\nconst error = $input.first().json;\n\nconst alert = {\n  runId: error.execution?.id || 'unknown',\n  workflow: error.workflow?.name || 'pSEO Solar ETL',\n  node: error.execution?.lastNodeExecuted || 'unknown',\n  error: error.execution?.error?.message || JSON.stringify(error),\n  timestamp: new Date().toISOString(),\n  severity: 'ERROR'\n};\n\nconsole.error(JSON.stringify({ stage: 'ERROR_ALERT', alert }));\n\n// TODO: Conectar aquÃ­ con Slack/email/webhook de alertas\n// Ejemplo: await $helpers.httpRequest({ method: 'POST', url: 'https://hooks.slack.com/...', body: JSON.stringify({ text: JSON.stringify(alert) }) });\n\nreturn [{ json: alert }];"
       },
-      "id": "error-handler",
-      "name": "ERROR – Handler & Alert",
+      "id": "b5caa29f-1529-4131-9ece-1753d767ad9d",
+      "name": "ERROR â€” Handler & Alert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        360,
-        980
+        240,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ESTIMACIONES_AHORRO â€” Upsert estimaciones_ahorro_anual_es\n// Calcula ahorro por municipio basado en radiaciÃ³n + precio electricidad\nconst ctx = $('INIT â€” Env & Config').first().json;\nif (ctx.DRY_RUN) return [{ json: ctx }];\n\ntry {\n  // Obtener datos combinados vÃ­a Supabase RPC o query directa\n  const data = await $helpers.httpRequest({\n    method: 'GET',\n    url: `${ctx.SUPABASE_URL}/rest/v1/municipios_energia?select=municipio,provincia,slug,irradiacion_kwh_m2,precio_kwh&limit=10000`,\n    headers: {\n      'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n      'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`\n    }\n  });\n\n  const municipios = Array.isArray(data) ? data : [];\n  const estimaciones = municipios.map(m => ({\n    municipio: m.municipio,\n    provincia: m.provincia,\n    slug: m.slug,\n    // Asume instalaciÃ³n 4kWp estÃ¡ndar\n    potencia_instalada_kwp: 4,\n    produccion_anual_kwh: (m.irradiacion_kwh_m2 || 1300) * 4 * 0.80,\n    precio_kwh_referencia: m.precio_kwh || 0.15,\n    ahorro_bruto_anual_eur: Math.round((m.irradiacion_kwh_m2 || 1300) * 4 * 0.80 * (m.precio_kwh || 0.15)),\n    payback_estimado_anios: Math.round(6000 / ((m.irradiacion_kwh_m2 || 1300) * 4 * 0.80 * (m.precio_kwh || 0.15))),\n    actualizado_en: new Date().toISOString()\n  }));\n\n  // Upsert en lotes de 500\n  for (let i = 0; i < estimaciones.length; i += 500) {\n    const batch = estimaciones.slice(i, i + 500);\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: `${ctx.SUPABASE_URL}/rest/v1/estimaciones_ahorro_anual_es`,\n      headers: {\n        'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n        'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'resolution=merge-duplicates,return=minimal'\n      },\n      body: JSON.stringify(batch)\n    });\n  }\n\n  console.log(JSON.stringify({ stage: 'ESTIMACIONES_UPSERT', count: estimaciones.length }));\n} catch (e) {\n  console.error(JSON.stringify({ stage: 'ESTIMACIONES_ERROR', error: e.message }));\n}\n\nreturn [{ json: ctx }];"
+      },
+      "id": "15d5b9f3-631d-441b-b800-27b4795e954e",
+      "name": "ESTIMACIONES â€” Upsert ahorro_anual",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        480
       ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "CRON – GEO mensual": {
+    "CRON â€” GEO mensual": {
       "main": [
         [
           {
-            "node": "INIT – Env & Config",
+            "node": "INIT â€” Env & Config",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CRON – ESIOS diario": {
+    "CRON â€” ESIOS diario": {
       "main": [
         [
           {
-            "node": "INIT – Env & Config",
+            "node": "INIT â€” Env & Config",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CRON – Bonificaciones semanal": {
+    "CRON â€” Bonificaciones semanal": {
       "main": [
         [
           {
-            "node": "INIT – Env & Config",
+            "node": "INIT â€” Env & Config",
             "type": "main",
             "index": 0
           }
@@ -665,374 +651,368 @@
       "main": [
         [
           {
-            "node": "INIT – Env & Config",
+            "node": "INIT â€” Env & Config",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "INIT – Env & Config": {
+    "INIT â€” Env & Config": {
       "main": [
         [
           {
-            "node": "GEO – Start",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "BONIF – Start",
+            "node": "GEO â€” Start",
             "type": "main",
             "index": 0
           },
           {
-            "node": "ESIOS – Start",
+            "node": "PVGIS â€” Start",
             "type": "main",
             "index": 0
           },
           {
-            "node": "COMPAT – Start",
+            "node": "BONIF â€” Start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ESIOS â€” Start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "COMPAT â€” Start",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Start": {
+    "GEO â€” Start": {
       "main": [
         [
           {
-            "node": "GEO – Fetch CSV",
+            "node": "GEO â€” Fetch CSV",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Fetch CSV": {
+    "GEO â€” Fetch CSV": {
       "main": [
         [
           {
-            "node": "GEO – Parse & Slugify",
+            "node": "GEO â€” Parse & Slugify",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Parse & Slugify": {
+    "GEO â€” Parse & Slugify": {
       "main": [
         [
           {
-            "node": "GEO – Split Batches",
+            "node": "GEO â€” Split Batches",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Split Batches": {
+    "GEO â€” Split Batches": {
       "main": [
         [
           {
-            "node": "GEO – Upsert municipios_dataset_es",
+            "node": "GEO â€” Upsert municipios_dataset_es",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Upsert municipios_dataset_es": {
+    "GEO â€” Upsert municipios_dataset_es": {
       "main": [
         [
           {
-            "node": "GEO – Upsert slugs_seo",
+            "node": "GEO â€” Upsert slugs_seo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "GEO – Upsert slugs_seo": {
+    "PVGIS â€” Start": {
       "main": [
         [
           {
-            "node": "PVGIS – Start",
+            "node": "PVGIS â€” Fetch coords from Supabase",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Start": {
+    "PVGIS â€” Fetch coords from Supabase": {
       "main": [
         [
           {
-            "node": "PVGIS – Fetch coords from Supabase",
+            "node": "PVGIS â€” Dedupe coords",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Fetch coords from Supabase": {
+    "PVGIS â€” Dedupe coords": {
       "main": [
         [
           {
-            "node": "PVGIS – Dedupe coords",
+            "node": "PVGIS â€” Batch 5",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Dedupe coords": {
+    "PVGIS â€” Batch 5": {
       "main": [
         [
           {
-            "node": "PVGIS – Batch 5",
+            "node": "PVGIS â€” API Call",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Batch 5": {
+    "PVGIS â€” API Call": {
       "main": [
         [
           {
-            "node": "PVGIS – API Call",
+            "node": "PVGIS â€” Rate Limit Wait",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – API Call": {
+    "PVGIS â€” Rate Limit Wait": {
       "main": [
         [
           {
-            "node": "PVGIS – Rate Limit Wait",
+            "node": "PVGIS â€” Parse & Map",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Rate Limit Wait": {
+    "PVGIS â€” Parse & Map": {
       "main": [
         [
           {
-            "node": "PVGIS – Parse & Map",
+            "node": "PVGIS â€” Upsert radiacion_solar",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Parse & Map": {
+    "BONIF â€” Start": {
       "main": [
         [
           {
-            "node": "PVGIS – Upsert radiacion_solar",
+            "node": "BONIF â€” Fetch JSON",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PVGIS – Upsert radiacion_solar": {
+    "BONIF â€” Fetch JSON": {
       "main": [
         [
           {
-            "node": "MERGE – Wait All Subflows",
+            "node": "BONIF â€” Parse IBI/ICIO",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "BONIF – Start": {
+    "BONIF â€” Parse IBI/ICIO": {
       "main": [
         [
           {
-            "node": "BONIF – Fetch JSON",
+            "node": "BONIF â€” Split Batches",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "BONIF – Fetch JSON": {
+    "BONIF â€” Split Batches": {
       "main": [
         [
           {
-            "node": "BONIF – Parse IBI/ICIO",
+            "node": "BONIF â€” Upsert IBI/ICIO",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "BONIF – Parse IBI/ICIO": {
+    "ESIOS â€” Start": {
       "main": [
         [
           {
-            "node": "BONIF – Split Batches",
+            "node": "ESIOS â€” Fetch PVPC",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "BONIF – Split Batches": {
+    "ESIOS â€” Fetch PVPC": {
       "main": [
         [
           {
-            "node": "BONIF – Upsert IBI/ICIO",
+            "node": "ESIOS â€” Parse Precios",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "BONIF – Upsert IBI/ICIO": {
+    "ESIOS â€” Parse Precios": {
       "main": [
         [
           {
-            "node": "MERGE – Wait All Subflows",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "ESIOS – Start": {
-      "main": [
-        [
-          {
-            "node": "ESIOS – Fetch PVPC",
+            "node": "ESIOS â€” Upsert tarifas",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "ESIOS – Fetch PVPC": {
+    "COMPAT â€” Start": {
       "main": [
         [
           {
-            "node": "ESIOS – Parse Precios",
+            "node": "COMPAT â€” Fetch CSV",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "ESIOS – Parse Precios": {
+    "COMPAT â€” Fetch CSV": {
       "main": [
         [
           {
-            "node": "ESIOS – Upsert tarifas",
+            "node": "COMPAT â€” Parse CSV",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "ESIOS – Upsert tarifas": {
+    "COMPAT â€” Parse CSV": {
       "main": [
         [
           {
-            "node": "MERGE – Wait All Subflows",
-            "type": "main",
-            "index": 2
-          }
-        ]
-      ]
-    },
-    "COMPAT – Start": {
-      "main": [
-        [
-          {
-            "node": "COMPAT – Fetch CSV",
+            "node": "COMPAT â€” Split Batches",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "COMPAT – Fetch CSV": {
+    "COMPAT â€” Split Batches": {
       "main": [
         [
           {
-            "node": "COMPAT – Parse CSV",
+            "node": "COMPAT â€” Upsert compatibilidad",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "COMPAT – Parse CSV": {
+    "COMPAT â€” Upsert compatibilidad": {
       "main": [
         [
           {
-            "node": "COMPAT – Split Batches",
+            "node": "REBUILD â€” Indexes & Derived Tables",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "COMPAT – Split Batches": {
+    "BONIF â€” Upsert IBI/ICIO": {
       "main": [
         [
           {
-            "node": "COMPAT – Upsert compatibilidad",
+            "node": "REBUILD â€” Indexes & Derived Tables",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "COMPAT – Upsert compatibilidad": {
+    "ESIOS â€” Upsert tarifas": {
       "main": [
         [
           {
-            "node": "MERGE – Wait All Subflows",
-            "type": "main",
-            "index": 3
-          }
-        ]
-      ]
-    },
-    "MERGE – Wait All Subflows": {
-      "main": [
-        [
-          {
-            "node": "REBUILD – Indexes & Derived Tables",
+            "node": "REBUILD â€” Indexes & Derived Tables",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "REBUILD – Indexes & Derived Tables": {
+    "GEO â€” Upsert slugs_seo": {
       "main": [
         [
           {
-            "node": "ESTIMACIONES – Upsert ahorro_anual",
+            "node": "REBUILD â€” Indexes & Derived Tables",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "ESTIMACIONES – Upsert ahorro_anual": {
+    "PVGIS â€” Upsert radiacion_solar": {
       "main": [
         [
           {
-            "node": "FINAL – Report & Dead Letters",
+            "node": "REBUILD â€” Indexes & Derived Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REBUILD â€” Indexes & Derived Tables": {
+      "main": [
+        [
+          {
+            "node": "ESTIMACIONES â€” Upsert ahorro_anual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ESTIMACIONES â€” Upsert ahorro_anual": {
+      "main": [
+        [
+          {
+            "node": "FINAL â€” Report & Dead Letters",
             "type": "main",
             "index": 0
           }
@@ -1043,7 +1023,7 @@
       "main": [
         [
           {
-            "node": "ERROR – Handler & Alert",
+            "node": "ERROR â€” Handler & Alert",
             "type": "main",
             "index": 0
           }
@@ -1051,20 +1031,14 @@
       ]
     }
   },
+  "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": ""
+    "executionOrder": "v1"
   },
-  "staticData": {},
-  "tags": [
-    "pSEO",
-    "solar",
-    "ETL",
-    "Supabase"
-  ],
-  "triggerCount": 4,
-  "updatedAt": "2026-03-05T00:00:00.000Z",
-  "versionId": "2"
+  "versionId": "60686753-2a53-4e82-99e2-9ab6abb57fe7",
+  "meta": {
+    "instanceId": "df47f805d4b4320ff353adcd9a1b248c84115d55f19850b31b42feda7a0d6bc9"
+  },
+  "id": "rFi4WxnnfCs2rFjR",
+  "tags": []
 }

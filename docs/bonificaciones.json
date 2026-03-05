@@ -1,0 +1,324 @@
+{
+  "bonificaciones": [
+    {
+      "municipio": "Granada",
+      "provincia": "Granada",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Uso residencial. Los colectores deben estar homologados. No acumulable con otras bonificaciones por energía renovable."
+    },
+    {
+      "municipio": "Granada",
+      "provincia": "Granada",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Construcciones e instalaciones que incorporen sistemas de aprovechamiento de energía solar."
+    },
+    {
+      "municipio": "Elche",
+      "provincia": "Alicante",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Sistemas de aprovechamiento térmico o eléctrico. Mínimo 2kW de potencia instalada. Solo para inmuebles de uso residencial."
+    },
+    {
+      "municipio": "Elche",
+      "provincia": "Alicante",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalación de paneles solares fotovoltaicos o térmicos. Sujeto a licencia de obra o declaración responsable."
+    },
+    {
+      "municipio": "Oviedo",
+      "provincia": "Asturias",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Para viviendas. Justificación técnica de la instalación. No aplicable a construcciones donde sea obligatorio por ley."
+    },
+    {
+      "municipio": "Oviedo",
+      "provincia": "Asturias",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 90,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras para la implantación de energías renovables (solar, eólica, biomasa)."
+    },
+    {
+      "municipio": "Badalona",
+      "provincia": "Barcelona",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Mínimo 50% de la demanda energética cubierta. Límite máximo de 300€ anuales por vivienda."
+    },
+    {
+      "municipio": "Badalona",
+      "provincia": "Barcelona",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalaciones de aprovechamiento de energía solar. Excluye instalaciones legalmente obligatorias."
+    },
+    {
+      "municipio": "Cartagena",
+      "provincia": "Murcia",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Sistemas de energía solar. El valor catastral del inmueble debe ser inferior a 150.000€ para aplicar el máximo."
+    },
+    {
+      "municipio": "Cartagena",
+      "provincia": "Murcia",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 90,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras destinadas a la incorporación de sistemas para el aprovechamiento térmico o eléctrico."
+    },
+    {
+      "municipio": "Sabadell",
+      "provincia": "Barcelona",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 5,
+      "condiciones": "Potencia mínima 1.5kWp. En edificios plurifamiliares, la bonificación se prorratea entre los propietarios."
+    },
+    {
+      "municipio": "Sabadell",
+      "provincia": "Barcelona",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Incorporación de sistemas de energía solar para autoconsumo."
+    },
+    {
+      "municipio": "Jerez de la Frontera",
+      "provincia": "Cádiz",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Viviendas que instalen sistemas solares homologados. Certificación técnica de la instalación."
+    },
+    {
+      "municipio": "Jerez de la Frontera",
+      "provincia": "Cádiz",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Bonificación en la cuota íntegra para instalaciones de autoconsumo fotovoltaico."
+    },
+    {
+      "municipio": "Móstoles",
+      "provincia": "Madrid",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Para viviendas habituales. Límite de 300€/año. No aplicable a nuevas construcciones."
+    },
+    {
+      "municipio": "Móstoles",
+      "provincia": "Madrid",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalación de sistemas de aprovechamiento de energía solar para autoconsumo."
+    },
+    {
+      "municipio": "Santa Cruz de Tenerife",
+      "provincia": "Santa Cruz de Tenerife",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Uso residencial. Potencia mínima 2kW. No acumulable si el sistema es obligatorio por el CTE."
+    },
+    {
+      "municipio": "Santa Cruz de Tenerife",
+      "provincia": "Santa Cruz de Tenerife",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 75,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras para la instalación de placas solares térmicas o fotovoltaicas."
+    },
+    {
+      "municipio": "Pamplona",
+      "provincia": "Navarra",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Solo para viviendas. La instalación debe reducir el consumo de energía primaria no renovable en un 30%."
+    },
+    {
+      "municipio": "Pamplona",
+      "provincia": "Navarra",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras de instalación de sistemas de aprovechamiento de energía solar."
+    },
+    {
+      "municipio": "Almería",
+      "provincia": "Almería",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Inmuebles residenciales. Requiere certificado de final de obra y registro de la instalación en la Junta de Andalucía."
+    },
+    {
+      "municipio": "Almería",
+      "provincia": "Almería",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Sistemas de aprovechamiento de energía solar fotovoltaica."
+    },
+    {
+      "municipio": "Fuenlabrada",
+      "provincia": "Madrid",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Viviendas. Límite de 400€ anuales. Debe acreditarse que el sistema cubre el 40% de la demanda."
+    },
+    {
+      "municipio": "Fuenlabrada",
+      "provincia": "Madrid",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalaciones solares para autoconsumo energético."
+    },
+    {
+      "municipio": "Leganés",
+      "provincia": "Madrid",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Uso residencial. Límite de 500€/año. Requiere presentación de la comunicación previa de obras."
+    },
+    {
+      "municipio": "Leganés",
+      "provincia": "Madrid",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Construcciones e instalaciones que utilicen energía solar fotovoltaica o térmica."
+    },
+    {
+      "municipio": "San Sebastián",
+      "provincia": "Gipuzkoa",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Solo viviendas. El coste de la instalación debe ser superior a 3.000€. Límite máximo de bonificación de 1.000€ total."
+    },
+    {
+      "municipio": "San Sebastián",
+      "provincia": "Gipuzkoa",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras para la incorporación de sistemas de energía renovable para autoconsumo."
+    },
+    {
+      "municipio": "Getafe",
+      "provincia": "Madrid",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 30,
+      "anios_bonificacion": 10,
+      "condiciones": "Inmuebles residenciales. Mínimo 2kWp de potencia. Límite de 500€ de bonificación por año."
+    },
+    {
+      "municipio": "Getafe",
+      "provincia": "Madrid",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras de instalación de paneles solares fotovoltaicos."
+    },
+    {
+      "municipio": "Burgos",
+      "provincia": "Burgos",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Viviendas. Presentación de factura y certificado de eficiencia energética tras la instalación."
+    },
+    {
+      "municipio": "Burgos",
+      "provincia": "Burgos",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 90,
+      "anios_bonificacion": 1,
+      "condiciones": "Sistemas de aprovechamiento de energía solar para demanda de ACS o electricidad."
+    },
+    {
+      "municipio": "Albacete",
+      "provincia": "Albacete",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Uso residencial. El sistema debe estar homologado. No aplicable a obras obligatorias por el CTE."
+    },
+    {
+      "municipio": "Albacete",
+      "provincia": "Albacete",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalaciones para aprovechamiento de energía solar."
+    },
+    {
+      "municipio": "Santander",
+      "provincia": "Cantabria",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Viviendas con sistemas solares. Es obligatorio que el inmueble no tenga deudas tributarias con el ayuntamiento."
+    },
+    {
+      "municipio": "Santander",
+      "provincia": "Cantabria",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 75,
+      "anios_bonificacion": 1,
+      "condiciones": "Obras menores para instalación de placas fotovoltaicas."
+    },
+    {
+      "municipio": "Castellón de la Plana",
+      "provincia": "Castellón",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 5,
+      "condiciones": "Viviendas urbanas. Instalación voluntaria. Mínimo 2 kW de potencia instalada."
+    },
+    {
+      "municipio": "Castellón de la Plana",
+      "provincia": "Castellón",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Construcciones que incorporen sistemas de energía solar."
+    },
+    {
+      "municipio": "Alcorcón",
+      "provincia": "Madrid",
+      "tipo": "IBI",
+      "porcentaje_bonificacion": 50,
+      "anios_bonificacion": 3,
+      "condiciones": "Uso residencial. Límite de 400€ anuales. Requiere que la instalación sea realizada por empresa autorizada."
+    },
+    {
+      "municipio": "Alcorcón",
+      "provincia": "Madrid",
+      "tipo": "ICIO",
+      "porcentaje_bonificacion": 95,
+      "anios_bonificacion": 1,
+      "condiciones": "Instalación de paneles solares para autoconsumo."
+    }
+  ]
+}
