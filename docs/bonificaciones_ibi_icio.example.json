@@ -1,36 +1,106 @@
 {
-  "bonificaciones": [
-    {
-      "municipio": "Madrid",
-      "provincia": "Madrid",
-      "tipo": "IBI",
-      "porcentaje_bonificacion": 50,
-      "anios_bonificacion": 3,
-      "condiciones": "Autoconsumo en inmueble residencial; solicitud dentro del plazo de la ordenanza vigente."
-    },
-    {
-      "municipio": "Madrid",
-      "provincia": "Madrid",
-      "tipo": "ICIO",
-      "porcentaje_bonificacion": 95,
-      "anios_bonificacion": 1,
-      "condiciones": "Obras con licencia para instalacion de energia solar."
-    },
-    {
-      "municipio": "Valencia",
-      "provincia": "Valencia",
-      "tipo": "IBI",
-      "porcentaje_bonificacion": 50,
-      "anios_bonificacion": 5,
-      "condiciones": "Aplicable a instalaciones solares termicas o fotovoltaicas segun ordenanza municipal."
-    },
-    {
-      "municipio": "Sevilla",
-      "provincia": "Sevilla",
-      "tipo": "ICIO",
-      "porcentaje_bonificacion": 50,
-      "anios_bonificacion": 1,
-      "condiciones": "Bonificacion sobre ICIO para obras de mejora energetica con tecnologia solar."
-    }
-  ]
+  "note": "Mock ESIOS response for testing n8n node ESIOS - Parse Precios",
+  "indicator": {
+    "id": 1001,
+    "name": "PVPC",
+    "short_name": "PVPC 2.0TD",
+    "values": [
+      {
+        "datetime": "2026-03-05T00:00:00+01:00",
+        "value": 126.2
+      },
+      {
+        "datetime": "2026-03-05T01:00:00+01:00",
+        "value": 118.4
+      },
+      {
+        "datetime": "2026-03-05T02:00:00+01:00",
+        "value": 110.7
+      },
+      {
+        "datetime": "2026-03-05T03:00:00+01:00",
+        "value": 104.3
+      },
+      {
+        "datetime": "2026-03-05T04:00:00+01:00",
+        "value": 98.1
+      },
+      {
+        "datetime": "2026-03-05T05:00:00+01:00",
+        "value": 95.6
+      },
+      {
+        "datetime": "2026-03-05T06:00:00+01:00",
+        "value": 101.2
+      },
+      {
+        "datetime": "2026-03-05T07:00:00+01:00",
+        "value": 119.8
+      },
+      {
+        "datetime": "2026-03-05T08:00:00+01:00",
+        "value": 140.5
+      },
+      {
+        "datetime": "2026-03-05T09:00:00+01:00",
+        "value": 152.7
+      },
+      {
+        "datetime": "2026-03-05T10:00:00+01:00",
+        "value": 149.3
+      },
+      {
+        "datetime": "2026-03-05T11:00:00+01:00",
+        "value": 145.6
+      },
+      {
+        "datetime": "2026-03-05T12:00:00+01:00",
+        "value": 141.2
+      },
+      {
+        "datetime": "2026-03-05T13:00:00+01:00",
+        "value": 136.8
+      },
+      {
+        "datetime": "2026-03-05T14:00:00+01:00",
+        "value": 132.4
+      },
+      {
+        "datetime": "2026-03-05T15:00:00+01:00",
+        "value": 129.9
+      },
+      {
+        "datetime": "2026-03-05T16:00:00+01:00",
+        "value": 134.1
+      },
+      {
+        "datetime": "2026-03-05T17:00:00+01:00",
+        "value": 146.7
+      },
+      {
+        "datetime": "2026-03-05T18:00:00+01:00",
+        "value": 168.3
+      },
+      {
+        "datetime": "2026-03-05T19:00:00+01:00",
+        "value": 179.5
+      },
+      {
+        "datetime": "2026-03-05T20:00:00+01:00",
+        "value": 171.4
+      },
+      {
+        "datetime": "2026-03-05T21:00:00+01:00",
+        "value": 159.8
+      },
+      {
+        "datetime": "2026-03-05T22:00:00+01:00",
+        "value": 147.9
+      },
+      {
+        "datetime": "2026-03-05T23:00:00+01:00",
+        "value": 136.5
+      }
+    ]
+  }
 }
