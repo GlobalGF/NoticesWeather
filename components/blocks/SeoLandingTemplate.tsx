@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SolarStats } from "@/components/ui/SolarStats";
 
 type Props = {
   title: string;
@@ -6,15 +7,27 @@ type Props = {
   highlights: Array<{ label: string; value: string }>;
   links?: string[];
   schema?: unknown;
+  municipioSlug?: string;
+  showSolarStats?: boolean;
 };
 
-export function SeoLandingTemplate({ title, intro, highlights, links = [], schema }: Props) {
+export function SeoLandingTemplate({
+  title,
+  intro,
+  highlights,
+  links = [],
+  schema,
+  municipioSlug,
+  showSolarStats = false
+}: Props) {
   return (
     <article className="grid">
       <section className="card">
         <h2>{title}</h2>
         <p>{intro}</p>
       </section>
+
+      {municipioSlug && showSolarStats ? <SolarStats slug={municipioSlug} className="mt-4" title="Metricas solares" /> : null}
 
       <section className="grid two">
         {highlights.map((item) => (

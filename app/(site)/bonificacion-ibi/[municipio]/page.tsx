@@ -36,5 +36,5 @@ export default async function IbiMunicipioPage({ params }: Props) {
   if (!parsed) notFound();
   const data = await getIbiPageData(parsed);
   if (!data) notFound();
-  return <SeoLandingTemplate {...data} />;
+  return <SeoLandingTemplate {...data} municipioSlug={parsed} showSolarStats />;
 }

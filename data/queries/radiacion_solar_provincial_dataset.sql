@@ -36,6 +36,7 @@ insert into radiacion_solar_provincial_es (
 values
   ('A Coruna', 2230, 1410.0, 1235.0),
   ('Alava', 2200, 1400.0, 1220.0),
+  ('Araba', 2200, 1400.0, 1220.0),
   ('Albacete', 2870, 1800.0, 1650.0),
   ('Alicante', 3020, 1925.0, 1760.0),
   ('Almeria', 3250, 2080.0, 1885.0),

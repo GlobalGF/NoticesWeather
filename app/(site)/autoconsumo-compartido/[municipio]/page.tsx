@@ -36,5 +36,5 @@ export default async function SharedSelfConsumptionMunicipioPage({ params }: Pro
   if (!parsed) notFound();
   const data = await getSharedSelfConsumptionPageData(parsed);
   if (!data) notFound();
-  return <SeoLandingTemplate {...data} />;
+  return <SeoLandingTemplate {...data} municipioSlug={parsed} showSolarStats />;
 }

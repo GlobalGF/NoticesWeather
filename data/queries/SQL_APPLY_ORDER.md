@@ -18,6 +18,7 @@ Este orden evita errores de dependencias y te deja una base preparada para crece
 1. `data/queries/tarifas_electricas_espana_dataset.sql`
 2. `data/queries/subvenciones_solares_ccaa_dataset.sql`
 3. `data/queries/bonificaciones_ibi_municipios_dataset.sql`
+4. `data/queries/precios_instalacion_solar_provincial_dataset.sql`
 
 ## Fase 4: Catalogo tecnico y simulaciones (recomendada)
 
@@ -30,6 +31,7 @@ Este orden evita errores de dependencias y te deja una base preparada para crece
 1. `data/queries/pseo_slug_index.sql`
 2. `data/queries/pseo_index.sql`
 3. `data/queries/municipios_energia_performance.sql`
+4. `data/queries/municipios_cercanos_function.sql`
 
 ## Fase 6: Opcional avanzado (solo si vas a modelo relacional profundo)
 

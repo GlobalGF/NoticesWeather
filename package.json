@@ -17,6 +17,8 @@
     "seo:go-no-go:csv": "tsx scripts/seo-go-no-go-csv.ts",
     "validate:slugs": "tsx scripts/validate-slugs.ts",
     "sync:slugs": "tsx scripts/sync-municipios-slugs.ts",
+    "generate:sitemaps": "node scripts/generate-sitemaps.js",
+    "energy:analysis": "tsx scripts/energy-analysis.ts",
     "subsidies:scrape": "python scripts/python/subsidies_scraper.py",
     "subsidies:install": "python -m pip install -r scripts/python/requirements.txt",
     "geo:pvgis:generate": "python scripts/python/geo_pvgis_pipeline.py",

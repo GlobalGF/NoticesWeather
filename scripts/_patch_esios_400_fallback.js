@@ -32,10 +32,10 @@ const r = item.json.record || {};
 async function postSupabase(pathWithQuery, payload) {
   return await httpRequest({
     method: 'POST',
-    url: `${ctx.SUPABASE_URL}/rest/v1/${pathWithQuery}`,
+    url: `${process.env.SUPABASE_URL}/rest/v1/${pathWithQuery}`,
     headers: {
-      apikey: ctx.SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,
+      apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       'Content-Type': 'application/json',
       Prefer: 'resolution=merge-duplicates,return=minimal',
     },

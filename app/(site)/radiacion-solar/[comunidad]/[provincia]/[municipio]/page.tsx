@@ -46,7 +46,7 @@ export default async function RadiationPage({ params }: Props) {
 
   return (
     <>
-      <SeoLandingTemplate {...data} />
+      <SeoLandingTemplate {...data} municipioSlug={parsedMunicipio} showSolarStats />
       <section className="card mt-6">
         <h2 className="text-xl font-semibold">Estimador PVGIS</h2>
         <h3 className="mt-1 text-lg font-semibold text-slate-800">Produccion, orientacion y sombras</h3>

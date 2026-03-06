@@ -104,6 +104,36 @@ begin
         greatest(1, least(80, round(habitantes / 15000.0)))::int as priority,
         now() as updated_at
       from source
+
+      union all
+
+      select
+        '/precio-instalacion-solar/' || slug as url,
+        'precio_instalacion'::text as route_type,
+        json_build_object('municipio', slug) as params_json,
+        greatest(1, least(85, round(habitantes / 14000.0)))::int as priority,
+        now() as updated_at
+      from source
+
+      union all
+
+      select
+        '/subvenciones-solares/' || slug as url,
+        'subvenciones'::text as route_type,
+        json_build_object('municipio', slug) as params_json,
+        greatest(1, least(85, round(habitantes / 14000.0)))::int as priority,
+        now() as updated_at
+      from source
+
+      union all
+
+      select
+        '/ahorro-placas-solares/' || slug as url,
+        'ahorro'::text as route_type,
+        json_build_object('municipio', slug) as params_json,
+        greatest(1, least(85, round(habitantes / 14000.0)))::int as priority,
+        now() as updated_at
+      from source
     )
     insert into pseo_url_index (url, route_type, params_json, priority, updated_at)
     select url, route_type, params_json, priority, updated_at
