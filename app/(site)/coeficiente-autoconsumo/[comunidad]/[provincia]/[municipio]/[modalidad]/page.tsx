@@ -9,6 +9,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { sharedCoefficientMetadata } from "@/modules/coeficiente-autoconsumo/seo";
 import { getSharedCoefficientPageData } from "@/modules/coeficiente-autoconsumo/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.sharedCoefficient;
 export const dynamicParams = true;
@@ -23,15 +24,17 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_COEFICIENTE_GEO", 500);
-  const modeBudget = getStaticPrebuildBudget("PSEO_PREBUILD_COEFICIENTE_MODALIDADES", 2);
+  return safeGenerateStaticParams(async () => {
+    const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_COEFICIENTE_GEO", 500);
+    const modeBudget = getStaticPrebuildBudget("PSEO_PREBUILD_COEFICIENTE_MODALIDADES", 2);
 
-  const [geoPaths, modes] = await Promise.all([
-    getTopMunicipiosEnergiaGeoPaths(municipioBudget),
-    getTopCoefficientModes(modeBudget)
-  ]);
+    const [geoPaths, modes] = await Promise.all([
+      getTopMunicipiosEnergiaGeoPaths(municipioBudget),
+      getTopCoefficientModes(modeBudget)
+    ]);
 
-  return geoPaths.flatMap((geo) => modes.map((modalidad) => ({ ...geo, modalidad })));
+    return geoPaths.flatMap((geo) => modes.map((modalidad) => ({ ...geo, modalidad })));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

@@ -8,6 +8,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { subsidyMetadata } from "@/modules/subvenciones-solares/seo";
 import { getSubsidyPageData } from "@/modules/subvenciones-solares/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.subsidy;
 export const dynamicParams = true;
@@ -22,15 +23,17 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_SUBVENCIONES_GEO", 500);
-  const programBudget = getStaticPrebuildBudget("PSEO_PREBUILD_SUBVENCIONES_PROGRAMAS", 3);
+  return safeGenerateStaticParams(async () => {
+    const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_SUBVENCIONES_GEO", 500);
+    const programBudget = getStaticPrebuildBudget("PSEO_PREBUILD_SUBVENCIONES_PROGRAMAS", 3);
 
-  const [geoPaths, programs] = await Promise.all([
-    getTopMunicipiosEnergiaGeoPaths(municipioBudget),
-    getTopSubsidyProgramSlugs(programBudget)
-  ]);
+    const [geoPaths, programs] = await Promise.all([
+      getTopMunicipiosEnergiaGeoPaths(municipioBudget),
+      getTopSubsidyProgramSlugs(programBudget)
+    ]);
 
-  return geoPaths.flatMap((geo) => programs.map((programa) => ({ ...geo, programa })));
+    return geoPaths.flatMap((geo) => programs.map((programa) => ({ ...geo, programa })));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

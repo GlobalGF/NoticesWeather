@@ -8,6 +8,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { urbanRegulationMetadata } from "@/modules/normativa-solar/seo";
 import { getUrbanRegulationPageData } from "@/modules/normativa-solar/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.regulation;
 export const dynamicParams = true;
@@ -22,15 +23,17 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_NORMATIVA_GEO", 500);
-  const ruleBudget = getStaticPrebuildBudget("PSEO_PREBUILD_NORMATIVA_REGLAS", 3);
+  return safeGenerateStaticParams(async () => {
+    const municipioBudget = getStaticPrebuildBudget("PSEO_PREBUILD_NORMATIVA_GEO", 500);
+    const ruleBudget = getStaticPrebuildBudget("PSEO_PREBUILD_NORMATIVA_REGLAS", 3);
 
-  const [geoPaths, rules] = await Promise.all([
-    getTopMunicipiosEnergiaGeoPaths(municipioBudget),
-    getTopUrbanRuleSlugs(ruleBudget)
-  ]);
+    const [geoPaths, rules] = await Promise.all([
+      getTopMunicipiosEnergiaGeoPaths(municipioBudget),
+      getTopUrbanRuleSlugs(ruleBudget)
+    ]);
 
-  return geoPaths.flatMap((geo) => rules.map((norma) => ({ ...geo, norma })));
+    return geoPaths.flatMap((geo) => rules.map((norma) => ({ ...geo, norma })));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

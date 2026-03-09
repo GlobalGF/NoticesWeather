@@ -10,6 +10,7 @@ import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.genericSolarSlug;
 export const dynamicParams = true;
@@ -19,9 +20,11 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const budget = getStaticPrebuildBudget("PSEO_PREBUILD_SOLUCION_SOLAR", 1200);
-  const slugs = await getTopPseoSlugIndexSlugs(budget);
-  return slugs.map((slug) => ({ slug }));
+  return safeGenerateStaticParams(async () => {
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_SOLUCION_SOLAR", 1200);
+    const slugs = await getTopPseoSlugIndexSlugs(budget);
+    return slugs.map((slug) => ({ slug }));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

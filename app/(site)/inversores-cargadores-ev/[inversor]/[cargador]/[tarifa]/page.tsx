@@ -7,6 +7,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { inverterEvMetadata } from "@/modules/inversores-cargadores-ev/seo";
 import { getInverterEvPageData } from "@/modules/inversores-cargadores-ev/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.compatibility;
 export const dynamicParams = true;
@@ -16,8 +17,10 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const budget = getStaticPrebuildBudget("PSEO_PREBUILD_COMPATIBILIDAD_EV", 300);
-  return getTopCompatibilityCombos(budget);
+  return safeGenerateStaticParams(async () => {
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_COMPATIBILIDAD_EV", 300);
+    return getTopCompatibilityCombos(budget);
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

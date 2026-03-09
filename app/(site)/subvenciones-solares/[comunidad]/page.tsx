@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -59,15 +60,17 @@ function buildFaqs(ccaaName: string, avgPct: number | null) {
 }
 
 export async function generateStaticParams() {
-  const rows = await getAllCcaaSubsidies();
-  const unique = new Set<string>();
+  return safeGenerateStaticParams(async () => {
+    const rows = await getAllCcaaSubsidies();
+    const unique = new Set<string>();
 
-  for (const row of rows) {
-    if (!row.comunidad_autonoma) continue;
-    unique.add(slugify(row.comunidad_autonoma));
-  }
+    for (const row of rows) {
+      if (!row.comunidad_autonoma) continue;
+      unique.add(slugify(row.comunidad_autonoma));
+    }
 
-  return Array.from(unique).map((comunidad) => ({ comunidad }));
+    return Array.from(unique).map((comunidad) => ({ comunidad }));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -87,8 +90,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     maxPct != null
       ? `Consulta programas y ayudas solares en ${ccaaName} con porcentajes de hasta ${maxPct.toFixed(
-          0
-        )}%. Guia para solicitar la subvencion.`
+        0
+      )}%. Guia para solicitar la subvencion.`
       : `Consulta programas y ayudas solares en ${ccaaName}, requisitos y pasos para tramitar tu subvencion.`;
 
   return {

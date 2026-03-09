@@ -8,6 +8,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { radiationMetadata } from "@/modules/radiacion-solar/seo";
 import { getRadiationPageData } from "@/modules/radiacion-solar/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.radiation;
 export const dynamicParams = true;
@@ -17,8 +18,10 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const budget = getStaticPrebuildBudget("PSEO_PREBUILD_RADIACION_GEO", 800);
-  return getTopMunicipiosEnergiaGeoPaths(budget);
+  return safeGenerateStaticParams(async () => {
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_RADIACION_GEO", 800);
+    return getTopMunicipiosEnergiaGeoPaths(budget);
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

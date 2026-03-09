@@ -7,6 +7,7 @@ import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
 import { ibiMetadata } from "@/modules/bonificacion-ibi/seo";
 import { getIbiPageData } from "@/modules/bonificacion-ibi/service";
+import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 
 export const revalidate = cachePolicy.page.ibi;
 export const dynamicParams = true;
@@ -16,9 +17,11 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const budget = getStaticPrebuildBudget("PSEO_PREBUILD_IBI", 1200);
-  const top = await getTopMunicipalitiesByPriority(budget);
-  return top.map((m) => ({ municipio: m.slug }));
+  return safeGenerateStaticParams(async () => {
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_IBI", 1200);
+    const top = await getTopMunicipalitiesByPriority(budget);
+    return top.map((m) => ({ municipio: m.slug }));
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
