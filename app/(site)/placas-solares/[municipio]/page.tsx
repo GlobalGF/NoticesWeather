@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { SolarStats } from "@/components/ui/SolarStats";
 import { HeroKpis } from "@/components/ui/HeroKpis";
 import { AhorroCalculator } from "@/components/ui/AhorroCalculator";
@@ -186,10 +187,24 @@ async function getAllSlugs(): Promise<string[]> {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllSlugs();
-  const budget = getStaticPrebuildBudget("PSEO_PREBUILD_MUNICIPIOS", 1200);
-  return slugs.slice(0, budget).map((slug) => ({ municipio: slug }));
+  // Guard: if Supabase env vars are not configured (e.g. during Vercel build
+  // without secrets), return an empty array instead of crashing.
+  // The page will still work at runtime via ISR (dynamicParams = true).
+  if (!hasSupabaseEnv()) {
+    console.warn("[generateStaticParams] Supabase env vars not set — skipping static pre-render.");
+    return [];
+  }
+
+  try {
+    const slugs = await getAllSlugs();
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_MUNICIPIOS", 1200);
+    return slugs.slice(0, budget).map((slug) => ({ municipio: slug }));
+  } catch (err) {
+    console.error("[generateStaticParams] Failed to load slugs:", err);
+    return [];
+  }
 }
+
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = tryParseSlug(decodeURIComponent(params.municipio));
