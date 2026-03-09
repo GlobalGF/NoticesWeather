@@ -1,5 +1,7 @@
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 
+const YEAR = new Date().getFullYear();
+
 export function subsidyMetadata(
   comunidad: string,
   provincia: string,
@@ -9,8 +11,8 @@ export function subsidyMetadata(
   programName: string
 ) {
   return buildMetadata({
-    title: `Subvenciones solares en ${municipalityName}: ${programName}`,
-    description: `Ayudas y subvenciones solares en ${municipalityName} con importes orientativos y requisitos principales.`,
+    title: `Subvención solar ${YEAR} en ${municipalityName}: ${programName} — Importe y requisitos`,
+    description: `Todo sobre el programa ${programName} para instalaciones solares en ${municipalityName}: importes, porcentajes subvencionables y cómo solicitarlo.`,
     pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}/${programa}`
   });
 }

@@ -9,6 +9,7 @@ import { cachePolicy } from "@/lib/cache/policy";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify } from "@/lib/utils/slug";
 
 export const revalidate = cachePolicy.page.genericSolarSlug;
 export const dynamicParams = true;
@@ -63,8 +64,9 @@ export default async function GenericSolarSlugPage({ params }: Props) {
         { label: "Tecnologia", value: data.tecnologiaSolar }
       ]}
       links={[
-        `/placas-solares/${data.municipio.toLowerCase().replace(/\s+/g, "-")}`,
-        `/autoconsumo-compartido/${data.municipio.toLowerCase().replace(/\s+/g, "-")}`
+        `/placas-solares/${slugify(data.municipio)}`,
+        `/autoconsumo-compartido/${slugify(data.municipio)}`,
+        `/bonificacion-ibi/${slugify(data.municipio)}`
       ]}
     />
   );

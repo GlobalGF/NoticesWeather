@@ -1,0 +1,888 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "10 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3548e059-d381-4ed3-ab05-9015feb72cd0",
+      "name": "Cron Diario 02:1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -1072,
+        672
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\n\nconst supabaseUrl = String($env.SUPABASE_URL || $env.NEXT_PUBLIC_SUPABASE_URL || '').trim();\nconst supabaseServiceRoleKey = String($env.SUPABASE_SERVICE_ROLE_KEY || '').trim();\nconst esiosApiToken = String($env.ESIOS_API_TOKEN || '').replace(/^Token\\s+/i, '').trim();\n\nif (!supabaseUrl) {\n  throw new Error('Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL fallback)');\n}\n\nif (!/^https?:\\/\\//i.test(supabaseUrl)) {\n  throw new Error('Invalid SUPABASE_URL format. Expected https://<project>.supabase.co');\n}\n\nif (!supabaseServiceRoleKey || supabaseServiceRoleKey.length < 20 || !supabaseServiceRoleKey.startsWith('sb_secret_')) {\n  throw new Error('Invalid SUPABASE_SERVICE_ROLE_KEY. Set a valid sb_secret_* key and remove duplicates');\n}\n\nconst env = {\n  SUPABASE_URL: supabaseUrl,\n  SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,\n  ESIOS_API_TOKEN: esiosApiToken,\n  ESIOS_TEST_JSON_URL: $env.ESIOS_TEST_JSON_URL || '',\n  GEO_SOURCE_CSV_URL: $env.GEO_SOURCE_CSV_URL || '',\n  IBI_ICIO_JSON_URL: $env.IBI_ICIO_JSON_URL || '',\n  COMPATIBILIDAD_CSV_URL: $env.COMPATIBILIDAD_CSV_URL || '',\n  PVGIS_BASE_URL: $env.PVGIS_BASE_URL || 'https://re.jrc.ec.europa.eu/api/v5_2',\n  BATCH_SIZE: parseInt($env.BATCH_SIZE || '50', 10),\n  DRY_RUN: ($env.DRY_RUN || 'false') === 'true',\n  STRICT_PROD: ($env.STRICT_PROD || 'true') === 'true',\n  AI_TO_STAGING_ONLY: ($env.AI_TO_STAGING_ONLY || 'true') === 'true',\n  AI_BASE_URL: $env.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n  AI_API_KEY: $env.AI_API_KEY || '',\n  AI_MODEL: $env.AI_MODEL || 'gpt-4o-mini'\n};\n\nstaticData.strictAlerts = [];\nstaticData.deadLetters = [];\n\nconst runId = `run_${Date.now()}`;\nconsole.log(JSON.stringify({\n  stage: 'INIT',\n  runId,\n  env: {\n    ...env,\n    SUPABASE_SERVICE_ROLE_KEY: '***',\n    ESIOS_API_TOKEN: env.ESIOS_API_TOKEN ? '***' : '',\n    AI_API_KEY: env.AI_API_KEY ? '***' : ''\n  }\n}));\n\nreturn [{ json: { ...env, runId, startedAt: new Date().toISOString() } }];"
+      },
+      "id": "0e2c52e5-8448-48d1-8e4b-7f81ea217cfd",
+      "name": "INIT - Env & Config",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -864,
+        672
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $('INIT - Env & Config').item.json.SUPABASE_URL + '/rest/v1/municipios_energia?select=slug,municipio,provincia,comunidad_autonoma,habitantes&slug=not.is.null&order=habitantes.desc.nullslast&limit=20' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('INIT - Env & Config').item.json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('INIT - Env & Config').item.json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd0dbf8c-ec0e-404c-998b-e3a43521d776",
+      "name": "Supabase Queue Source",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -672,
+        672
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "63254108-6f12-48f3-a8c2-13552cafcd3c",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -448,
+        672
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst init = $('INIT - Env & Config').item.json;\n\nreturn items.map((item) => ({\n  json: {\n    ...init,\n    ...item.json,\n    slug: item.json.slug || '',\n    municipio: item.json.municipio || '',\n    provincia: item.json.provincia || '',\n    comunidad_autonoma: item.json.comunidad_autonoma || '',\n    habitantes: Number(item.json.habitantes || 0),\n  },\n}));"
+      },
+      "id": "3980f9ed-78be-45f9-b196-4f71fe38f6cd",
+      "name": "Set Base Params",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -224,
+        672
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/municipios_dataset_es?select=municipio,provincia,comunidad_autonoma,poblacion,codigo_postal,latitud,longitud&slug=eq.' + encodeURIComponent($json.slug) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01f8ed51-a40c-4114-b40c-4a2c6998bb8b",
+      "name": "Get municipios_dataset_es",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        64
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const requiredNodes = [\n  'Get municipios_dataset_es',\n  'Get radiacion',\n  'Get IBI',\n  'Get subvenciones',\n  'Get tarifas',\n  'Get equipos',\n  'Get estimaciones',\n  'Get precios instalacion',\n  'Get compatibilidad',\n  'Get pseo slug index',\n  'Get pseo url index',\n];\n\nconst getItems = (nodeName) => {\n  try {\n    return $(nodeName).all() || [];\n  } catch (e) {\n    return [];\n  }\n};\n\nconst snapshots = {};\nfor (const nodeName of requiredNodes) {\n  snapshots[nodeName] = getItems(nodeName);\n}\n\nconst missingNodes = requiredNodes.filter((nodeName) => snapshots[nodeName].length === 0);\n\nconst base = $('Set Base Params').first()?.json || {};\nconst merged = { ...base };\n\nfor (const nodeName of requiredNodes) {\n  const first = snapshots[nodeName][0]?.json || {};\n  Object.assign(merged, first);\n}\n\n// Debug rapido para saber que ramas faltaron en esta ejecucion\nmerged.build_missing_nodes = missingNodes;\nmerged.build_ready_count = requiredNodes.length - missingNodes.length;\n\n// Mantener listas como arrays cuando el nodo devuelva multiples filas\nmerged.pseo_url_index_rows = snapshots['Get pseo url index'].map((i) => i.json);\nmerged.equipos_rows = snapshots['Get equipos'].map((i) => i.json);\n\nconst slug = merged.slug || '';\nconst municipio = merged.municipio || '';\nconst provincia = merged.provincia || '';\nconst comunidad = merged.comunidad_autonoma || '';\nconst model = merged.AI_MODEL || 'gpt-4o-mini';\n\nconst prompt = [\n  'Genera contenido SEO en espanol para instalacion de energia solar residencial.',\n  `Municipio: ${municipio}, Provincia: ${provincia}, Comunidad Autonoma: ${comunidad}`,\n  `Slug: ${slug}`,\n  'Basandote en los datos disponibles, devuelve SOLO un JSON valido con estos campos:',\n  '{ seo_title, seo_description, intro, beneficios, faqs }',\n].join('\\n');\n\nreturn [{\n  json: {\n    ...merged,\n    AI_BASE_URL: merged.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n    AI_MODEL: model,\n    openai_body: {\n      model,\n      messages: [\n        { role: 'system', content: 'Eres un redactor SEO experto en energia solar para Espana. Responde SIEMPRE con JSON valido.' },\n        { role: 'user', content: prompt },\n      ],\n      temperature: 0.3,\n    },\n  },\n}];"
+      },
+      "id": "48aa627d-543a-491e-a031-65c62b7421ad",
+      "name": "Build prompt payload",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        256,
+        784
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $json.AI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.openai_body) }}",
+        "options": {}
+      },
+      "id": "1c3b593a-6e3e-4853-a44d-3410fac034d8",
+      "name": "AI content request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        784
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $json;\n\nconst safeFirstJson = (nodeName) => {\n  try {\n    return $(nodeName).first()?.json || {};\n  } catch (e) {\n    return {};\n  }\n};\n\nconst upstream = safeFirstJson('Build prompt payload');\n\nconst init = safeFirstJson('INIT - Env & Config');\n\nconst envVars = {\n  SUPABASE_URL: $env.SUPABASE_URL || $env.NEXT_PUBLIC_SUPABASE_URL || '',\n  SUPABASE_SERVICE_ROLE_KEY: $env.SUPABASE_SERVICE_ROLE_KEY || '',\n  AI_BASE_URL: $env.AI_BASE_URL || 'https://api.openai.com/v1/chat/completions',\n  AI_MODEL: $env.AI_MODEL || 'gpt-4o-mini',\n};\n\nconst src = { ...envVars, ...init, ...upstream };\n\nlet parsed;\ntry {\n  const content = aiResponse?.choices?.[0]?.message?.content;\n  if (!content || typeof content !== 'string') {\n    throw new Error('AI response sin contenido en choices[0].message.content');\n  }\n\n  const match = content.match(/\\{[\\s\\S]*\\}/);\n  const jsonText = match ? match[0] : content;\n  parsed = JSON.parse(jsonText);\n} catch (err) {\n  return [{\n    json: {\n      ...src,\n      __error: true,\n      error_stage: 'validate_output',\n      error_message: String(err?.message || err),\n      ai_raw: aiResponse,\n      logged_at: new Date().toISOString(),\n    },\n  }];\n}\n\nconst beneficios = Array.isArray(parsed.beneficios) ? parsed.beneficios : [];\nconst faqs = Array.isArray(parsed.faqs) ? parsed.faqs : [];\n\nif (!src.slug || !src.municipio || !src.provincia || !src.comunidad_autonoma) {\n  return [{\n    json: {\n      ...src,\n      __error: true,\n      error_stage: 'validate_output',\n      error_message: 'Faltan campos obligatorios para upsert: slug/municipio/provincia/comunidad_autonoma',\n      ai_raw: aiResponse,\n      logged_at: new Date().toISOString(),\n    },\n  }];\n}\n\nconst narrativa = ['ahorro','sostenibilidad','independencia_energetica','revalorizacion'].includes(src.angulo_sugerido)\n  ? src.angulo_sugerido\n  : null;\n\nconst h2 = faqs\n  .map((f) => (typeof f === 'string' ? f : f?.pregunta || f?.question || ''))\n  .filter(Boolean)\n  .slice(0, 3);\n\nreturn [{\n  json: {\n    ...src,\n    ai_raw: aiResponse,\n    __error: false,\n    seo_title: parsed.seo_title || '',\n    seo_description: parsed.seo_description || '',\n    intro: parsed.intro || '',\n    beneficios,\n    faqs,\n    upsert_payload: {\n      slug: src.slug,\n      municipio: src.municipio,\n      provincia: src.provincia,\n      comunidad_autonoma: src.comunidad_autonoma,\n      intro_unica: parsed.intro || null,\n      analisis_fiscal_personalizado: beneficios.length ? beneficios.join('\\n') : null,\n      h2_variante: h2.length ? h2 : null,\n      conclusion_local: parsed.seo_description || null,\n      narrativa_angulo: narrativa,\n      irradiacion_solar: src.irradiacion_kwh_m2 ?? src.irradiacion_solar ?? null,\n      horas_sol: src.horas_sol_anuales ?? src.horas_sol ?? null,\n      ahorro_estimado: src.ahorro_estimado ?? null,\n      bonificacion_ibi: src.porcentaje_bonificacion ?? src.bonificacion_ibi ?? null,\n      subvencion_autoconsumo: src.subvencion_porcentaje ?? src.subvencion_autoconsumo ?? null,\n      precio_instalacion_medio_eur: src.precio_medio_eur ?? src.precio_instalacion_medio_eur ?? null,\n      precio_medio_luz: src.precio_kwh_dia ?? src.precio_medio_luz ?? null,\n      habitantes: src.habitantes ?? null,\n      modelo_ia: src.AI_MODEL || envVars.AI_MODEL,\n      last_generated_at: new Date().toISOString(),\n      needs_regen: false,\n      updated_at: new Date().toISOString(),\n    },\n  },\n}];"
+      },
+      "id": "ed75acc4-b3a0-44da-952a-340b9282b4ac",
+      "name": "Validate output",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        704,
+        784
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.__error === true }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "525bcc75-6b3c-43a1-a080-068e1f03f4ff",
+      "name": "IF error?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        944,
+        784
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.SUPABASE_URL || $env.SUPABASE_URL) + '/rest/v1/seo_municipio_snapshot?on_conflict=slug' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + ($json.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_SERVICE_ROLE_KEY) }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify([$json.upsert_payload || {}]) }}",
+        "options": {}
+      },
+      "id": "23aa5c1f-36ef-4846-b5cd-ed0284bf2365",
+      "name": "Upsert seo_municipio_snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1152,
+        672
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.SUPABASE_URL || $env.SUPABASE_URL) + '/rest/v1/seo_generation_errors' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + ($json.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_SERVICE_ROLE_KEY) }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify([{ slug: $json.slug || null, municipio: $json.municipio || null, provincia: $json.provincia || null, error_stage: $json.error_stage || 'unknown', error_message: $json.error_message || 'Unknown error', raw_response: JSON.stringify($json.ai_raw || $json || {}), run_id: $json.runId || null, created_at: $json.logged_at || new Date().toISOString() }]) }}",
+        "options": {}
+      },
+      "id": "3db8c782-5e01-4956-801b-2cc20756ebd0",
+      "name": "Log errors",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1152,
+        880
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/bonificaciones_ibi_municipios_es?select=porcentaje_bonificacion,duracion_anos,condiciones&municipio=ilike.' + encodeURIComponent($json.municipio) + '&provincia=ilike.' + encodeURIComponent($json.provincia) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7db019a9-c53a-4bc6-947e-e04f0923c7bb",
+      "name": "Get IBI",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        336
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/subvenciones_solares_ccaa_es?select=subvencion_porcentaje,max_subvencion_euros,programa&comunidad_autonoma=ilike.*' + encodeURIComponent($json.comunidad_autonoma || '') + '*&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "90493663-f6a1-404c-9d1a-90d628db81c0",
+      "name": "Get subvenciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        480
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/tarifas_electricas_espana_es?select=precio_kwh_dia,precio_kwh_noche,precio_kwh_valle&limit=120' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5493855b-2671-4cc8-98bb-8bb56c64c24c",
+      "name": "Get tarifas",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        608
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/equipos_solares_comunes_es?select=marca,modelo,tipo,eficiencia,precio_estimado&order=eficiencia.desc&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ee000cb2-20b0-4496-b1e2-6f2dad4f9670",
+      "name": "Get equipos",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        736
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/estimaciones_ahorro_anual_es?select=consumo_mensual,ahorro_estimado,produccion_anual,porcentaje_autoconsumo&limit=30' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa22553d-e8da-4781-8677-1f0867321d7b",
+      "name": "Get estimaciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        864
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/precios_instalacion_solar_provincial_es?select=precio_min_eur,precio_medio_eur,precio_max_eur,eur_por_watio&provincia=ilike.' + encodeURIComponent($json.provincia) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3c96a5af-72fa-46f2-8ece-8e3b1ec3b078",
+      "name": "Get precios instalacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        1008
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/compatibilidad_inversor_bateria_cargador_ev_es?select=inversor,bateria,cargador_ev,compatible&compatible=is.true&limit=25' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4667a2ff-ff38-4839-9ce0-eebff8e1cde3",
+      "name": "Get compatibilidad",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        1136
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/pseo_slug_index?select=slug,municipio,provincia,tarifa_electrica,consumo,tecnologia_solar,seo_title,seo_description&slug=eq.' + encodeURIComponent($json.slug) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "252cfdc9-6ebb-4d29-8881-399a4df24963",
+      "name": "Get pseo slug index",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        1264
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/pseo_url_index?select=url,route_type,priority&url=ilike.*' + encodeURIComponent($json.slug) + '*&limit=30' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8908042b-9202-4f37-a7cc-7c256d9cfc5c",
+      "name": "Get pseo url index",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        1408
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.SUPABASE_URL + '/rest/v1/radiacion_solar_provincial_es?select=horas_sol_anuales,irradiacion_kwh_m2,produccion_media_panel_1kw&provincia=ilike.' + encodeURIComponent($json.provincia) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1df8cecd-9ed0-49c6-9a52-46b700570b15",
+      "name": "Get radiacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "alwaysOutputData": true,
+      "position": [
+        16,
+        208
+      ],
+      "typeVersion": 4.2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron Diario 02:1": {
+      "main": [
+        [
+          {
+            "node": "INIT - Env & Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INIT - Env & Config": {
+      "main": [
+        [
+          {
+            "node": "Supabase Queue Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Queue Source": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Set Base Params",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Base Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Base Params": {
+      "main": [
+        [
+          {
+            "node": "Get municipios_dataset_es",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get radiacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get IBI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get subvenciones",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get tarifas",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get equipos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get estimaciones",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get precios instalacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get compatibilidad",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get pseo slug index",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get pseo url index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get municipios_dataset_es": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build prompt payload": {
+      "main": [
+        [
+          {
+            "node": "AI content request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI content request": {
+      "main": [
+        [
+          {
+            "node": "Validate output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate output": {
+      "main": [
+        [
+          {
+            "node": "IF error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF error?": {
+      "main": [
+        [
+          {
+            "node": "Log errors",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upsert seo_municipio_snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get IBI": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get subvenciones": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get tarifas": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get equipos": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get estimaciones": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get precios instalacion": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get compatibilidad": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get pseo slug index": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get pseo url index": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get radiacion": {
+      "main": [
+        [
+          {
+            "node": "Build prompt payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert seo_municipio_snapshot": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log errors": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4342c755-0ca3-4b6b-b901-68fa67198759",
+  "meta": {
+    "instanceId": "df47f805d4b4320ff353adcd9a1b248c84115d55f19850b31b42feda7a0d6bc9"
+  },
+  "id": "XEnhNW62gfdfyYDt",
+  "tags": [
+    {
+      "createdAt": "2026-03-05T18:33:18.901Z",
+      "updatedAt": "2026-03-05T18:33:18.901Z",
+      "id": "VyIaVcmks1PR6Cew",
+      "name": "etl"
+    },
+    {
+      "createdAt": "2026-03-05T23:40:08.693Z",
+      "updatedAt": "2026-03-05T23:40:08.693Z",
+      "id": "c6VORcskSm8vNRfi",
+      "name": "solar"
+    },
+    {
+      "createdAt": "2026-03-05T23:40:08.696Z",
+      "updatedAt": "2026-03-05T23:40:08.696Z",
+      "id": "m2H9mqAPiERZvOc9",
+      "name": "ai"
+    }
+  ]
+}

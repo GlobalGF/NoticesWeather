@@ -86,7 +86,7 @@ export function SolarStats({ slug, className, title = "Datos solares" }: SolarSt
     <section className={resolveWrapperClass(className)} aria-live="polite" aria-busy={loading}>
       <header className="mb-4">
         <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{title}</h2>
-        <p className="mt-1 text-sm text-slate-600">Resumen energetico actualizado desde Supabase.</p>
+        <p className="mt-1 text-sm text-slate-600">Datos energéticos en tiempo real desde Supabase.</p>
       </header>
 
       {loading ? (
@@ -103,22 +103,22 @@ export function SolarStats({ slug, className, title = "Datos solares" }: SolarSt
 
       {!loading && !error && data ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">radiacion_solar</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{formatNumber(data.radiacion_solar, 1)}</p>
-            <p className="mt-1 text-xs text-slate-600">kWh/m2 al ano</p>
+          <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-amber-600">☀️ Irradiación solar</p>
+            <p className="mt-2 text-2xl font-bold text-amber-700 tabular-nums">{formatNumber(data.radiacion_solar, 1)}</p>
+            <p className="mt-1 text-xs text-slate-500">kWh/m² al año</p>
           </article>
 
           <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">horas_sol</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{formatNumber(data.horas_sol)}</p>
-            <p className="mt-1 text-xs text-slate-600">horas al ano</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">⚡ Horas de sol</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 tabular-nums">{formatNumber(data.horas_sol)}</p>
+            <p className="mt-1 text-xs text-slate-500">horas al año</p>
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">ahorro_estimado</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatNumber(data.ahorro_estimado, 2)} EUR</p>
-            <p className="mt-1 text-xs text-slate-600">estimacion anual</p>
+          <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">💰 Ahorro estimado</p>
+            <p className="mt-2 text-2xl font-bold text-emerald-700 tabular-nums">{formatNumber(data.ahorro_estimado, 0)} €</p>
+            <p className="mt-1 text-xs text-slate-500">estimación anual</p>
           </article>
         </div>
       ) : null}

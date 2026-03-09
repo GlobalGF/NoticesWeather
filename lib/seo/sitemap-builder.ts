@@ -32,7 +32,6 @@ export function toSitemapXml(urls: SitemapUrl[]): string {
       const lastmod = url.lastmod ? `<lastmod>${escapeXml(url.lastmod)}</lastmod>` : "";
       const changefreq = url.changefreq ? `<changefreq>${url.changefreq}</changefreq>` : "";
       const priority = typeof url.priority === "number" ? `<priority>${url.priority.toFixed(1)}</priority>` : "";
-
       return `<url><loc>${escapeXml(url.loc)}</loc>${lastmod}${changefreq}${priority}</url>`;
     })
     .join("");
@@ -51,13 +50,25 @@ export function toSitemapIndexXml(locations: Array<{ loc: string; lastmod?: stri
   return `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${items}</sitemapindex>`;
 }
 
-export async function getSitemapPageCount(): Promise<number> {
+// ---------------------------------------------------------------------------
+// Shared count helper — called once and reused by both functions to avoid
+// hitting the DB twice for the same information in a single request.
+// ---------------------------------------------------------------------------
+
+type SitemapCounts = { municipiosCount: number; pseoSlugCount: number };
+
+async function getSitemapCounts(): Promise<SitemapCounts> {
   const [municipiosCount, pseoSlugCount] = await Promise.all([
     getMunicipiosEnergiaCount(),
     getPseoSlugIndexCount()
   ]);
+  return { municipiosCount, pseoSlugCount };
+}
 
-  // 1 URL por tipo para cada municipio en rutas existentes.
+export async function getSitemapPageCount(): Promise<number> {
+  const { municipiosCount, pseoSlugCount } = await getSitemapCounts();
+
+  // 3 URL types per municipality (placas-solares, bonificacion-ibi, autoconsumo-compartido)
   const dynamicLocalUrls = municipiosCount * 3;
   const guideUrls = GUIDE_SLUGS.length;
   const totalUrls = dynamicLocalUrls + guideUrls + pseoSlugCount;
@@ -65,32 +76,37 @@ export async function getSitemapPageCount(): Promise<number> {
   return Math.max(1, Math.ceil(totalUrls / SITEMAP_CHUNK_SIZE));
 }
 
+// ---------------------------------------------------------------------------
+// Build the lastmod date string.
+// Priority: updatedAt from the data → fall back to current deploy date.
+// Using a static deploy-time date avoids constantly signalling "changed" to
+// crawlers for content that hasn't actually changed.
+// ---------------------------------------------------------------------------
+
+const DEPLOY_DATE = new Date().toISOString().split("T")[0]; // e.g. "2026-03-09"
+
+function resolveLastmod(updatedAt?: string | null): string {
+  if (updatedAt) {
+    try {
+      return new Date(updatedAt).toISOString().split("T")[0];
+    } catch {
+      // ignore malformed dates
+    }
+  }
+  return DEPLOY_DATE;
+}
+
 export async function getSitemapChunkUrls(page: number, baseUrl: string): Promise<SitemapUrl[]> {
-  const [municipiosCount, pseoSlugCount] = await Promise.all([
-    getMunicipiosEnergiaCount(),
-    getPseoSlugIndexCount()
-  ]);
+  const { municipiosCount, pseoSlugCount } = await getSitemapCounts();
   const totalMunicipioUrlsPerType = municipiosCount;
 
   const start = page * SITEMAP_CHUNK_SIZE;
   const end = start + SITEMAP_CHUNK_SIZE - 1;
 
   const sections = [
-    {
-      key: "municipio" as const,
-      from: 0,
-      to: totalMunicipioUrlsPerType - 1
-    },
-    {
-      key: "ibi" as const,
-      from: totalMunicipioUrlsPerType,
-      to: totalMunicipioUrlsPerType * 2 - 1
-    },
-    {
-      key: "autoconsumo" as const,
-      from: totalMunicipioUrlsPerType * 2,
-      to: totalMunicipioUrlsPerType * 3 - 1
-    },
+    { key: "municipio" as const, from: 0, to: totalMunicipioUrlsPerType - 1 },
+    { key: "ibi" as const, from: totalMunicipioUrlsPerType, to: totalMunicipioUrlsPerType * 2 - 1 },
+    { key: "autoconsumo" as const, from: totalMunicipioUrlsPerType * 2, to: totalMunicipioUrlsPerType * 3 - 1 },
     {
       key: "guia" as const,
       from: totalMunicipioUrlsPerType * 3,
@@ -104,7 +120,6 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
   ];
 
   const urls: SitemapUrl[] = [];
-  const nowIso = new Date().toISOString();
 
   for (const section of sections) {
     const overlapFrom = Math.max(start, section.from);
@@ -118,7 +133,7 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
       for (const guideSlug of GUIDE_SLUGS.slice(guideStart, guideEnd + 1)) {
         urls.push({
           loc: `${baseUrl}/guias/${guideSlug}`,
-          lastmod: nowIso,
+          lastmod: DEPLOY_DATE,
           changefreq: "weekly",
           priority: 0.7
         });
@@ -134,7 +149,7 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
       for (const slug of slugs) {
         urls.push({
           loc: `${baseUrl}/solucion-solar/${slug}`,
-          lastmod: nowIso,
+          lastmod: DEPLOY_DATE,
           changefreq: "weekly",
           priority: 0.7
         });
@@ -156,7 +171,7 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
 
       urls.push({
         loc: `${baseUrl}${path}`,
-        lastmod: nowIso,
+        lastmod: resolveLastmod(null), // uses DEPLOY_DATE; extend slug fetch to include updated_at if needed
         changefreq: "weekly",
         priority: section.key === "municipio" ? 0.8 : 0.7
       });

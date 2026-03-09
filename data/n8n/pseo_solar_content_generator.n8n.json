@@ -1,0 +1,204 @@
+{
+  "name": "pSEO Solar Content Generator",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Cron: Cada noche a las 02:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 2 * * *" }]
+        }
+      },
+      "position": [200, 300]
+    },
+    {
+      "id": "2",
+      "name": "Supabase: Cola de municipios pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_seo_generation_queue",
+        "headers": {
+          "apikey": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Authorization": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "body": "={ \"p_limit\": 50 }",
+        "options": { "response": { "response": { "fullResponse": false } } }
+      },
+      "position": [420, 300],
+      "notes": "Llama a get_seo_generation_queue(50). Devuelve hasta 50 municipios priorizados por poblacion que necesitan contenido nuevo o regeneracion."
+    },
+    {
+      "id": "3",
+      "name": "SplitInBatches: 1 municipio a la vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "parameters": { "batchSize": 1, "options": {} },
+      "position": [640, 300],
+      "notes": "Procesa cada municipio individualmente para aislar errores y controlar rate limits de OpenAI."
+    },
+    {
+      "id": "4",
+      "name": "Set: Preparar variables del prompt",
+      "type": "n8n-nodes-base.set",
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "slug",               "value": "={{ $json.slug }}" },
+            { "name": "municipio",           "value": "={{ $json.municipio }}" },
+            { "name": "provincia",           "value": "={{ $json.provincia }}" },
+            { "name": "comunidad_autonoma",  "value": "={{ $json.comunidad_autonoma }}" },
+            { "name": "tipo_zona",           "value": "={{ $json.tipo_zona }}" },
+            { "name": "angulo",              "value": "={{ $json.angulo_sugerido }}" },
+            { "name": "irradiacion",         "value": "={{ $json.irradiacion_solar ?? 'N/D' }}" },
+            { "name": "horas_sol",           "value": "={{ $json.horas_sol ?? 'N/D' }}" },
+            { "name": "ahorro",              "value": "={{ $json.ahorro_estimado ?? 'N/D' }}" },
+            { "name": "ibi",                 "value": "={{ $json.bonificacion_ibi ?? 0 }}" },
+            { "name": "subvencion",          "value": "={{ $json.subvencion_autoconsumo ?? 0 }}" },
+            { "name": "precio_instalacion",  "value": "={{ $json.precio_instalacion_medio_eur ?? 'N/D' }}" },
+            { "name": "precio_min",          "value": "={{ $json.precio_instalacion_min_eur ?? 'N/D' }}" },
+            { "name": "precio_max",          "value": "={{ $json.precio_instalacion_max_eur ?? 'N/D' }}" },
+            { "name": "eur_por_watio",       "value": "={{ $json.eur_por_watio ?? 'N/D' }}" },
+            { "name": "precio_luz",          "value": "={{ $json.precio_medio_luz ?? 'N/D' }}" },
+            { "name": "habitantes",          "value": "={{ $json.habitantes ?? 0 }}" }
+          ]
+        },
+        "options": {}
+      },
+      "position": [860, 300]
+    },
+    {
+      "id": "5",
+      "name": "OpenAI: Generar contenido SEO",
+      "type": "n8n-nodes-base.openAi",
+      "parameters": {
+        "operation": "message",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Eres un redactor local experto en energia fotovoltaica en Espana. Respondes UNICAMENTE con un objeto JSON valido, sin markdown, sin bloques de codigo, sin comentarios. El JSON debe contener exactamente estas claves: intro_unica, analisis_fiscal_personalizado, h2_variante (array de 3 strings), conclusion_local, narrativa_angulo, calidad_score (numero 0-10), palabras_total (entero)."
+            },
+            {
+              "role": "user",
+              "content": "=Genera contenido SEO unico para el municipio {{ $json.municipio }} ({{ $json.provincia }}, {{ $json.comunidad_autonoma }}).\n\nDATOS REALES:\n- Tipo de zona: {{ $json.tipo_zona }}\n- Radiacion solar: {{ $json.irradiacion }} kWh/m2 al ano\n- Horas de sol: {{ $json.horas_sol }} horas/ano\n- Precio medio luz: {{ $json.precio_luz }} EUR/kWh\n- Ahorro estimado: {{ $json.ahorro }} EUR/ano\n- Bonificacion IBI: {{ $json.ibi }}%\n- Subvencion autonomica: {{ $json.subvencion }}%\n- Precio instalacion: {{ $json.precio_min }}-{{ $json.precio_max }} EUR (media {{ $json.precio_instalacion }} EUR)\n- EUR por Watio pico: {{ $json.eur_por_watio }}\n- Habitantes: {{ $json.habitantes }}\n\nREGLAS:\n1. intro_unica: parrafo de 80-120 palabras con caracteristicas geograficas reales de la zona ({{ $json.tipo_zona }}) y como benefician a la energia solar. Menciona el municipio por nombre.\n2. analisis_fiscal_personalizado: parrafo de 60-90 palabras explicando IBI ({{ $json.ibi }}%), subvencion ({{ $json.subvencion }}%) y precio de instalacion con retorno de inversion estimado.\n3. h2_variante: array con EXACTAMENTE 3 titulos H2 diferentes. Incluir el nombre del municipio en cada uno. Variar entre: ahorro, instalacion, autoconsumo, placas solares, energia solar.\n4. conclusion_local: parrafo de 40-60 palabras con CTA adaptado. Si habitantes < 5000, enfoque autonomia rural. Si habitantes > 100000, enfoque reduccion costes urbanos.\n5. narrativa_angulo: uno de: ahorro, sostenibilidad, independencia_energetica, revalorizacion. Usa: {{ $json.angulo }}.\n6. NO uses frases como 'En la actualidad', 'Hoy en dia', 'Como es bien sabido'. Varia sinonimos: placas solares/modulos fotovoltaicos/paneles/sistemas solares. ahorro/reduccion de factura/rentabilidad. instalacion/montaje/puesta en marcha.\n7. calidad_score: valora del 0 al 10 la unicidad y utilidad local real del contenido.\n8. palabras_total: suma de palabras de intro + analisis + conclusion.\n\nDevuelve SOLO el JSON, nada mas."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.75,
+          "maxTokens": 900
+        }
+      },
+      "position": [1080, 300],
+      "notes": "Temperatura 0.75: suficiente variedad sin perder precision de datos numericos."
+    },
+    {
+      "id": "6",
+      "name": "Code: Parsear y validar JSON de IA",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.message?.content ?? $input.item.json.choices?.[0]?.message?.content ?? '';\n\nlet parsed;\ntry {\n  // Limpiar posible markdown de code block si el modelo lo incluye\n  const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  return [{ json: { __error: true, __reason: 'JSON_PARSE_FAILED', __raw: raw.slice(0, 500), slug: $('Set: Preparar variables del prompt').item.json.slug } }];\n}\n\n// Validacion de campos obligatorios\nconst required = ['intro_unica', 'analisis_fiscal_personalizado', 'h2_variante', 'conclusion_local', 'narrativa_angulo'];\nconst missing = required.filter(k => !parsed[k]);\nif (missing.length > 0) {\n  return [{ json: { __error: true, __reason: 'MISSING_FIELDS:' + missing.join(','), slug: $('Set: Preparar variables del prompt').item.json.slug } }];\n}\n\n// Validar h2_variante es array de 3 elementos\nif (!Array.isArray(parsed.h2_variante) || parsed.h2_variante.length !== 3) {\n  return [{ json: { __error: true, __reason: 'H2_VARIANTE_INVALID', slug: $('Set: Preparar variables del prompt').item.json.slug } }];\n}\n\n// Validar longitud minima de intro (200 palabras en total aproximado)\nconst introWords = (parsed.intro_unica || '').split(' ').length;\nconst analisisWords = (parsed.analisis_fiscal_personalizado || '').split(' ').length;\nconst conclusionWords = (parsed.conclusion_local || '').split(' ').length;\nconst totalWords = introWords + analisisWords + conclusionWords;\n\nif (totalWords < 200) {\n  return [{ json: { __error: true, __reason: 'CONTENT_TOO_SHORT:' + totalWords + '_words', slug: $('Set: Preparar variables del prompt').item.json.slug } }];\n}\n\nconst vars = $('Set: Preparar variables del prompt').item.json;\n\nreturn [{\n  json: {\n    __error: false,\n    slug:                          vars.slug,\n    municipio:                     vars.municipio,\n    provincia:                     vars.provincia,\n    comunidad_autonoma:            vars.comunidad_autonoma,\n    // Contenido IA\n    intro_unica:                   parsed.intro_unica,\n    analisis_fiscal_personalizado: parsed.analisis_fiscal_personalizado,\n    h2_variante:                   parsed.h2_variante,\n    conclusion_local:              parsed.conclusion_local,\n    narrativa_angulo:              parsed.narrativa_angulo,\n    calidad_score:                 parseFloat(parsed.calidad_score) || null,\n    palabras_total:                totalWords,\n    modelo_ia:                     'gpt-4o-mini',\n    version_prompt:                1,\n    // Snapshot datos fuente\n    irradiacion_solar:             parseFloat(vars.irradiacion) || null,\n    horas_sol:                     parseInt(vars.horas_sol) || null,\n    ahorro_estimado:               parseFloat(vars.ahorro) || null,\n    bonificacion_ibi:              parseFloat(vars.ibi) || null,\n    subvencion_autoconsumo:        parseFloat(vars.subvencion) || null,\n    precio_instalacion_medio_eur:  parseFloat(vars.precio_instalacion) || null,\n    precio_medio_luz:              parseFloat(vars.precio_luz) || null,\n    habitantes:                    parseInt(vars.habitantes) || null\n  }\n}];"
+      },
+      "position": [1300, 300],
+      "notes": "Valida: JSON valido, campos obligatorios presentes, h2_variante es array[3], minimo 200 palabras totales."
+    },
+    {
+      "id": "7",
+      "name": "IF: Error en validacion?",
+      "type": "n8n-nodes-base.if",
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.__error }}", "value2": true }]
+        }
+      },
+      "position": [1500, 300]
+    },
+    {
+      "id": "8_error",
+      "name": "Supabase: Loguear error",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/seo_generation_errors",
+        "headers": {
+          "apikey": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Authorization": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        "body": "={{ JSON.stringify({ slug: $json.slug, reason: $json.__reason, raw_snippet: $json.__raw, created_at: new Date().toISOString() }) }}"
+      },
+      "position": [1700, 450],
+      "notes": "Tabla seo_generation_errors: slug, reason, raw_snippet, created_at"
+    },
+    {
+      "id": "8_ok",
+      "name": "Supabase: Upsert seo_municipio_snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/seo_municipio_snapshot",
+        "headers": {
+          "apikey": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Authorization": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}",
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates,return=representation"
+        },
+        "body": "={{ JSON.stringify({\n  slug:                          $json.slug,\n  municipio:                     $json.municipio,\n  provincia:                     $json.provincia,\n  comunidad_autonoma:            $json.comunidad_autonoma,\n  intro_unica:                   $json.intro_unica,\n  analisis_fiscal_personalizado: $json.analisis_fiscal_personalizado,\n  h2_variante:                   $json.h2_variante,\n  conclusion_local:              $json.conclusion_local,\n  narrativa_angulo:              $json.narrativa_angulo,\n  calidad_score:                 $json.calidad_score,\n  palabras_total:                $json.palabras_total,\n  modelo_ia:                     $json.modelo_ia,\n  version_prompt:                $json.version_prompt,\n  irradiacion_solar:             $json.irradiacion_solar,\n  horas_sol:                     $json.horas_sol,\n  ahorro_estimado:               $json.ahorro_estimado,\n  bonificacion_ibi:              $json.bonificacion_ibi,\n  subvencion_autoconsumo:        $json.subvencion_autoconsumo,\n  precio_instalacion_medio_eur:  $json.precio_instalacion_medio_eur,\n  precio_medio_luz:              $json.precio_medio_luz,\n  habitantes:                    $json.habitantes,\n  needs_regen:                   false,\n  last_generated_at:             new Date().toISOString()\n}) }}"
+      },
+      "position": [1700, 180],
+      "notes": "Usa Prefer: resolution=merge-duplicates para upsert por slug."
+    },
+    {
+      "id": "9",
+      "name": "Wait: 1.2s anti-rate-limit",
+      "type": "n8n-nodes-base.wait",
+      "parameters": { "amount": 1200, "unit": "milliseconds" },
+      "position": [1920, 180],
+      "notes": "Respeta el rate limit de OpenAI tier 1 (~50 RPM). Ajustar segun tier contratado."
+    }
+  ],
+  "connections": {
+    "Cron: Cada noche a las 02:00": {
+      "main": [[{ "node": "Supabase: Cola de municipios pendientes", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Cola de municipios pendientes": {
+      "main": [[{ "node": "SplitInBatches: 1 municipio a la vez", "type": "main", "index": 0 }]]
+    },
+    "SplitInBatches: 1 municipio a la vez": {
+      "main": [[{ "node": "Set: Preparar variables del prompt", "type": "main", "index": 0 }]]
+    },
+    "Set: Preparar variables del prompt": {
+      "main": [[{ "node": "OpenAI: Generar contenido SEO", "type": "main", "index": 0 }]]
+    },
+    "OpenAI: Generar contenido SEO": {
+      "main": [[{ "node": "Code: Parsear y validar JSON de IA", "type": "main", "index": 0 }]]
+    },
+    "Code: Parsear y validar JSON de IA": {
+      "main": [[{ "node": "IF: Error en validacion?", "type": "main", "index": 0 }]]
+    },
+    "IF: Error en validacion?": {
+      "main": [
+        [{ "node": "Supabase: Loguear error",             "type": "main", "index": 0 }],
+        [{ "node": "Supabase: Upsert seo_municipio_snapshot", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase: Upsert seo_municipio_snapshot": {
+      "main": [[{ "node": "Wait: 1.2s anti-rate-limit", "type": "main", "index": 0 }]]
+    },
+    "Wait: 1.2s anti-rate-limit": {
+      "main": [[{ "node": "SplitInBatches: 1 municipio a la vez", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["pseo", "solar", "contenido-ia", "supabase"]
+}

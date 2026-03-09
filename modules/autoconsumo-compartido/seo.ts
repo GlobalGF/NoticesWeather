@@ -1,9 +1,11 @@
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 
+const YEAR = new Date().getFullYear();
+
 export function sharedMetadata(slug: string, municipalityName: string) {
   return buildMetadata({
-    title: `Autoconsumo compartido en ${municipalityName}: normativa y ahorro`,
-    description: `Todo sobre autoconsumo compartido en ${municipalityName}, requisitos y beneficios.`,
+    title: `Autoconsumo compartido en ${municipalityName} ${YEAR} — Normativa, coeficientes y ahorro`,
+    description: `Guía de autoconsumo compartido colectivo en ${municipalityName}: coeficientes de reparto, requisitos legales, ventajas fiscales y estimación de ahorro.`,
     pathname: `/autoconsumo-compartido/${slug}`
   });
 }

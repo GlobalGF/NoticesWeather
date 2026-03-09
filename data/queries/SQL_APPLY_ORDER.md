@@ -33,7 +33,16 @@ Este orden evita errores de dependencias y te deja una base preparada para crece
 3. `data/queries/municipios_energia_performance.sql`
 4. `data/queries/municipios_cercanos_function.sql`
 
-## Fase 6: Opcional avanzado (solo si vas a modelo relacional profundo)
+## Fase 6: Contenido SEO generado por IA (requerido para n8n workflow)
+
+1. `data/queries/municipios_energia_geo_enrichment.sql`  ← enriquece tipo_zona y descripcion_geo
+2. `data/queries/seo_municipio_snapshot.sql`             ← tabla destino del contenido generado por IA
+
+> Despues de aplicar estos dos SQL, importa el workflow en n8n:
+> `data/n8n/pseo_solar_content_generator.n8n.json`
+> Variables de entorno requeridas en n8n: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY
+
+## Fase 7: Opcional avanzado (solo si vas a modelo relacional profundo)
 
 1. `data/queries/hardware_compatibility.sql`
 2. `data/queries/public_subsidies.sql`
