@@ -1,0 +1,373 @@
+{
+  "name": "Indexa paginas al google",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "83a78fdf-d9b2-441a-a497-cd1b053e0cda",
+      "name": "Cron: Diario 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [-1104, 112],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read config from env\nconst BATCH_SIZE = parseInt($env.DRIP_BATCH_SIZE || '400', 10);\nconst SITE_URL = $env.GOOGLE_GSC_SITE_URL || 'https://tudominio.com';\nreturn [{ json: { batchSize: BATCH_SIZE, siteUrl: SITE_URL } }];"
+      },
+      "id": "4ef93f1a-e0d5-4ca5-997b-b8bc28a27641",
+      "name": "Init Config",
+      "type": "n8n-nodes-base.code",
+      "position": [-880, 112],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, slug, municipio, provincia, comunidad, ruta_tipo FROM publish_queue WHERE status = 'pending' AND scheduled_for <= NOW() ORDER BY priority_score DESC LIMIT {{ $json.batchSize }}",
+        "options": {}
+      },
+      "id": "9a027f42-6cd6-4f74-82e1-a45147d3a281",
+      "name": "Fetch Pending Slugs",
+      "type": "n8n-nodes-base.postgres",
+      "position": [-656, 112],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "u8sSsXBzmxsSe8aJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "50f63cee-61a4-4698-ba6f-1d9dd08b4447",
+      "name": "Process in Batches of 10",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [-448, 112],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the canonical URL from slug parts\nconst item = $input.item.json;\nconst siteUrl = $('Init Config').first().json.siteUrl;\nconst ruta = item.ruta_tipo || 'placas-solares';\n\n// The slug is stored as 'comunidad/provincia/municipio' in pseo_slug_index\n// or just the municipio slug in pseo_index\nconst url = `${siteUrl}/${ruta}/${item.slug}`;\n\nreturn [{ json: { ...item, canonicalUrl: url } }];"
+      },
+      "id": "08f7b9b1-64f3-4cf9-8dec-3f904415c8b0",
+      "name": "Build Canonical URL",
+      "type": "n8n-nodes-base.code",
+      "position": [-224, 112],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://indexing.googleapis.com/v3/urlNotifications:publish",
+        "authentication": "serviceAccount",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "ddf57e3d-d02c-47d3-8deb-7d492ad19a3c",
+      "name": "Google Indexing API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [0, 0],
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publish_queue SET status = 'published', published_at = NOW() WHERE id = {{ $json.id }}",
+        "options": {}
+      },
+      "id": "8bbd1249-0430-4770-b96d-dd78408329fb",
+      "name": "Mark as Published",
+      "type": "n8n-nodes-base.postgres",
+      "position": [0, 224],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "u8sSsXBzmxsSe8aJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Evaluate Google API response\nconst googleResponse = $('Google Indexing API').item.json;\nconst queueItem = $('Build Canonical URL').item.json;\n\nconst httpStatus = googleResponse.statusCode || 200;\nconst status = httpStatus === 200 ? 'submitted' : 'error';\n\nreturn [{ json: {\n  url: queueItem.canonicalUrl,\n  queue_id: queueItem.id,\n  status,\n  http_status: httpStatus,\n  google_response: googleResponse\n}}];"
+      },
+      "id": "095e34d5-cc7b-41f6-babe-21e3228f7625",
+      "name": "Evaluate Response",
+      "type": "n8n-nodes-base.code",
+      "position": [224, 112],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/indexing_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4e5eeb7-ddff-4e7e-8368-d4c55dfdedaa",
+      "name": "Log to Supabase indexing_log",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [448, 112],
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect stats and check error rate\nconst allItems = $input.all();\nconst total = allItems.length;\nconst errors = allItems.filter(i => i.json.status === 'error').length;\nconst errorRate = total > 0 ? errors / total : 0;\n\nif (errorRate > 0.10) {\n  return [{ json: {\n    alert: true,\n    message: `⚠️ PSEO Drip: ${errors}/${total} URLs fallaron al indexar (${(errorRate*100).toFixed(1)}% error rate).`,\n    total, errors\n  }}];\n}\n\nreturn [{ json: {\n  alert: false,\n  message: `✅ PSEO Drip completado: ${total - errors}/${total} URLs enviadas a Google.`,\n  total, errors\n}}];"
+      },
+      "id": "71d91b6d-8acc-4160-b598-2ebe8819bb19",
+      "name": "Check Error Rate",
+      "type": "n8n-nodes-base.code",
+      "position": [672, 112],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.alert }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c23326fd-d555-46f4-9a60-4d8ee0f73a5b",
+      "name": "Error > 10%?",
+      "type": "n8n-nodes-base.if",
+      "position": [880, 112],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.message }}\n\nFecha: {{ $now.toISOString() }}",
+        "additionalFields": {}
+      },
+      "id": "8dce01ea-b11b-41a4-896e-0fa06fcbca5d",
+      "name": "Telegram Alert",
+      "type": "n8n-nodes-base.telegram",
+      "position": [1104, 0],
+      "typeVersion": 1.2,
+      "webhookId": "c80f56a0-0671-4c3d-b5c1-8f00f29d86b0",
+      "credentials": {
+        "telegramApi": {
+          "id": "9HrA3FYT0G1WZeJ2",
+          "name": "Telegram account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('Drip completado:', $json.message);\nreturn $input.all();"
+      },
+      "id": "256af981-5780-48c8-b256-8ed0e14eba2d",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "position": [1104, 224],
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron: Diario 09:00": {
+      "main": [
+        [
+          {
+            "node": "Init Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Config": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Slugs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Slugs": {
+      "main": [
+        [
+          {
+            "node": "Process in Batches of 10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process in Batches of 10": {
+      "main": [
+        [
+          {
+            "node": "Build Canonical URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Error Rate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Canonical URL": {
+      "main": [
+        [
+          {
+            "node": "Google Indexing API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mark as Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Indexing API": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as Published": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Response": {
+      "main": [
+        [
+          {
+            "node": "Log to Supabase indexing_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Supabase indexing_log": {
+      "main": [
+        [
+          {
+            "node": "Process in Batches of 10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error Rate": {
+      "main": [
+        [
+          {
+            "node": "Error > 10%?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error > 10%?": {
+      "main": [
+        [
+          {
+            "node": "Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0a028ca0-0db6-476e-828e-c8937030cb53",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df47f805d4b4320ff353adcd9a1b248c84115d55f19850b31b42feda7a0d6bc9"
+  },
+  "id": "rmmoFhnXPzh9S2bN",
+  "tags": []
+}

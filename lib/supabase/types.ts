@@ -252,6 +252,186 @@ export type Database = {
           updated_at: string;
         };
       };
+
+      // -----------------------------------------------------------------------
+      // LEAD FUNNEL TABLES (Phase 2+)
+      // -----------------------------------------------------------------------
+      leads: {
+        Row: {
+          id: number;
+          nombre: string;
+          telefono: string;
+          email: string | null;
+          tipo_vivienda: "unifamiliar" | "piso" | "empresa" | null;
+          consumo_kwh: number | null;
+          municipio_nombre: string | null;
+          municipio_slug: string | null;
+          provincia: string | null;
+          estado: "nuevo" | "contactado" | "vendido" | "descartado";
+          score: number | null;
+          precio_venta_eur: number | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          ip_hash: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          nombre: string;
+          telefono: string;
+          email?: string | null;
+          tipo_vivienda?: "unifamiliar" | "piso" | "empresa" | null;
+          consumo_kwh?: number | null;
+          municipio_nombre?: string | null;
+          municipio_slug?: string | null;
+          provincia?: string | null;
+          estado?: "nuevo" | "contactado" | "vendido" | "descartado";
+          score?: number | null;
+          precio_venta_eur?: number | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          ip_hash?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          nombre?: string;
+          telefono?: string;
+          email?: string | null;
+          tipo_vivienda?: "unifamiliar" | "piso" | "empresa" | null;
+          consumo_kwh?: number | null;
+          municipio_nombre?: string | null;
+          municipio_slug?: string | null;
+          provincia?: string | null;
+          estado?: "nuevo" | "contactado" | "vendido" | "descartado";
+          score?: number | null;
+          precio_venta_eur?: number | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          ip_hash?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+
+      publish_queue: {
+        Row: {
+          id: number;
+          slug: string;
+          municipio: string | null;
+          provincia: string | null;
+          comunidad: string | null;
+          ruta_tipo: string | null;
+          priority_score: number | null;
+          status: "pending" | "published" | "indexed" | "error";
+          sitemap_batch: string | null;
+          scheduled_for: string | null;
+          published_at: string | null;
+          indexed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          slug: string;
+          municipio?: string | null;
+          provincia?: string | null;
+          comunidad?: string | null;
+          ruta_tipo?: string | null;
+          priority_score?: number | null;
+          status?: "pending" | "published" | "indexed" | "error";
+          sitemap_batch?: string | null;
+          scheduled_for?: string | null;
+          published_at?: string | null;
+          indexed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          slug?: string;
+          municipio?: string | null;
+          provincia?: string | null;
+          comunidad?: string | null;
+          ruta_tipo?: string | null;
+          priority_score?: number | null;
+          status?: "pending" | "published" | "indexed" | "error";
+          sitemap_batch?: string | null;
+          scheduled_for?: string | null;
+          published_at?: string | null;
+          indexed_at?: string | null;
+          created_at?: string;
+        };
+      };
+
+      indexing_log: {
+        Row: {
+          id: number;
+          url: string;
+          status: "submitted" | "indexed" | "error" | "skipped" | null;
+          http_status: number | null;
+          google_response: Json | null;
+          queue_id: number | null;
+          submitted_at: string;
+        };
+        Insert: {
+          id?: number;
+          url: string;
+          status?: "submitted" | "indexed" | "error" | "skipped" | null;
+          http_status?: number | null;
+          google_response?: Json | null;
+          queue_id?: number | null;
+          submitted_at?: string;
+        };
+        Update: {
+          id?: number;
+          url?: string;
+          status?: "submitted" | "indexed" | "error" | "skipped" | null;
+          http_status?: number | null;
+          google_response?: Json | null;
+          queue_id?: number | null;
+          submitted_at?: string;
+        };
+      };
+
+      page_metrics: {
+        Row: {
+          id: number;
+          slug: string;
+          date: string;
+          clicks: number | null;
+          impressions: number | null;
+          ctr: number | null;
+          position: number | null;
+          source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          slug: string;
+          date: string;
+          clicks?: number | null;
+          impressions?: number | null;
+          ctr?: number | null;
+          position?: number | null;
+          source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          slug?: string;
+          date?: string;
+          clicks?: number | null;
+          impressions?: number | null;
+          ctr?: number | null;
+          position?: number | null;
+          source?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };

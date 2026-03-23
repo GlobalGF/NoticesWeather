@@ -1,0 +1,9 @@
+﻿app/(site)/baterias-solares/[municipio]/page.tsx(294,38): error TS2741: Property 'municipioSlug' is missing in type '{ municipio: string; provincia: string; ahorroEstimado: number; }' but required in type 'LeadFormProps'.
+app/api/leads/route.ts(45,40): error TS2869: Right operand of ?? is unreachable because the left operand is never nullish.
+app/api/leads/route.ts(124,10): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "leads", never, "POST">', gave the following error.
+    Argument of type '{ nombre: string; telefono: string; tipo_vivienda: string; consumo_kwh: number | null; municipio_nombre: string; municipio_slug: string | null; provincia: string; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; ip_hash: string; estado: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "leads", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'nombre' does not exist in type 'never[]'.
+app/api/leads/route.ts(156,30): error TS2339: Property 'id' does not exist on type 'never'.
+app/api/leads/route.ts(171,55): error TS2339: Property 'id' does not exist on type 'never'.

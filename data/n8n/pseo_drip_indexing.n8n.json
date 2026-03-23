@@ -1,0 +1,383 @@
+{
+    "name": "PSEO Drip Feeding + Google Indexing API",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 24
+                        }
+                    ]
+                }
+            },
+            "id": "drip-schedule",
+            "name": "Cron: Diario 09:00",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "position": [
+                240,
+                300
+            ],
+            "typeVersion": 1.2
+        },
+        {
+            "parameters": {
+                "jsCode": "// Read config from env\nconst BATCH_SIZE = parseInt($env.DRIP_BATCH_SIZE || '400', 10);\nconst SITE_URL = $env.GOOGLE_GSC_SITE_URL || 'https://tudominio.com';\nreturn [{ json: { batchSize: BATCH_SIZE, siteUrl: SITE_URL } }];"
+            },
+            "id": "init-config",
+            "name": "Init Config",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                460,
+                300
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "SELECT id, slug, municipio, provincia, comunidad, ruta_tipo FROM publish_queue WHERE status = 'pending' AND scheduled_for <= NOW() ORDER BY priority_score DESC LIMIT {{ $json.batchSize }}",
+                "additionalFields": {}
+            },
+            "id": "fetch-pending-slugs",
+            "name": "Fetch Pending Slugs",
+            "type": "n8n-nodes-base.postgres",
+            "position": [
+                680,
+                300
+            ],
+            "typeVersion": 2.5,
+            "credentials": {
+                "postgres": {
+                    "name": "Supabase Postgres"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "batchSize": 10,
+                "options": {}
+            },
+            "id": "split-batches",
+            "name": "Process in Batches of 10",
+            "type": "n8n-nodes-base.splitInBatches",
+            "position": [
+                900,
+                300
+            ],
+            "typeVersion": 3
+        },
+        {
+            "parameters": {
+                "jsCode": "// Build the canonical URL from slug parts\nconst item = $input.item.json;\nconst siteUrl = $('Init Config').first().json.siteUrl;\nconst ruta = item.ruta_tipo || 'placas-solares';\n\n// The slug is stored as 'comunidad/provincia/municipio' in pseo_slug_index\n// or just the municipio slug in pseo_index\nconst url = `${siteUrl}/${ruta}/${item.slug}`;\n\nreturn [{ json: { ...item, canonicalUrl: url } }];"
+            },
+            "id": "build-url",
+            "name": "Build Canonical URL",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                1120,
+                300
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://indexing.googleapis.com/v3/urlNotifications:publish",
+                "authentication": "serviceAccount",
+                "sendBody": true,
+                "contentType": "json",
+                "body": "={\n  \"url\": \"{{ $json.canonicalUrl }}\",\n  \"type\": \"URL_UPDATED\"\n}",
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "google-indexing-api",
+            "name": "Google Indexing API",
+            "type": "n8n-nodes-base.httpRequest",
+            "position": [
+                1340,
+                200
+            ],
+            "typeVersion": 4.2,
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "UPDATE publish_queue SET status = 'published', published_at = NOW() WHERE id = {{ $json.id }}",
+                "additionalFields": {}
+            },
+            "id": "mark-published",
+            "name": "Mark as Published",
+            "type": "n8n-nodes-base.postgres",
+            "position": [
+                1340,
+                420
+            ],
+            "typeVersion": 2.5,
+            "credentials": {
+                "postgres": {
+                    "name": "Supabase Postgres"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Evaluate Google API response\nconst googleResponse = $('Google Indexing API').item.json;\nconst queueItem = $('Build Canonical URL').item.json;\n\nconst httpStatus = googleResponse.statusCode || 200;\nconst status = httpStatus === 200 ? 'submitted' : 'error';\n\nreturn [{ json: {\n  url: queueItem.canonicalUrl,\n  queue_id: queueItem.id,\n  status,\n  http_status: httpStatus,\n  google_response: googleResponse\n}}];"
+            },
+            "id": "eval-response",
+            "name": "Evaluate Response",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                1560,
+                300
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $env.SUPABASE_URL }}/rest/v1/indexing_log",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        },
+                        {
+                            "name": "Prefer",
+                            "value": "return=minimal"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "contentType": "json",
+                "body": "={{ JSON.stringify($json) }}"
+            },
+            "id": "log-indexing",
+            "name": "Log to Supabase indexing_log",
+            "type": "n8n-nodes-base.httpRequest",
+            "position": [
+                1780,
+                300
+            ],
+            "typeVersion": 4.2,
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "// Collect stats and check error rate\nconst allItems = $input.all();\nconst total = allItems.length;\nconst errors = allItems.filter(i => i.json.status === 'error').length;\nconst errorRate = total > 0 ? errors / total : 0;\n\nif (errorRate > 0.10) {\n  return [{ json: {\n    alert: true,\n    message: `⚠️ PSEO Drip: ${errors}/${total} URLs fallaron al indexar (${(errorRate*100).toFixed(1)}% error rate).`,\n    total, errors\n  }}];\n}\n\nreturn [{ json: {\n  alert: false,\n  message: `✅ PSEO Drip completado: ${total - errors}/${total} URLs enviadas a Google.`,\n  total, errors\n}}];"
+            },
+            "id": "check-error-rate",
+            "name": "Check Error Rate",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                2000,
+                300
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.alert }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "if-alert",
+            "name": "Error > 10%?",
+            "type": "n8n-nodes-base.if",
+            "position": [
+                2220,
+                300
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+                "text": "={{ $json.message }}\n\nFecha: {{ $now.toISOString() }}"
+            },
+            "id": "telegram-alert",
+            "name": "Telegram Alert",
+            "type": "n8n-nodes-base.telegram",
+            "position": [
+                2440,
+                200
+            ],
+            "typeVersion": 1.2,
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "console.log('Drip completado:', $json.message);\nreturn $input.all();"
+            },
+            "id": "log-success",
+            "name": "Log Success",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                2440,
+                420
+            ],
+            "typeVersion": 2
+        }
+    ],
+    "connections": {
+        "Cron: Diario 09:00": {
+            "main": [
+                [
+                    {
+                        "node": "Init Config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Init Config": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Pending Slugs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Pending Slugs": {
+            "main": [
+                [
+                    {
+                        "node": "Process in Batches of 10",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Process in Batches of 10": {
+            "main": [
+                [
+                    {
+                        "node": "Build Canonical URL",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Build Canonical URL": {
+            "main": [
+                [
+                    {
+                        "node": "Google Indexing API",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Mark as Published",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Indexing API": {
+            "main": [
+                [
+                    {
+                        "node": "Evaluate Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Mark as Published": {
+            "main": [
+                [
+                    {
+                        "node": "Evaluate Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Evaluate Response": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Supabase indexing_log",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log to Supabase indexing_log": {
+            "main": [
+                [
+                    {
+                        "node": "Check Error Rate",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Error Rate": {
+            "main": [
+                [
+                    {
+                        "node": "Error > 10%?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Error > 10%?": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram Alert",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Log Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1",
+        "saveManualExecutions": true,
+        "callerPolicy": "workflowsFromSameOwner"
+    },
+    "meta": {
+        "description": "Drip feeding workflow: reads pending slugs from publish_queue, marks them as published, calls Google Indexing API for each URL, logs results, and alerts via Telegram if error rate > 10%. Runs daily at 09:00. Processes up to DRIP_BATCH_SIZE URLs/day (default 400)."
+    }
+}

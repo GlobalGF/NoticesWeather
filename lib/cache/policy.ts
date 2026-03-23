@@ -41,7 +41,9 @@ export const cachePolicy = {
     /** IBI bonification records — very stable (municipal ordinances), 7 days */
     ibi: 604800,
     /** Shared self-consumption coefficients — stable, once per day */
-    sharedCoefficient: 86400
+    sharedCoefficient: 86400,
+    /** WeatherAPI current conditions — refresh every 30 min */
+    weather: 1800
   },
   sitemap: {
     /** Sitemap index — regenerate every hour */

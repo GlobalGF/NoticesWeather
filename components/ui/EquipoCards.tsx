@@ -1,9 +1,7 @@
 /**
  * EquipoCards — Visual cards for solar equipment (panels, inverters, batteries).
  *
- * Replaces the plain HTML tables with premium-feeling cards with brand color,
- * efficiency bar, type badge, and estimated price.
- *
+ * Data-Driven redesign using clean lines, tech-focused typography and blue/amber accents.
  * Server component — receives data from the page.
  */
 
@@ -22,9 +20,9 @@ type EquipoCardsProps = {
 };
 
 const TIPO_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
-    "panel-solar": { label: "Panel solar", icon: "🔲", color: "bg-sky-100 text-sky-700 ring-sky-200" },
-    "inversor": { label: "Inversor", icon: "⚡", color: "bg-violet-100 text-violet-700 ring-violet-200" },
-    "bateria": { label: "Batería", icon: "🔋", color: "bg-amber-100 text-amber-700 ring-amber-200" },
+    "panel-solar": { label: "Panel Fotovoltaico", icon: "▤", color: "bg-blue-50 text-blue-700 border-blue-200" },
+    "inversor": { label: "Inversor Eléctrico", icon: "⚡", color: "bg-slate-100 text-slate-700 border-slate-300" },
+    "bateria": { label: "Batería Litio", icon: "🔋", color: "bg-amber-50 text-amber-700 border-amber-300" },
 };
 
 function fmt(n: number, decimals = 0): string {
@@ -33,10 +31,10 @@ function fmt(n: number, decimals = 0): string {
 
 function EfficiencyBar({ value }: { value: number }) {
     const pct = Math.min(100, Math.max(0, value));
-    const color = pct >= 22 ? "bg-emerald-500" : pct >= 18 ? "bg-amber-400" : "bg-slate-300";
+    const color = pct >= 22 ? "bg-blue-600" : pct >= 18 ? "bg-amber-400" : "bg-slate-400";
     return (
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded bg-slate-100 border border-slate-200">
+            <div className={`h-full transition-all ${color}`} style={{ width: `${pct}%` }} />
         </div>
     );
 }
@@ -45,35 +43,35 @@ function EquipoCard({ equipo }: { equipo: EquipoRow }) {
     const config = TIPO_CONFIG[equipo.tipo] ?? {
         label: equipo.tipo,
         icon: "🔧",
-        color: "bg-slate-100 text-slate-600 ring-slate-200",
+        color: "bg-slate-50 text-slate-600 border-slate-200",
     };
 
     return (
-        <article className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md">
+        <article className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-300 hover:shadow-md">
             {/* Badge */}
             <span
-                className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${config.color}`}
+                className={`inline-flex w-fit items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold uppercase tracking-wider border ${config.color}`}
             >
-                <span aria-hidden="true">{config.icon}</span> {config.label}
+                <span aria-hidden="true" className="opacity-75">{config.icon}</span> {config.label}
             </span>
 
             {/* Name */}
-            <h3 className="mt-3 font-bold text-slate-900 leading-tight">
+            <h3 className="mt-4 text-xl font-extrabold text-slate-900 leading-tight">
                 {equipo.marca}
             </h3>
-            <p className="text-sm text-slate-500">{equipo.modelo}</p>
+            <p className="mt-0.5 text-sm font-medium text-slate-500 truncate" title={equipo.modelo}>{equipo.modelo}</p>
 
             {/* Specs */}
-            <div className="mt-3 space-y-1 text-sm">
+            <div className="mt-5 space-y-2 text-sm border-t border-slate-100 pt-4">
                 {equipo.potencia > 0 && (
-                    <div className="flex justify-between">
-                        <span className="text-slate-500">Potencia</span>
-                        <span className="font-semibold tabular-nums">{fmt(equipo.potencia)} W</span>
+                    <div className="flex justify-between items-center">
+                        <span className="text-slate-500 font-medium">Potencia pico</span>
+                        <span className="font-bold tabular-nums text-slate-900">{fmt(equipo.potencia)} W</span>
                     </div>
                 )}
-                <div className="flex justify-between">
-                    <span className="text-slate-500">Eficiencia</span>
-                    <span className="font-semibold tabular-nums">{fmt(equipo.eficiencia, 1)}%</span>
+                <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-medium">Índice eficiencia</span>
+                    <span className="font-bold tabular-nums text-slate-900">{fmt(equipo.eficiencia, 1)}%</span>
                 </div>
             </div>
 
@@ -81,20 +79,24 @@ function EquipoCard({ equipo }: { equipo: EquipoRow }) {
             <EfficiencyBar value={equipo.eficiencia} />
 
             {/* Price */}
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-xs text-slate-400">Precio est.</span>
-                <span className="text-lg font-extrabold text-emerald-700 tabular-nums">
-                    {fmt(equipo.precio_estimado)} €
-                </span>
+            <div className="mt-5 flex flex-col justify-end h-full">
+                <div className="flex items-end justify-between rounded-lg bg-slate-50 border border-slate-100 p-3">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Est. Mercado</span>
+                        <span className="text-xl font-extrabold text-blue-600 tabular-nums leading-none mt-1">
+                            {fmt(equipo.precio_estimado)} €
+                        </span>
+                    </div>
+                </div>
             </div>
         </article>
     );
 }
 
-function SectionTitle({ icon, title }: { icon: string; title: string }) {
+function SectionTitle({ title }: { title: string }) {
     return (
-        <h3 className="mt-6 flex items-center gap-2 text-base font-semibold text-slate-800">
-            <span aria-hidden="true">{icon}</span> {title}
+        <h3 className="mt-8 mb-4 border-b border-slate-200 pb-2 text-sm font-bold uppercase tracking-wider text-slate-400">
+            {title}
         </h3>
     );
 }
@@ -108,20 +110,20 @@ export function EquipoCards({ equipos, provincia }: EquipoCardsProps) {
 
     return (
         <section
-            className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
             aria-label="Equipos solares recomendados"
         >
             <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
-                <span aria-hidden="true">🛒</span> Equipos recomendados para {provincia}
+                <span aria-hidden="true" className="text-blue-600">⚙️</span> Componentes del sistema: {provincia}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-                Selección de paneles, inversores y baterías más habituales en la zona
+                Cat\u00e1logo de equipos m\u00e1s instalados en informes recientes de rentabilidad.
             </p>
 
             {paneles.length > 0 && (
                 <>
-                    <SectionTitle icon="🔲" title="Paneles solares" />
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <SectionTitle title="Módulos Fotovoltaicos" />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {paneles.map((e) => <EquipoCard key={`${e.marca}-${e.modelo}`} equipo={e} />)}
                     </div>
                 </>
@@ -129,8 +131,8 @@ export function EquipoCards({ equipos, provincia }: EquipoCardsProps) {
 
             {inversores.length > 0 && (
                 <>
-                    <SectionTitle icon="⚡" title="Inversores" />
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <SectionTitle title="Inversores" />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {inversores.map((e) => <EquipoCard key={`${e.marca}-${e.modelo}`} equipo={e} />)}
                     </div>
                 </>
@@ -138,8 +140,8 @@ export function EquipoCards({ equipos, provincia }: EquipoCardsProps) {
 
             {baterias.length > 0 && (
                 <>
-                    <SectionTitle icon="🔋" title="Baterías de almacenamiento" />
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <SectionTitle title="Almacenamiento (Baterías)" />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {baterias.map((e) => <EquipoCard key={`${e.marca}-${e.modelo}`} equipo={e} />)}
                     </div>
                 </>

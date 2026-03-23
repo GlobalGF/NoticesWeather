@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f7f8f3;
-  --text: #1c231e;
+  --bg: #f8fafc;
+  --text: #0f172a;
 }
 
 html,
 body {
-  background: radial-gradient(circle at 20% 10%, #e7f4dc 0%, var(--bg) 40%, #eef2ff 100%);
+  background: var(--bg);
   color: var(--text);
 }
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm;
+    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm;
   }
 
   .two {

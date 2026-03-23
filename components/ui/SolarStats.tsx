@@ -26,11 +26,11 @@ function formatNumber(value: number, maximumFractionDigits = 0): string {
 }
 
 function resolveWrapperClass(className?: string): string {
-  const base = "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6";
+  const base = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6";
   return className ? `${base} ${className}` : base;
 }
 
-export function SolarStats({ slug, className, title = "Datos solares" }: SolarStatsProps) {
+export function SolarStats({ slug, className, title = "Datos solares en tiempo real" }: SolarStatsProps) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [data, setData] = useState<SolarStatsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,40 +85,44 @@ export function SolarStats({ slug, className, title = "Datos solares" }: SolarSt
   return (
     <section className={resolveWrapperClass(className)} aria-live="polite" aria-busy={loading}>
       <header className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{title}</h2>
-        <p className="mt-1 text-sm text-slate-600">Datos energéticos en tiempo real desde Supabase.</p>
+        <h2 className="text-lg font-bold text-slate-900 sm:text-xl">
+          <span aria-hidden="true" className="text-blue-600 mr-1">📡</span> {title}
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          M\u00e9tricas servidas directamente desde la base de datos (Supabase).
+        </p>
       </header>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
-          <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
-          <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="h-28 animate-pulse rounded border border-slate-100 bg-slate-50" />
+          <div className="h-28 animate-pulse rounded border border-slate-100 bg-slate-50" />
+          <div className="h-28 animate-pulse rounded border border-slate-100 bg-slate-50" />
         </div>
       ) : null}
 
       {!loading && error ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{error}</div>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">{error}</div>
       ) : null}
 
       {!loading && !error && data ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-amber-600">☀️ Irradiación solar</p>
-            <p className="mt-2 text-2xl font-bold text-amber-700 tabular-nums">{formatNumber(data.radiacion_solar, 1)}</p>
-            <p className="mt-1 text-xs text-slate-500">kWh/m² al año</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <article className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-600">Irradiaci\u00f3n solar</p>
+            <p className="mt-3 text-3xl font-extrabold text-amber-900 tabular-nums leading-none">{formatNumber(data.radiacion_solar, 1)}</p>
+            <p className="mt-1 text-xs text-amber-700 font-medium">kWh/m² al año</p>
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">⚡ Horas de sol</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900 tabular-nums">{formatNumber(data.horas_sol)}</p>
-            <p className="mt-1 text-xs text-slate-500">horas al año</p>
+          <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Horas de sol</p>
+            <p className="mt-3 text-3xl font-bold text-slate-900 tabular-nums leading-none">{formatNumber(data.horas_sol)}</p>
+            <p className="mt-1 text-xs text-slate-500 font-medium">horas al año</p>
           </article>
 
-          <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">💰 Ahorro estimado</p>
-            <p className="mt-2 text-2xl font-bold text-emerald-700 tabular-nums">{formatNumber(data.ahorro_estimado, 0)} €</p>
-            <p className="mt-1 text-xs text-slate-500">estimación anual</p>
+          <article className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-blue-700">Ahorro estimado</p>
+            <p className="mt-3 text-3xl font-extrabold text-blue-900 tabular-nums leading-none">{formatNumber(data.ahorro_estimado, 0)} €</p>
+            <p className="mt-1 text-xs text-blue-600 font-medium">estimación anual</p>
           </article>
         </div>
       ) : null}
