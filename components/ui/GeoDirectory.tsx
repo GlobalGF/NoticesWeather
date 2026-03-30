@@ -82,68 +82,76 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
     }
 
     return (
-        <div className={`grid grid-cols-1 gap-6 mt-6 ${level === 'provincias' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
-            {items.map((item) => {
-                const href = queryParam
-                    ? `${baseRoute}?${queryParam}=${item.slug}`
-                    : `${baseRoute}/${item.slug}`;
-
-                if (level === 'provincias') {
-                    const meta = getProvinceMetadata(item.slug);
-                    return (
-                        <Link key={item.slug} href={href} className="group relative overflow-hidden rounded-2xl aspect-[4/3] sm:aspect-video lg:aspect-[4/3]">
-                            {/* Background Image */}
-                            <img
-                                src={meta.backgroundUrl}
-                                alt={item.name}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Overlay Gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-
-                            {/* Content */}
-                            <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                                <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest mb-1">PROVINCIA</span>
-                                <h3 className="text-2xl font-bold text-white mb-2 decoration-blue-400 group-hover:underline decoration-2 underline-offset-4">
-                                    {item.name}
-                                </h3>
-                                <p className="text-slate-300 text-xs line-clamp-2 mb-4 font-light leading-relaxed">
-                                    {meta.description}
-                                </p>
-
-                                {/* Stats */}
-                                <div className="flex gap-3 mt-auto">
-                                    {item.radiation && (
-                                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/20">
-                                            <p className="text-[10px] text-white/60 font-medium uppercase">Radiación</p>
-                                            <p className="text-white font-bold text-sm leading-tight">{item.radiation} <span className="text-[10px] font-normal">kWh/m²</span></p>
-                                        </div>
-                                    )}
-                                    {item.sunHours && (
-                                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/20">
-                                            <p className="text-[10px] text-white/60 font-medium uppercase">Sol</p>
-                                            <p className="text-white font-bold text-sm leading-tight">{item.sunHours} <span className="text-[10px] font-normal">h/año</span></p>
-                                        </div>
-                                    )}
+        <>
+        {level === 'provincias' ? (
+            <div className="mt-6 relative" role="region" aria-label="Directorio de provincias" tabIndex={0}>
+                {/* Scroll container */}
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+                    {items.map((item) => {
+                        const href = queryParam
+                            ? `${baseRoute}?${queryParam}=${item.slug}`
+                            : `${baseRoute}/${item.slug}`;
+                        const meta = getProvinceMetadata(item.slug);
+                        return (
+                            <Link
+                                key={item.slug}
+                                href={href}
+                                className="group relative overflow-hidden rounded-xl flex-none w-[320px] sm:w-[360px] aspect-[3/2] snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                aria-label={`${item.name} — ${meta.description}`}
+                            >
+                                <img
+                                    src={meta.backgroundUrl}
+                                    alt={item.name}
+                                    loading="lazy"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                                <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                                    <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest mb-0.5">Provincia</span>
+                                    <h3 className="text-lg font-bold text-white mb-1 group-hover:underline decoration-blue-400 decoration-2 underline-offset-4 leading-tight">
+                                        {item.name}
+                                    </h3>
+                                    <div className="flex gap-2 mt-1">
+                                        {item.radiation && (
+                                            <div className="bg-white/10 backdrop-blur-md rounded-md px-2 py-1 border border-white/20">
+                                                <p className="text-white font-bold text-xs leading-tight">{item.radiation} <span className="text-[9px] font-normal text-white/70">kWh/m²</span></p>
+                                            </div>
+                                        )}
+                                        {item.sunHours && (
+                                            <div className="bg-white/10 backdrop-blur-md rounded-md px-2 py-1 border border-white/20">
+                                                <p className="text-white font-bold text-xs leading-tight">{item.sunHours} <span className="text-[9px] font-normal text-white/70">h/año</span></p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </Link>
-                    );
-                }
-
-                return (
-                    <Link key={item.slug} href={href} className="block group">
-                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 h-full flex items-center justify-between">
-                            <h3 className="text-[15px] font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">
+                            </Link>
+                        );
+                    })}
+                </div>
+                {/* Fade edges to hint at scrollability */}
+                <div className="absolute top-0 right-0 bottom-4 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none rounded-r-xl" aria-hidden="true" />
+                <p className="text-center text-[10px] text-slate-400 font-medium mt-1 tracking-wide" aria-hidden="true">Desliza para explorar más provincias →</p>
+            </div>
+        ) : (
+            <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mt-6`}>
+                {items.map((item) => {
+                    const href = queryParam
+                        ? `${baseRoute}?${queryParam}=${item.slug}`
+                        : `${baseRoute}/${item.slug}`;
+                    return (
+                        <Link
+                            key={item.slug}
+                            href={href}
+                            className="group block bg-white rounded-lg border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        >
+                            <h3 className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors truncate">
                                 {item.name}
                             </h3>
-                            <svg className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </Link>
-                );
-            })}
-        </div>
+                        </Link>
+                    );
+                })}
+            </div>
+        )}
+        </>
     );
 }

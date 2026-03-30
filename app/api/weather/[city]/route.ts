@@ -46,13 +46,23 @@ const CACHE_HEADERS = {
 } as const;
 
 export async function GET(_request: NextRequest, { params }: Params) {
-  const city = decodeURIComponent(params.city ?? "");
+  let city = decodeURIComponent(params.city ?? "");
   if (!city) {
     return NextResponse.json(
       { error: "City parameter is required" },
       { status: 400 }
     );
   }
+
+  // WeatherAPI specific overrides
+  const cityOverrides: Record<string, string> = {
+    "Añana": "Anana-alava",
+    "anana": "Anana-alava",
+    "anana-arabaalava": "Anana-alava",
+  };
+
+  const query = cityOverrides[city] || city;
+  const finalQuery = `${query}-spain`;
 
   const apiKey = process.env.WEATHERAPI_KEY;
   if (!apiKey) {
@@ -63,7 +73,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     );
   }
 
-  const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(city)}&lang=es&aqi=no`;
+  const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(finalQuery)}&lang=es&aqi=no`;
 
   try {
     const controller = new AbortController();

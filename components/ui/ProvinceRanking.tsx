@@ -59,8 +59,8 @@ export function ProvinceRanking({ items, provincia, currentSlug }: ProvinceRanki
                         <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
                             <th className="py-3 pl-4" scope="col">#</th>
                             <th className="py-3 px-3" scope="col">Municipio</th>
-                            <th className="py-3 px-3 text-right" scope="col">Poblaci\u00f3n</th>
-                            <th className="py-3 px-3 text-right" scope="col">Irradiaci\u00f3n</th>
+                            <th className="py-3 px-3 text-right" scope="col">Población</th>
+                            <th className="py-3 px-3 text-right" scope="col">Irradiación</th>
                             <th className="py-3 px-3 text-right" scope="col">Ahorro Est.</th>
                             <th className="py-3 px-4 text-right" scope="col">IBI</th>
                         </tr>

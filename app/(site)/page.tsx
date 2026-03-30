@@ -56,7 +56,7 @@ export default async function HomePage() {
     : [];
 
   return (
-    <section className="prose mx-auto max-w-3xl">
+    <section className="prose mx-auto max-w-3xl px-4 py-8 md:py-12">
       <h1 className="mb-2">Wiki Solar España</h1>
       <p className="text-lg mb-4">Bienvenido a la enciclopedia de energía solar en España. Explora las principales secciones y accede a recursos, guías y herramientas.</p>
 

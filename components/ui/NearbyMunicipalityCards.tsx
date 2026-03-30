@@ -45,7 +45,7 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
                 <span aria-hidden="true" className="text-blue-600">📍</span> Análisis geográfico: Entorno de {currentMunicipio}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-                Comparativa r\u00e1pida de potencial solar con los municipios de mayor poblaci\u00f3n en la zona.
+                Comparativa rápida de potencial solar con los municipios de mayor población en la zona.
             </p>
 
             <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
@@ -70,7 +70,7 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
                             {/* Data badges */}
                             <div className="mt-4 flex flex-wrap gap-2">
                                 {m.irradiacionSolar != null && (
-                                    <DataBadge label="Irradiaci\u00f3n" value={`${fmt(m.irradiacionSolar)} kWh/m²`} />
+                                    <DataBadge label="Irradiación" value={`${fmt(m.irradiacionSolar)} kWh/m²`} />
                                 )}
                                 {m.bonificacionIbi != null && (
                                     <DataBadge label="Bonif. IBI" value={`${fmt(m.bonificacionIbi)}%`} />
