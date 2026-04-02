@@ -30,7 +30,7 @@ export function WeatherSection({
   irradiacionAnual,
 }: WeatherSectionProps) {
   return (
-    <WeatherProvider municipio={municipio} municipioSlug={municipioSlug}>
+    <WeatherProvider municipio={municipio} municipioSlug={municipioSlug} provincia={provincia}>
       {/* 1. CRO Urgency Banner — high visibility, above the fold */}
       <CroUrgencyBanner
         municipio={municipio}
