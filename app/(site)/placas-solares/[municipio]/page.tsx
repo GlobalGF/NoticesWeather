@@ -215,6 +215,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia}
                                 slug={slug}
+                                comunidadSlug={tryParseSlug(municipio.comunidad_autonoma ?? municipio.provincia) || decodeURIComponent(rawMunicipio).split('-')[1] || "andalucia"}
+                                provinciaSlug={tryParseSlug(municipio.provincia) || decodeURIComponent(rawMunicipio).split('-')[1] || "sevilla"}
                                 bonificacionIbi={municipio.bonificacion_ibi}
                                 nearbyItems={nearbyItems}
                             />

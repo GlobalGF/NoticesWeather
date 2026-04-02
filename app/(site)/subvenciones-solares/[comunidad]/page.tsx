@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
@@ -125,10 +125,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+
 export default async function SubsidiesCcaaPage({ params }: Props) {
   const { comunidad } = await params;
   const parsed = tryParseSlug(comunidad);
   if (!parsed) notFound();
+
+  // --- Redirect Logic for Sticky Header ---
+  // If the slug is NOT a known CCAA, check if it's a municipality to redirect to the deep route
+  const isCcaa = !!CCAA_NAME_MAP[parsed];
+  if (!isCcaa) {
+    const supabase = await createSupabaseServerClient();
+    const { data: muni } = await supabase
+      .from("municipios_energia")
+      .select("slug, provincia, comunidad_autonoma")
+      .eq("slug", parsed)
+      .maybeSingle();
+
+    if (muni) {
+      const m = muni as any;
+      const cSlug = slugify(m.comunidad_autonoma);
+      const pSlug = slugify(m.provincia);
+      redirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+    }
+  }
 
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);

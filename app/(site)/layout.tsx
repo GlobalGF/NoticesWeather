@@ -8,7 +8,7 @@ import { Footer } from "@/components/ui/Footer";
 const navLinks = [
   { href: "/placas-solares", label: "Placas Solares", sticky: true },
   { href: "/baterias-solares", label: "Baterías", sticky: true },
-  { href: "/subvenciones-solares", label: "Subvenciones", sticky: false },
+  { href: "/subvenciones-solares", label: "Subvenciones", sticky: true },
   { href: "/precio-luz", label: "Precio Luz", sticky: true },
   { href: "/calculadoras", label: "Calculadoras", sticky: true },
 ];

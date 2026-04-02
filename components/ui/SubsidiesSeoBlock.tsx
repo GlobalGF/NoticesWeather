@@ -4,6 +4,8 @@ type SubsidiesSeoBlockProps = {
   municipio: string;
   provincia: string;
   slug: string;
+  comunidadSlug: string;
+  provinciaSlug: string;
   bonificacionIbi?: number | null;
   nearbyItems?: {
     municipio: string;
@@ -24,6 +26,8 @@ export function SubsidiesSeoBlock({
   municipio,
   provincia,
   slug,
+  comunidadSlug,
+  provinciaSlug,
   bonificacionIbi,
   nearbyItems = [],
 }: SubsidiesSeoBlockProps) {
@@ -99,13 +103,19 @@ export function SubsidiesSeoBlock({
           </div>
         </div>
 
-        {/* Dynamic Footer with Interlinking */}
-        <div className="mt-5 text-center space-y-3">
-          <p className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-md py-2 px-4 shadow-sm inline-block">
+        <div className="mt-5 text-center space-y-4">
+          <a
+            href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${slug}`}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-colors"
+          >
+            Ver todas las subvenciones oficiales en {municipio}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </a>
+          <p className="block text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-md py-2 px-4 shadow-sm inline-block">
             Consulta siempre al ayuntamiento de {provincia} para confirmar la vigencia anual de estas ayudas.
           </p>
           {nearby && (
-            <p className="text-[10px] text-slate-400">
+            <p className="block text-[10px] text-slate-400">
               Al igual que ocurre en localidades próximas como{" "}
               <a
                 href={`/placas-solares/${nearby.slug}`}
