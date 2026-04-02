@@ -1,5 +1,5 @@
-const DEFAULT_STATIC_ROUTES = 2000;
-const MAX_ALLOWED_STATIC_ROUTES = 5000;
+const DEFAULT_STATIC_ROUTES = 400;
+const MAX_ALLOWED_STATIC_ROUTES = 1000;
 
 export function getStaticPrebuildBudget(envName: string, fallback = DEFAULT_STATIC_ROUTES): number {
   const raw = process.env[envName];

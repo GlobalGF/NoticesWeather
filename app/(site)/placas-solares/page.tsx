@@ -3,18 +3,124 @@ import Link from "next/link";
 import GeoDirectory from "@/components/ui/GeoDirectory";
 import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 import { getNationalStats } from "@/lib/data/solar";
-
-export const metadata: Metadata = {
-  title: "Placas Solares en España: Estudio de Rendimiento y Precios",
-  description: "Descubre el potencial solar de tu localidad. Buscador de rendimiento energético, precios de instalación y subvenciones para placas solares en España.",
-};
+import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
+import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
+import ProvincePageClient from "@/components/ui/ProvincePageClient";
 
 type Props = {
   searchParams: Promise<{ provincia?: string }>;
 };
 
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { provincia } = await searchParams;
+  if (provincia) {
+    const stats = await getProvinceStats(provincia);
+    const name = stats?.provinceName ?? provincia;
+    return {
+      title: `Placas Solares en ${name}: Rendimiento, Precios y Subvenciones`,
+      description: `Encuentra tu municipio en ${name} y accede al estudio completo de irradiación solar, rentabilidad financiera y bonificaciones fiscales (IBI/ICIO). ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
+    };
+  }
+  return {
+    title: "Placas Solares en España: Estudio de Rendimiento y Precios",
+    description: "Descubre el potencial solar de tu localidad. Buscador de rendimiento energético, precios de instalación y subvenciones para placas solares en España.",
+  };
+}
+
 export default async function PlacasSolaresIndexPage({ searchParams }: Props) {
   const { provincia } = await searchParams;
+
+  // ── Province-specific Landing ──────────────────────────────────
+  if (provincia) {
+    const [provStats, allProvs] = await Promise.all([
+      getProvinceStats(provincia),
+      getAllProvinces(),
+    ]);
+
+    if (!provStats) {
+      // Fallback: Province not found, show generic page
+      return <GenericPlacasSolaresPage />;
+    }
+
+    const meta = getProvinceMetadata(provincia);
+
+    return (
+      <main className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
+
+        {/* ── Province Hero with Background ── */}
+        <div className="relative pb-24 pt-16 overflow-hidden shadow-lg">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img
+              src={meta.backgroundUrl}
+              alt={provStats.provinceName}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />
+          </div>
+
+          {/* Decorative blurs */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+
+          <div className="mx-auto max-w-4xl px-4 relative z-30 text-center">
+            {/* Province badge */}
+            <div className="inline-flex items-center gap-3 mb-5 bg-white/10 backdrop-blur-lg border border-white/20 px-5 py-2.5 rounded-full">
+              <svg className="text-amber-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <p className="text-amber-300 font-bold tracking-widest uppercase text-[10px]">
+                Provincia de {provStats.provinceName}
+              </p>
+            </div>
+
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-5">
+              Placas Solares en <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">{provStats.provinceName}</span>
+            </h1>
+
+            <p className="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-4">
+              Explora los <strong className="text-white font-semibold">{provStats.totalMunicipios} municipios</strong> de {provStats.provinceName}. 
+              Encuentra tu ciudad y accede al estudio completo de irradiación, rentabilidad y bonificaciones fiscales.
+            </p>
+
+            {/* Province highlights */}
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              {meta.highlights.map((h, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-xs text-white/80 font-medium">
+                  <svg className="text-emerald-400" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  {h}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Province Client Section (search + KPIs + grid) ── */}
+        <ProvincePageClient
+          hubName="Placas Solares"
+          baseRoute="/placas-solares"
+          provinceName={provStats.provinceName}
+          provinceSlug={provStats.provinceSlug}
+          municipios={provStats.municipios}
+          allProvinces={allProvs}
+          stats={{
+            totalMunicipios: provStats.totalMunicipios,
+            avgSunHours: provStats.avgSunHours,
+            avgRadiation: provStats.avgRadiation,
+            avgSavings: provStats.avgSavings,
+            avgIBI: provStats.avgIBI,
+          }}
+        />
+      </main>
+    );
+  }
+
+  // ── Generic / No Province Selected ─────────────────────────────
+  return <GenericPlacasSolaresPage />;
+}
+
+// ── Extracted generic page (no province selected) ────────────────
+async function GenericPlacasSolaresPage() {
   const stats = await getNationalStats();
 
   return (
@@ -89,29 +195,13 @@ export default async function PlacasSolaresIndexPage({ searchParams }: Props) {
           </p>
         </div>
 
-        {provincia ? (
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-            <div className="mb-6">
-              <Link href="/placas-solares" className="text-sm text-blue-600 hover:text-blue-800 font-bold flex items-center gap-2 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                Volver a Provincias
-              </Link>
-            </div>
-            <GeoDirectory
-              level="municipios"
-              parentSlug={provincia}
-              baseRoute="/placas-solares"
-            />
-          </div>
-        ) : (
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-            <GeoDirectory
-              level="provincias"
-              baseRoute="/placas-solares"
-              queryParam="provincia"
-            />
-          </div>
-        )}
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+          <GeoDirectory
+            level="provincias"
+            baseRoute="/placas-solares"
+            queryParam="provincia"
+          />
+        </div>
       </div>
     </main>
   );

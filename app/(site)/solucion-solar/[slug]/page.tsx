@@ -21,7 +21,7 @@ type Props = {
 
 export async function generateStaticParams() {
   return safeGenerateStaticParams(async () => {
-    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_SOLUCION_SOLAR", 1200);
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_SOLUCION_SOLAR", 200);
     const slugs = await getTopPseoSlugIndexSlugs(budget);
     return slugs.map((slug) => ({ slug }));
   });

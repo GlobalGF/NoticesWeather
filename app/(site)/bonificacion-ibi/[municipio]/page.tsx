@@ -18,7 +18,7 @@ type Props = {
 
 export async function generateStaticParams() {
   return safeGenerateStaticParams(async () => {
-    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_IBI", 1200);
+    const budget = getStaticPrebuildBudget("PSEO_PREBUILD_IBI", 300);
     const top = await getTopMunicipalitiesByPriority(budget);
     return top.map((m) => ({ municipio: m.slug }));
   });

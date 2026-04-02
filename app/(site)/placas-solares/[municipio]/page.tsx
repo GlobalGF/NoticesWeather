@@ -41,7 +41,7 @@ const fmtEur = (v: number | null | undefined) => v ? new Intl.NumberFormat('es-E
 
 export async function generateStaticParams() {
     return safeGenerateStaticParams(async () => {
-        const budget = getStaticPrebuildBudget("PSEO_PREBUILD_MUNICIPIOS", 1200);
+        const budget = getStaticPrebuildBudget("PSEO_PREBUILD_MUNICIPIOS", 400);
         const top = await getTopMunicipalitiesByPriority(budget);
         return top.map((m) => ({ municipio: m.slug }));
     });

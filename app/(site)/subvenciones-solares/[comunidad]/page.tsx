@@ -28,7 +28,7 @@ async function getAllCcaaSubsidies(): Promise<SubsidyCcaaRow[]> {
   const { data, error } = await supabase
     .from("subvenciones_solares_ccaa_es")
     .select("comunidad_autonoma, subvencion_porcentaje, max_subvencion_euros, programa")
-    .limit(5000);
+    .limit(100);
   if (error) throw new Error(`Error loading subvenciones_solares_ccaa_es: ${error.message}`);
   return (data ?? []) as SubsidyCcaaRow[];
 }
