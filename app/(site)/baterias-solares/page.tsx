@@ -46,37 +46,37 @@ export default async function BateriasSolaresRootPage({ searchParams }: Props) {
       {/* ── National Statistics KPIs ── */}
       <div className="mx-auto max-w-5xl px-4 -mt-10 relative z-20 mb-16">
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 divide-x divide-slate-100">
-            <div className="flex flex-col items-center text-center px-2">
-                <span className="w-12 h-12 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-2xl mb-4 shadow-inner border border-indigo-200/50">
+            <div className="flex flex-col items-center text-center px-1 sm:px-2">
+                <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-indigo-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>
                 </span>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ciclos de Vida</p>
-                <p className="text-3xl font-black text-slate-800 tabular-nums">&gt;6000</p>
-                <p className="text-xs font-bold text-indigo-600">baterías de litio LFP</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ciclos Vida</p>
+                <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">&gt;6000</p>
+                <p className="text-[10px] font-bold text-indigo-600 hidden sm:block">baterías de litio LFP</p>
             </div>
-            <div className="flex flex-col items-center text-center px-2 pl-4 md:pl-8">
-                <span className="w-12 h-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-2xl mb-4 shadow-inner border border-blue-200/50">
+            <div className="flex flex-col items-center text-center px-1 sm:px-2 pl-2 sm:pl-8">
+                <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-blue-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </span>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ahorro Nocturno</p>
-                <p className="text-3xl font-black text-slate-800 tabular-nums">~60%</p>
-                <p className="text-xs font-bold text-blue-600">consumos fuera de horas solares</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ahorro Noct.</p>
+                <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">~60%</p>
+                <p className="text-[10px] font-bold text-blue-600 hidden sm:block">consumos fuera de horas solares</p>
             </div>
-            <div className="flex flex-col items-center text-center px-2 pl-4 md:pl-8 mt-6 md:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-6 md:pt-0">
-                <span className="w-12 h-12 flex items-center justify-center bg-emerald-100 text-emerald-600 rounded-2xl mb-4 shadow-inner border border-emerald-200/50">
+            <div className="flex flex-col items-center text-center px-1 sm:px-2 pl-2 sm:pl-8 mt-4 sm:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-4 sm:pt-0">
+                <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-emerald-100 text-emerald-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-emerald-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </span>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Amortización</p>
-                <p className="text-3xl font-black text-slate-800 tabular-nums">5-8</p>
-                <p className="text-xs font-bold text-emerald-600">años de retorno</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Amortización</p>
+                <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">5-8</p>
+                <p className="text-[10px] font-bold text-emerald-600 hidden sm:block">años de retorno</p>
             </div>
-            <div className="flex flex-col items-center text-center px-2 pl-4 md:pl-8 mt-6 md:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-6 md:pt-0">
-                <span className="w-12 h-12 flex items-center justify-center bg-fuchsia-100 text-fuchsia-600 rounded-2xl mb-4 shadow-inner border border-fuchsia-200/50">
+            <div className="flex flex-col items-center text-center px-1 sm:px-2 pl-2 sm:pl-8 mt-4 sm:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-4 sm:pt-0">
+                <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-fuchsia-100 text-fuchsia-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-fuchsia-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </span>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Independencia</p>
-                <p className="text-3xl font-black text-slate-800 tabular-nums">80%</p>
-                <p className="text-xs font-bold text-fuchsia-600">reducción dependencia eléctrica</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Independ.</p>
+                <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">80%</p>
+                <p className="text-[10px] font-bold text-fuchsia-600 hidden sm:block">reducción dependencia</p>
             </div>
         </div>
       </div>

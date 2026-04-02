@@ -11,7 +11,8 @@ type Params = {
   };
 };
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(_request: NextRequest, context?: Params) {
+  const params = context?.params;
   if (!params?.page) {
     return new NextResponse("Sitemap page not found", { status: 404 });
   }

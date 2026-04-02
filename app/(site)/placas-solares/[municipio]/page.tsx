@@ -11,6 +11,7 @@ import { SolarWeatherWidget } from "@/components/ui/SolarWeatherWidget";
 import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
+import { SubsidiesSeoBlock } from "@/components/ui/SubsidiesSeoBlock";
 
 import { BatteryNeedsCalculator } from "@/components/ui/BatteryNeedsCalculator";
 import { SurplusCompensationCalculator } from "@/components/ui/SurplusCompensationCalculator";
@@ -24,6 +25,11 @@ import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import Fallback from "@/components/solar/Fallback";
 
 import { getMunicipioBySlug, getWeatherBySlug, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy } from "@/lib/data/solar";
+
+/* ── SEO: Schema, FAQ, Server SEO Block ── */
+import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
+import { FaqAccordion } from "@/components/ui/FaqAccordion";
+import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
 
 type Props = {
     params: Promise<{ municipio: string }>;
@@ -94,9 +100,33 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     const payback = municipio.precio_instalacion_medio_eur && ahorroAnual > 0
         ? Math.round(municipio.precio_instalacion_medio_eur / ahorroAnual) : null;
 
+    /* ── Build JSON-LD structured data ── */
+    const schemaData = {
+        municipio: municipio.municipio,
+        provincia: municipio.provincia,
+        comunidadAutonoma: municipio.comunidad_autonoma ?? municipio.provincia,
+        ahorroEstimado: ahorroAnual,
+        irradiacionSolar: municipio.irradiacion_solar ?? 1700,
+        precioInstalacionMedio: municipio.precio_instalacion_medio_eur ?? null,
+        bonificacionIbi: municipio.bonificacion_ibi ?? null,
+        subvencionAutoconsumo: municipio.subvencion_autoconsumo ?? null,
+    };
+    const faqs = buildMunicipioFaqs(schemaData);
+    const jsonLd = buildSolarEnergyPageSchema({
+        data: schemaData,
+        pagePath: `/placas-solares/${slug}`,
+        faqs,
+    });
+
     return (
         <WeatherProvider municipio={municipio.municipio} municipioSlug={slug}>
-            <main className="bg-slate-50 min-h-screen font-sans pb-16">
+            {/* ── JSON-LD Structured Data (visible to Googlebot) ── */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
+            <main className="bg-slate-50 min-h-screen font-sans pb-16 overflow-x-hidden">
 
                 {/* ── Page Header (ESIOS style) ───────────── */}
                 <div className="bg-slate-900 text-white">
@@ -120,8 +150,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                     Calculadora solar · Rentabilidad y ayudas
                                 </p>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
-                                    {municipio.municipio}
-                                    <span className="text-slate-400 font-normal"> · {municipio.provincia}</span>
+                                    Placas solares en {municipio.municipio}
+                                    <span className="text-slate-400 font-normal text-lg sm:text-xl"> · {municipio.provincia}</span>
                                 </h1>
                             </div>
                         </div>
@@ -150,7 +180,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                 <div className="mx-auto max-w-5xl px-4 pt-20">
                     <div className="grid gap-8 lg:grid-cols-3">
                         {/* Left Column */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="lg:col-span-2 space-y-8 min-w-0">
                             <CroUrgencyBanner municipio={municipio.municipio} />
 
                             <LiveSolarCalculator
@@ -160,6 +190,19 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
                             <SolarWeatherWidget municipio={municipio.municipio} />
 
+                            {/* Server-rendered SEO text (visible to Googlebot) */}
+                            <ServerSeoBlock
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                irradiacionAnual={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                ahorroEstimado={ahorroAnual}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                precioMedioLuz={precioLuz}
+                                weather={weather}
+                            />
+
+                            {/* Client-side dynamic block (additional content, updates with live weather) */}
                             <DynamicSeoBlock
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia}
@@ -167,54 +210,21 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 precioMedioLuz={precioLuz}
                             />
 
-                            {/* Subvenciones y Bonificaciones */}
-                            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-8 transition-shadow hover:shadow-md">
-                                <div className="bg-slate-900 px-6 py-5 flex items-center justify-between">
-                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <span aria-hidden="true">🏛️</span> Ayudas y Subvenciones locales
-                                    </h2>
-                                </div>
-                                <div className="p-6 md:p-8">
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div className="bg-emerald-50/80 rounded-xl p-5 border border-emerald-100 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-                                            <div className="flex items-center gap-2 mb-3 relative z-10">
-                                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shadow-inner">
-                                                    %
-                                                </div>
-                                                <h3 className="font-bold text-emerald-900 tracking-tight">Bonificación del IBI</h3>
-                                            </div>
-                                            <p className="text-emerald-700/90 text-sm leading-relaxed relative z-10">
-                                                Las instalaciones en <strong>{municipio.municipio}</strong> pueden beneficiarse de deducciones en el Impuesto sobre Bienes Inmuebles. Las ordenanzas fiscales recogen hasta un <strong>50%</strong> de descuento para el autoconsumo.
-                                            </p>
-                                        </div>
-                                        <div className="bg-blue-50/80 rounded-xl p-5 border border-blue-100 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-                                            <div className="flex items-center gap-2 mb-3 relative z-10">
-                                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shadow-inner">
-                                                    📄
-                                                </div>
-                                                <h3 className="font-bold text-blue-900 tracking-tight">Deducción en IRPF</h3>
-                                            </div>
-                                            <p className="text-blue-700/90 text-sm leading-relaxed relative z-10">
-                                                A nivel estatal y autonómico, puedes deducirte entre el <strong>20% y el 40%</strong> del coste de la instalación en tu próxima declaración de la Renta por mejora de eficiencia energética.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-5 text-center">
-                                         <p className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-md py-2 px-4 shadow-sm inline-block">
-                                            Consulta siempre al ayuntamiento de {municipio.provincia} para confirmar la vigencia anual de estas ayudas.
-                                         </p>
-                                    </div>
-                                </div>
-                            </section>
+                            {/* Subvenciones y Bonificaciones Dynamic Block */}
+                            <SubsidiesSeoBlock
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                slug={slug}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                nearbyItems={nearbyItems}
+                            />
 
                             {/* CTA Calculadoras Avanzadas */}
                             <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 rounded-2xl shadow-xl mt-8 p-8 md:p-10 border border-indigo-900">
                                 {/* Decorative elements */}
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400 opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 opacity-20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
-                                
+
                                 <div className="relative z-10 lg:flex items-center justify-between gap-8">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-3">
@@ -229,29 +239,29 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                         </p>
                                         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/></svg>
+                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                                                 Dimensionador de Paneles
                                             </li>
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/></svg>
+                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                                                 Simulador de Financiación
                                             </li>
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/></svg>
+                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                                                 Monetización de Excedentes
                                             </li>
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/></svg>
+                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                                                 Calculadora de Baterías
                                             </li>
                                         </ul>
                                     </div>
                                     <div className="shrink-0 mt-6 lg:mt-0 flex lg:flex-col gap-4">
-                                        <a 
+                                        <a
                                             href={`/calculadoras?m=${slug}`}
                                             className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 px-8 py-4 text-sm font-bold text-amber-950 shadow-lg shadow-yellow-500/30 transition-all hover:scale-105 hover:shadow-yellow-500/50"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:rotate-12"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:rotate-12"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /></svg>
                                             Probar Calculadoras
                                             <span className="absolute -inset-0.5 -z-10 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 opacity-0 blur backdrop-filter transition-opacity duration-300 group-hover:opacity-60"></span>
                                         </a>
@@ -259,21 +269,24 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 </div>
                             </section>
 
+                            {/* ── FAQ Accordion (SSR — visible to Googlebot) ── */}
+                            <FaqAccordion faqs={faqs} municipio={municipio.municipio} />
+
                             {/* Related municipalities */}
                             <NearbyMunicipalityCards items={nearbyItems} currentMunicipio={municipio.municipio} />
 
                             <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden">
-                                <h2 className="text-xl font-bold text-slate-900 mb-6">Explora otras provincias</h2>
+                                <h2 className="text-xl font-bold text-slate-900 mb-6">Más localidades con placas solares por provincia</h2>
                                 <GeoDirectory level="provincias" baseRoute="/placas-solares" />
                             </section>
                         </div>
 
                         {/* Right Column */}
                         <div className="lg:col-span-1 space-y-6">
-                            {/* Local Stats Box */}
+                            {/* Local Stats Box with source citations */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="bg-slate-900 px-5 py-4">
-                                    <h3 className="text-lg font-bold text-white">Datos Técnicos {municipio.municipio}</h3>
+                                    <h3 className="text-lg font-bold text-white">Datos solares de {municipio.municipio}</h3>
                                 </div>
                                 <div className="p-5 space-y-4">
                                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -288,10 +301,22 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                         <span className="text-sm text-slate-500">Coste Medio Instal.</span>
                                         <span className="font-semibold text-slate-900">{municipio.precio_instalacion_medio_eur ? `${fmt(municipio.precio_instalacion_medio_eur)}€` : 'N/A'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                                         <span className="text-sm text-slate-500">Bonificación IBI</span>
                                         <span className="font-semibold text-slate-900">{municipio.bonificacion_ibi ? `${municipio.bonificacion_ibi}%` : 'No'}</span>
                                     </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-slate-500">Precio PVPC hoy</span>
+                                        <span className="font-semibold text-slate-900">{precioLuz.toFixed(3)} €/kWh</span>
+                                    </div>
+                                </div>
+                                <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-100">
+                                    <p className="text-[9px] text-slate-400 leading-relaxed">
+                                        Fuentes: PVGIS (Comisión Europea) · ESIOS/REE · Ordenanzas municipales de {municipio.provincia}
+                                    </p>
+                                    <p className="text-[9px] text-slate-400 mt-0.5">
+                                        Actualizado: {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </p>
                                 </div>
                             </div>
 

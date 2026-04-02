@@ -93,7 +93,7 @@ export default async function MunicipioTemaPage({ params }: { params: { municipi
   const tema = params.tema;
   if (!slug || !tema) notFound();
 
-  const data = await getMunicipioBySlug(slug);
+  const data = await getMunicipioBySlug(slug) as any;
   if (!data) notFound();
 
   const Block = TEMA_COMPONENTS[tema];

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { slugify } from "@/lib/utils/slug";
 
 export type LocationResult = {
   type: "provincia" | "municipio";
@@ -9,7 +10,8 @@ export type LocationResult = {
   sublabel?: string;
 };
 
-export async function searchLocations(query: string): Promise<LocationResult[]> {
+export async function searchLocations(rawQuery: string): Promise<LocationResult[]> {
+  const query = rawQuery.trim();
   if (!query || query.length < 2) return [];
 
   const supabase = await createSupabaseServerClient();
@@ -41,18 +43,20 @@ export async function searchLocations(query: string): Promise<LocationResult[]> 
       addedProvinces.add(item.provincia);
       results.push({
         type: "provincia",
-        label: item.provincia,
-        slug: item.provincia.toLowerCase().replace(/ /g, "-").normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
-        sublabel: "Provincia"
+        label: `${item.provincia} (Provincia)`,
+        slug: slugify(item.provincia),
+        sublabel: "Ver todos los municipios"
       });
     }
 
     if (isMunicipioMatch) {
+      // Si el municipio se llama igual que la provincia (Ej: Madrid, Barcelona), le añadimos "Ciudad" para mayor claridad visual
+      const isCapitalOSimiliar = item.municipio.toLowerCase() === item.provincia.toLowerCase();
       results.push({
         type: "municipio",
-        label: item.municipio,
+        label: isCapitalOSimiliar ? `${item.municipio} (Ciudad)` : item.municipio,
         slug: item.slug,
-        sublabel: item.provincia
+        sublabel: `Municipio de ${item.provincia}`
       });
     }
   }

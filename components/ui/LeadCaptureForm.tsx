@@ -16,9 +16,10 @@ type FormState = {
   nombre: string;
   telefono: string;
   email: string;
+  bateria: string;
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const initialState: FormState = {
   vivienda: "",
@@ -26,7 +27,8 @@ const initialState: FormState = {
   tejado: "",
   nombre: "",
   telefono: "",
-  email: ""
+  email: "",
+  bateria: ""
 };
 
 function isValidEmail(value: string) {
@@ -57,13 +59,14 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
 
   const leadValue = useMemo(() => {
     if (!form.vivienda || monthlyConsumptionKwh <= 0) return null;
-    return calculateSolarLeadValue({
+      return calculateSolarLeadValue({
       monthlyConsumptionKwh,
       housingType: form.vivienda as HousingType,
       location,
-      electricityPriceEurKwh: electricityPrice
+      electricityPriceEurKwh: electricityPrice,
+      hasInsterestInBatteries: form.bateria.includes("Sí") || form.bateria.includes("Tal vez")
     });
-  }, [form.vivienda, monthlyConsumptionKwh, location, electricityPrice]);
+  }, [form.vivienda, monthlyConsumptionKwh, location, electricityPrice, form.bateria]);
 
   const progress = useMemo(() => Math.round((step / TOTAL_STEPS) * 100), [step]);
 
@@ -106,7 +109,12 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
       return false;
     }
 
-    if (step === 4) {
+    if (step === 4 && !form.bateria) {
+      setError("Indica si te interesan las baterías.");
+      return false;
+    }
+
+    if (step === 5) {
       if (!form.nombre.trim()) {
         setError("Escribe tu nombre.");
         return false;
@@ -170,7 +178,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
     <form onSubmit={handleSubmit} className="rounded-xl border border-emerald-200 bg-white p-5">
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
-          <span>Paso {step} de 4</span>
+          <span>Paso {step} de 5</span>
           <span>{progress}% completado</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-100">
@@ -239,6 +247,30 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
       )}
 
       {step === 4 && (
+        <fieldset className="mt-4 space-y-2">
+          <legend className="mb-1 text-sm font-bold text-slate-900 leading-tight">4) ¿Te interesa añadir baterías de litio?</legend>
+          <p className="text-xs text-slate-500 mb-3 leading-snug">Las baterías permiten usar tu energía solar por la noche y maximizar el ahorro.</p>
+          {[
+            { id: "si", label: "Sí, quiero ser 100% independiente" },
+            { id: "talvez", label: "Tal vez, quiero ver la comparativa" },
+            { id: "no", label: "No, solo quiero placas solares" }
+          ].map((opt) => (
+            <label key={opt.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all ${form.bateria === opt.label ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border-slate-200 hover:border-emerald-300'}`}>
+              <input
+                type="radio"
+                name="bateria"
+                value={opt.label}
+                checked={form.bateria === opt.label}
+                onChange={(e) => updateField("bateria", e.target.value)}
+                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-sm font-medium text-slate-800">{opt.label}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      {step === 5 && (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-800 md:col-span-2">
             Nombre

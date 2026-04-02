@@ -5,7 +5,7 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("municipios_energia")
-    .select("municipio, provincia, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur")
+    .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
     .eq("slug", slug)
     .maybeSingle();
   if (error) return null;

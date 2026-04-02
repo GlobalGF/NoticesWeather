@@ -62,12 +62,12 @@ export function LocationSearchBar({ baseRoute, placeholder = "Busca tu ciudad o 
 
   return (
     <div className="relative w-full max-w-2xl mx-auto" ref={wrapperRef}>
-      <div className="relative flex items-center w-full h-14 rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-        <div className="grid place-items-center h-full w-14 text-slate-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <div className="relative flex items-center w-full h-10 sm:h-14 rounded-xl sm:rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+        <div className="grid place-items-center h-full w-10 sm:w-14 text-slate-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </div>
         <input
-          className="peer h-full w-full outline-none text-slate-700 font-medium bg-transparent text-lg placeholder-slate-400 pr-4"
+          className="peer h-full w-full outline-none text-slate-700 font-medium bg-transparent text-sm sm:text-lg placeholder-slate-400 pr-4"
           type="text"
           placeholder={placeholder}
           value={query}

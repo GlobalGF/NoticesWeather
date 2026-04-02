@@ -42,6 +42,9 @@ type BateriaRow = {
     ciclos: number;
     profundidad_descarga_pct: number;
     garantia_anos: number;
+    tecnologia?: string;
+    eficiencia_roundtrip_pct?: number;
+    ficha_tecnica_url?: string;
 };
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
@@ -103,7 +106,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
             .select("slug,municipio,provincia,comunidad_autonoma,habitantes,horas_sol,irradiacion_solar,ahorro_estimado,bonificacion_ibi,subvencion_autoconsumo,precio_medio_luz,precio_instalacion_min_eur,precio_instalacion_medio_eur,precio_instalacion_max_eur,eur_por_watio")
             .eq("slug", slug).single(),
         supabase.from("baterias_solares")
-            .select("fabricante, modelo, capacidad_kwh, potencia_descarga_kw, ciclos, profundidad_descarga_pct, garantia_anos")
+            .select("fabricante, modelo, capacidad_kwh, potencia_descarga_kw, ciclos, profundidad_descarga_pct, garantia_anos, tecnologia, eficiencia_roundtrip_pct, ficha_tecnica_url")
             .eq("activo", true)
             .order("capacidad_kwh", { ascending: true })
             .limit(6),
@@ -132,17 +135,17 @@ export default async function BateriasMunicipioPage({ params }: Props) {
             {/* ── Page Header ─────────────────────────────────────────── */}
             <div className="bg-slate-900 text-white">
                 <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between flex-wrap gap-2">
-                    <nav className="text-xs text-slate-400 flex gap-1.5 items-center inline-flex">
+                    <nav className="text-[10px] sm:text-xs text-slate-400 flex gap-1.5 items-center inline-flex">
                         <a href="/" className="hover:text-white transition-colors">Inicio</a>
-                        <span>›</span>
-                        <a href="/placas-solares" className="hover:text-white transition-colors">Placas Solares</a>
+                        <span className="hidden sm:inline">›</span>
+                        <a href="/placas-solares" className="hidden sm:inline hover:text-white transition-colors">Placas Solares</a>
                         <span>›</span>
                         <a href="/baterias-solares" className="hover:text-white transition-colors">Baterías</a>
                         <span>›</span>
-                        <span className="text-slate-200 truncate max-w-[150px] sm:max-w-none">{m.municipio}</span>
+                        <span className="text-slate-200 truncate max-w-[100px] sm:max-w-none">{m.municipio}</span>
                     </nav>
-                    <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span>Actualizado: {nowStr}</span>
+                    <div className="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
+                        <span className="hidden sm:inline">Actualizado: {nowStr}</span>
                         <span className="h-3 w-px bg-slate-600 hidden sm:inline-block" />
                         <span className="hidden sm:inline-block">Datos de mercado ESP</span>
                     </div>
@@ -154,12 +157,12 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">
                                 SISTEMAS DE ALMACENAMIENTO · LÍTIO LFP
                             </p>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+                            <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight">
                                 Baterías Solares en {m.municipio}
-                                <span className="text-slate-400 font-normal"> · Independencia Energética</span>
+                                <span className="text-slate-400 font-normal hidden sm:inline"> · Independencia Energética</span>
                             </h1>
-                            <p className="mt-2 text-sm text-slate-300 max-w-2xl leading-relaxed font-light">
-                                Consulte el impacto financiero de añadir módulos de almacenamiento a su instalación fotovoltaica residencial en el área de {m.provincia}. Eleve el autoconsumo por encima del 80%.
+                            <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-light">
+                                Consulte el impacto financiero de añadir módulos de almacenamiento a {m.municipio}. Eleve el autoconsumo por encima del 80%.
                             </p>
                         </div>
                     </div>
@@ -177,8 +180,8 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                     ].map((k) => (
                         <div key={k.label} className="px-4 sm:px-6 py-4">
                             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{k.label}</p>
-                            <p className="mt-1 text-xl font-bold text-slate-900 tabular-nums">{k.value}</p>
-                            <span className={`mt-1 inline-block rounded border px-1.5 py-0.5 text-xs font-semibold ${k.statusClass}`}>{k.status}</span>
+                            <p className="mt-1 text-base sm:text-xl font-bold text-slate-900 tabular-nums">{k.value}</p>
+                            <span className={`mt-1 hidden sm:inline-block rounded border px-1.5 py-0.5 text-xs font-semibold ${k.statusClass}`}>{k.status}</span>
                         </div>
                     ))}
                 </div>
@@ -237,15 +240,15 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                                 <table className="w-full text-sm text-left align-middle border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200">
-                                            <th className="px-6 py-3 font-semibold text-slate-700 uppercase tracking-wide text-xs">Equipo Base</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Tecnología</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Capacidad</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Descarga</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Ciclos</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Eficiencia</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Garantía</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Ficha</th>
-                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs">Coste Est.*</th>
+                                            <th className="px-4 sm:px-6 py-3 font-semibold text-slate-700 uppercase tracking-wide text-[10px] sm:text-xs">Equipo Base</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Tecnología</th>
+                                            <th className="px-4 sm:px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-[10px] sm:text-xs">Capacidad</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Descarga</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Ciclos</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Eficiencia</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Garantía</th>
+                                            <th className="px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-xs hidden md:table-cell">Ficha</th>
+                                            <th className="px-4 sm:px-6 py-3 text-right font-semibold text-slate-700 uppercase tracking-wide text-[10px] sm:text-xs">Coste Est.*</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
@@ -253,24 +256,24 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                                             const precioProd = Math.round(bat.capacidad_kwh * 480);
                                             return (
                                                 <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="px-6 py-3">
-                                                        <div className="font-semibold text-slate-900">{bat.fabricante}</div>
-                                                        <div className="text-xs text-slate-500">{bat.modelo}</div>
+                                                    <td className="px-4 sm:px-6 py-3">
+                                                        <div className="font-semibold text-slate-900 text-xs sm:text-sm">{bat.fabricante}</div>
+                                                        <div className="text-[10px] text-slate-500">{bat.modelo}</div>
                                                     </td>
-                                                    <td className="px-6 py-3 text-right">
+                                                    <td className="px-6 py-3 text-right hidden md:table-cell">
                                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${bat.tecnologia === 'LFP' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{bat.tecnologia}</span>
                                                     </td>
-                                                    <td className="px-6 py-3 text-right text-slate-600 font-medium">{nd(bat.capacidad_kwh, " kWh", 1)}</td>
-                                                    <td className="px-6 py-3 text-right text-slate-600 font-medium">{nd(bat.potencia_descarga_kw, " kW", 1)}</td>
-                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs">{nd(bat.ciclos)}</td>
-                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs">{bat.eficiencia_roundtrip_pct ? nd(bat.eficiencia_roundtrip_pct, '%', 1) : '—'}</td>
-                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs">{bat.garantia_anos ? bat.garantia_anos + ' años' : '—'}</td>
-                                                    <td className="px-6 py-3 text-right">
+                                                    <td className="px-4 sm:px-6 py-3 text-right text-slate-600 font-medium text-xs sm:text-sm">{nd(bat.capacidad_kwh, " kWh", 1)}</td>
+                                                    <td className="px-6 py-3 text-right text-slate-600 font-medium hidden md:table-cell">{nd(bat.potencia_descarga_kw, " kW", 1)}</td>
+                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs hidden md:table-cell">{nd(bat.ciclos)}</td>
+                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs hidden md:table-cell">{bat.eficiencia_roundtrip_pct ? nd(bat.eficiencia_roundtrip_pct, '%', 1) : '—'}</td>
+                                                    <td className="px-6 py-3 text-right text-slate-500 font-mono text-xs hidden md:table-cell">{bat.garantia_anos ? bat.garantia_anos + ' años' : '—'}</td>
+                                                    <td className="px-6 py-3 text-right hidden md:table-cell">
                                                         {bat.ficha_tecnica_url ? (
                                                             <a href={bat.ficha_tecnica_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ficha</a>
                                                         ) : '—'}
                                                     </td>
-                                                    <td className="px-6 py-3 text-right tabular-nums text-slate-900 font-bold">
+                                                    <td className="px-4 sm:px-6 py-3 text-right tabular-nums text-slate-900 font-bold text-xs sm:text-sm">
                                                         <span title="Precio estimado: capacidad (kWh) × 480 €">{nd(precioProd, " €")}</span>
                                                     </td>
                                                 </tr>

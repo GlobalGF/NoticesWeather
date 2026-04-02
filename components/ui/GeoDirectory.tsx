@@ -19,57 +19,129 @@ interface Item {
     sunHours?: number;
 }
 
+/* ── Static Fallbacks for PSEO ───────────────────────────────────── */
+
+const COMUNIDADES_ESTATICAS = [
+    "Andalucía", "Aragón", "Principado de Asturias", "Illes Balears", "Canarias",
+    "Cantabria", "Castilla y León", "Castilla-La Mancha", "Cataluña",
+    "Comunitat Valenciana", "Extremadura", "Galicia", "Comunidad de Madrid",
+    "Región de Murcia", "Comunidad Foral de Navarra", "País Vasco", "La Rioja",
+    "Ceuta", "Melilla"
+].sort();
+
+const PROVINCIAS_POR_COMUNIDAD: Record<string, string[]> = {
+    "andalucia": ["Almería", "Cádiz", "Córdoba", "Granada", "Huelva", "Jaén", "Málaga", "Sevilla"],
+    "aragon": ["Huesca", "Teruel", "Zaragoza"],
+    "principado-de-asturias": ["Asturias"],
+    "illes-balears": ["Islas Baleares"],
+    "canarias": ["Las Palmas", "Santa Cruz de Tenerife"],
+    "cantabria": ["Cantabria"],
+    "castilla-y-leon": ["Ávila", "Burgos", "León", "Palencia", "Salamanca", "Segovia", "Soria", "Valladolid", "Zamora"],
+    "castilla-la-mancha": ["Albacete", "Ciudad Real", "Cuenca", "Guadalajara", "Toledo"],
+    "cataluna": ["Barcelona", "Girona", "Lleida", "Tarragona"],
+    "comunitat-valenciana": ["Alicante", "Castellón", "Valencia"],
+    "extremadura": ["Badajoz", "Cáceres"],
+    "galicia": ["A Coruña", "Lugo", "Ourense", "Pontevedra"],
+    "comunidad-madrid": ["Madrid"],
+    "region-de-murcia": ["Murcia"],
+    "comunidad-foral-navarra": ["Navarra"],
+    "pais-vasco": ["Álava", "Bizkaia", "Gipuzkoa"],
+    "la-rioja": ["La Rioja"],
+    "ceuta": ["Ceuta"],
+    "melilla": ["Melilla"]
+};
+
 export default async function GeoDirectory({ level, parentSlug, baseRoute, queryParam }: GeoDirectoryProps) {
     const supabase = await createSupabaseServerClient();
     let items: Item[] = [];
 
     if (level === "comunidades") {
         const { data } = await supabase.from("municipios_energia").select("comunidad_autonoma").not("comunidad_autonoma", "is", null);
+        
+        let uniqueNames = new Set<string>();
         if (data) {
-            const typedData = data as any[];
-            const unique = Array.from(new Set(typedData.map((d) => d.comunidad_autonoma as string))).sort();
-            items = unique.map((name) => ({ name, slug: slugify(name) }));
+            (data as any[]).forEach(d => {
+                if (d.comunidad_autonoma) {
+                    uniqueNames.add(d.comunidad_autonoma);
+                }
+            });
         }
+        
+        // Always ensure the 17+2 regions are present for SEO
+        COMUNIDADES_ESTATICAS.forEach(name => uniqueNames.add(name));
+        
+        items = Array.from(uniqueNames).sort().map((name) => {
+            const slug = slugify(name);
+            return { 
+                name, 
+                slug: (slug === "ceuta" || slug === "melilla") ? `${slug}-${slug}` : slug 
+            };
+        });
+
     } else if (level === "provincias") {
         const { data } = await supabase.from("municipios_energia")
             .select("provincia, comunidad_autonoma, irradiacion_solar, horas_sol")
             .not("provincia", "is", null);
 
-        if (data) {
-            let filtered = data as any[];
-            if (parentSlug) {
-                filtered = filtered.filter((d) => slugify(d.comunidad_autonoma as string) === parentSlug);
+        let filtered = (data ?? []) as any[];
+        
+        if (parentSlug) {
+            // Support both 'ceuta' and 'ceuta-ceuta' as parent slugs
+            const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
+            filtered = filtered.filter((d) => slugify(d.comunidad_autonoma as string) === normalizedParent);
+        }
+
+        // Group by province to calculate averages
+        const provinceMap: Record<string, { totalRad: number; totalHours: number; count: number }> = {};
+        filtered.forEach((d) => {
+            if (!provinceMap[d.provincia]) {
+                provinceMap[d.provincia] = { totalRad: 0, totalHours: 0, count: 0 };
             }
+            if (d.irradiacion_solar) {
+                provinceMap[d.provincia].totalRad += d.irradiacion_solar;
+                provinceMap[d.provincia].totalHours += d.horas_sol || 0;
+                provinceMap[d.provincia].count += 1;
+            }
+        });
 
-            // Group by province to calculate averages
-            const provinceMap: Record<string, { totalRad: number; totalHours: number; count: number }> = {};
-            filtered.forEach((d) => {
-                if (!provinceMap[d.provincia]) {
-                    provinceMap[d.provincia] = { totalRad: 0, totalHours: 0, count: 0 };
-                }
-                if (d.irradiacion_solar) {
-                    provinceMap[d.provincia].totalRad += d.irradiacion_solar;
-                    provinceMap[d.provincia].totalHours += d.horas_sol || 0;
-                    provinceMap[d.provincia].count += 1;
-                }
-            });
+        // Merge with static provinces if specific community is selected
+        if (parentSlug) {
+            const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
+            if (PROVINCIAS_POR_COMUNIDAD[normalizedParent]) {
+                PROVINCIAS_POR_COMUNIDAD[normalizedParent].forEach(provName => {
+                    if (!provinceMap[provName]) {
+                        provinceMap[provName] = { totalRad: 0, totalHours: 0, count: 0 };
+                    }
+                });
+            }
+        }
 
-            items = Object.entries(provinceMap).map(([name, stats]) => ({
+        items = Object.entries(provinceMap).map(([name, stats]) => {
+            const slug = slugify(name);
+            return {
                 name,
-                slug: slugify(name),
+                slug: (slug === "ceuta" || slug === "melilla") ? `${slug}-${slug}` : slug,
                 radiation: stats.count > 0 ? Math.round(stats.totalRad / stats.count) : undefined,
                 sunHours: stats.count > 0 ? Math.round(stats.totalHours / stats.count) : undefined
-            })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-        }
+            };
+        }).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+
     } else if (level === "municipios") {
         let query = supabase.from("municipios_energia").select("municipio, slug, provincia").not("municipio", "is", null);
 
         const { data } = await query;
-        if (data) {
-            let filtered = data as any[];
-            if (parentSlug) {
-                filtered = filtered.filter((d) => slugify(d.provincia as string) === parentSlug);
-            }
+        let filtered = (data ?? []) as any[];
+        
+        if (parentSlug) {
+            filtered = filtered.filter((d) => slugify(d.provincia as string) === parentSlug);
+        }
+
+        // --- Special Case: Ceuta/Melilla ---
+        // If it's Ceuta or Melilla but DB is empty, inject the single city
+        if (filtered.length === 0 && (parentSlug === "ceuta" || parentSlug === "melilla")) {
+            const name = parentSlug === "ceuta" ? "Ceuta" : "Melilla";
+            items = [{ name, slug: `${parentSlug}-${parentSlug}` }];
+        } else {
             items = filtered.map((d) => ({
                 name: d.municipio as string,
                 slug: d.slug as string
@@ -84,9 +156,9 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
     return (
         <>
         {level === 'provincias' ? (
-            <div className="mt-6 relative" role="region" aria-label="Directorio de provincias" tabIndex={0}>
+            <div className="mt-6 relative w-full min-w-0" role="region" aria-label="Directorio de provincias" tabIndex={0}>
                 {/* Scroll container */}
-                <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide min-w-0 w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
                     {items.map((item) => {
                         const href = queryParam
                             ? `${baseRoute}?${queryParam}=${item.slug}`
@@ -96,7 +168,7 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                             <Link
                                 key={item.slug}
                                 href={href}
-                                className="group relative overflow-hidden rounded-xl flex-none w-[320px] sm:w-[360px] aspect-[3/2] snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                className="group relative overflow-hidden rounded-xl flex-none w-[75vw] max-w-[280px] sm:max-w-none sm:w-[320px] lg:w-[360px] aspect-[3/2] snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                 aria-label={`${item.name} — ${meta.description}`}
                             >
                                 <img

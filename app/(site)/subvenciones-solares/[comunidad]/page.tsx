@@ -4,15 +4,17 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
+import GeoDirectory from "@/components/ui/GeoDirectory";
+import CitySearchInput from "@/components/ui/CitySearchInput";
+import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
+import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
 export const dynamic = "force-static";
 export const runtime = "nodejs";
 
-type Props = {
-  params: { comunidad: string };
-};
+type Props = { params: { comunidad: string } };
 
 type SubsidyCcaaRow = {
   comunidad_autonoma: string;
@@ -27,11 +29,7 @@ async function getAllCcaaSubsidies(): Promise<SubsidyCcaaRow[]> {
     .from("subvenciones_solares_ccaa_es")
     .select("comunidad_autonoma, subvencion_porcentaje, max_subvencion_euros, programa")
     .limit(5000);
-
-  if (error) {
-    throw new Error(`Error loading subvenciones_solares_ccaa_es: ${error.message}`);
-  }
-
+  if (error) throw new Error(`Error loading subvenciones_solares_ccaa_es: ${error.message}`);
   return (data ?? []) as SubsidyCcaaRow[];
 }
 
@@ -42,167 +40,331 @@ async function getCcaaSubsidiesBySlug(comunidadSlug: string): Promise<SubsidyCca
 
 function buildFaqs(ccaaName: string, avgPct: number | null) {
   const pctText = avgPct != null ? `${avgPct.toFixed(0)}%` : "un porcentaje variable";
-
   return [
     {
-      q: `Que ayudas solares hay en ${ccaaName}?`,
-      a: `En ${ccaaName} hay programas de subvencion para autoconsumo, con importes y condiciones segun convocatoria activa.`
+      q: `¿Qué ayudas solares hay en ${ccaaName}?`,
+      a: `En ${ccaaName} existen programas de subvención directa para autoconsumo, con importes y condiciones según la convocatoria activa. Además, muchos municipios ofrecen bonificaciones de IBI e ICIO adicionales.`,
     },
     {
-      q: "Cuanto puedo subvencionar de mi instalacion?",
-      a: `La referencia actual es ${pctText}, aunque el porcentaje final depende del programa, perfil del solicitante y requisitos tecnicos.`
+      q: "¿Cuánto puedo subvencionar de mi instalación?",
+      a: `La referencia actual es ${pctText}. El porcentaje final depende del programa vigente, el perfil del solicitante (particular, empresa o comunidad de vecinos) y los requisitos técnicos de la instalación.`,
     },
     {
-      q: "Como se solicita la subvencion?",
-      a: "Normalmente se tramita por sede electronica autonómica, aportando memoria tecnica, presupuesto y documentacion fiscal requerida."
-    }
+      q: "¿Cómo se solicita la subvención?",
+      a: "La solicitud se tramita por la sede electrónica autonómica ANTES de iniciar las obras. Tras instalar y legalizar, se presenta la documentación justificativa para el cobro.",
+    },
+    {
+      q: "¿Puedo acumular la subvención autonómica con la deducción de IRPF?",
+      a: "Sí, en la mayoría de casos es posible combinar la subvención directa con la deducción estatal en el IRPF por mejoras de eficiencia energética, siempre que no se supere el importe de la inversión real.",
+    },
   ];
 }
+
+const CCAA_NAME_MAP: Record<string, string> = {
+  "andalucia": "Andalucía",
+  "aragon": "Aragón",
+  "principado-de-asturias": "Asturias",
+  "asturias": "Asturias",
+  "illes-balears": "Islas Baleares",
+  "islas-baleares": "Islas Baleares",
+  "canarias": "Canarias",
+  "cantabria": "Cantabria",
+  "castilla-y-leon": "Castilla y León",
+  "castilla-la-mancha": "Castilla-La Mancha",
+  "cataluna": "Cataluña",
+  "comunitat-valenciana": "Comunidad Valenciana",
+  "valencia": "Comunidad Valenciana",
+  "extremadura": "Extremadura",
+  "galicia": "Galicia",
+  "comunidad-madrid": "Comunidad de Madrid",
+  "madrid": "Comunidad de Madrid",
+  "region-de-murcia": "Región de Murcia",
+  "murcia": "Región de Murcia",
+  "comunidad-foral-navarra": "Navarra",
+  "navarra": "Navarra",
+  "pais-vasco": "País Vasco",
+  "euskadi": "País Vasco",
+  "la-rioja": "La Rioja",
+  "ceuta": "Ceuta",
+  "ceuta-ceuta": "Ceuta",
+  "melilla": "Melilla",
+  "melilla-melilla": "Melilla",
+};
 
 export async function generateStaticParams() {
   return safeGenerateStaticParams(async () => {
     const rows = await getAllCcaaSubsidies();
     const unique = new Set<string>();
-
     for (const row of rows) {
       if (!row.comunidad_autonoma) continue;
       unique.add(slugify(row.comunidad_autonoma));
     }
-
+    Object.keys(CCAA_NAME_MAP).forEach((slug) => unique.add(slug));
     return Array.from(unique).map((comunidad) => ({ comunidad }));
   });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const parsed = tryParseSlug(params.comunidad);
+  const { comunidad } = await params;
+  const parsed = tryParseSlug(comunidad);
   if (!parsed) return {};
-
-  const rows = await getCcaaSubsidiesBySlug(parsed);
-  if (!rows.length) return {};
-
-  const ccaaName = rows[0].comunidad_autonoma;
-  const percentages = rows
-    .map((r) => r.subvencion_porcentaje)
-    .filter((v): v is number => typeof v === "number");
-
-  const maxPct = percentages.length ? Math.max(...percentages) : null;
-  const title = `Subvenciones placas solares en ${ccaaName} | Ayudas y requisitos`;
-  const description =
-    maxPct != null
-      ? `Consulta programas y ayudas solares en ${ccaaName} con porcentajes de hasta ${maxPct.toFixed(
-        0
-      )}%. Guia para solicitar la subvencion.`
-      : `Consulta programas y ayudas solares en ${ccaaName}, requisitos y pasos para tramitar tu subvencion.`;
-
+  const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
+  const rows = await getCcaaSubsidiesBySlug(normalized);
+  const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
+  const percentages = rows.map((r) => r.subvencion_porcentaje).filter((v): v is number => typeof v === "number");
+  const maxPct = percentages.length ? Math.max(...percentages) : 40;
+  const title = `Subvenciones placas solares en ${ccaaName} 2026 | Ayudas y requisitos`;
+  const description = rows.length > 0
+    ? `Programa vigente en ${ccaaName}: hasta ${maxPct}% de subvención. Guía completa para solicitar correctamente la ayuda fotovoltaica.`
+    : `Ayudas y deducciones fiscales para instalar placas solares en ${ccaaName}. Requisitos, procedimiento y bonificaciones IBI e ICIO.`;
   return {
     title,
     description,
-    alternates: {
-      canonical: `/subvenciones-solares/${parsed}`
-    },
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      locale: "es_ES",
-      url: `/subvenciones-solares/${parsed}`
-    }
+    alternates: { canonical: `/subvenciones-solares/${parsed}` },
+    openGraph: { title, description, type: "article", locale: "es_ES", url: `/subvenciones-solares/${parsed}` },
   };
 }
 
 export default async function SubsidiesCcaaPage({ params }: Props) {
-  const parsed = tryParseSlug(params.comunidad);
+  const { comunidad } = await params;
+  const parsed = tryParseSlug(comunidad);
   if (!parsed) notFound();
 
-  const rows = await getCcaaSubsidiesBySlug(parsed);
-  if (!rows.length) notFound();
+  const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
+  const rows = await getCcaaSubsidiesBySlug(normalized);
+  const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
 
-  const ccaaName = rows[0].comunidad_autonoma;
-
-  const percentages = rows
-    .map((r) => r.subvencion_porcentaje)
-    .filter((v): v is number => typeof v === "number");
-  const averagePct = percentages.length
-    ? percentages.reduce((acc, n) => acc + n, 0) / percentages.length
+  const percentages = rows.map((r) => r.subvencion_porcentaje).filter((v): v is number => typeof v === "number");
+  const maxPct = percentages.length ? Math.max(...percentages) : 40;
+  const maxEurAmount = rows.length > 0
+    ? (rows.map(r => r.max_subvencion_euros).filter((v): v is number => typeof v === "number").reduce((a, b) => Math.max(a, b), 0) || null)
     : null;
+  const averagePct = percentages.length ? percentages.reduce((acc, n) => acc + n, 0) / percentages.length : null;
 
-  const programs = Array.from(
-    new Set(rows.map((r) => String(r.programa || "Programa no especificado").trim()))
-  );
+  const programs: string[] = rows.length > 0
+    ? Array.from(new Set(rows.map((r) => String(r.programa || "Programa no especificado").trim())))
+    : ["Deducciones autonómicas por eficiencia energética", "Bonificaciones locales (IBI e ICIO)", "IRPF estatal por mejora energética"];
 
-  const maxAmounts = Array.from(
-    new Set(
-      rows
-        .map((r) => r.max_subvencion_euros)
-        .filter((v): v is number => typeof v === "number")
-        .map((v) => `${v.toLocaleString("es-ES")} EUR maximo por expediente`)
-    )
-  );
+  const maxAmounts: string[] = rows.length > 0
+    ? Array.from(new Set(rows.map((r) => r.max_subvencion_euros).filter((v): v is number => typeof v === "number").map((v) => `${v.toLocaleString("es-ES")} € máximo por expediente`)))
+    : ["Importe variable según potencia instalada", "Deducción de hasta el 40% en IRPF", "Bonificación de hasta el 50% en el IBI local"];
 
   const faqs = buildFaqs(ccaaName, averagePct);
 
+  // ── SEO Paragraph Generation (Spintax + IF data logic) ───────────
+  const spintaxVars = {
+    CCAA: ccaaName,
+    PCT: String(maxPct),
+    MAX_EUR: maxEurAmount ? Number(maxEurAmount).toLocaleString("es-ES") : "3.000",
+    PROGRAMA: programs[0] || `Ayudas Autoconsumo ${ccaaName}`,
+  };
+
+  // Choose template based on real percentage: high (>=50%), medium (<50%), or fiscal (no direct subsidy)
+  const introParagraph = rows.length === 0
+    ? null
+    : maxPct >= 50
+      ? replaceTokens(parseSpintax(SUBVENCIONES_SPINTAX.ccaa_intro_alta, comunidad), spintaxVars)
+      : maxPct >= 30
+        ? replaceTokens(parseSpintax(SUBVENCIONES_SPINTAX.ccaa_intro_media, comunidad), spintaxVars)
+        : replaceTokens(parseSpintax(SUBVENCIONES_SPINTAX.ccaa_intro_fiscal, comunidad), spintaxVars);
+
+  const requisitosText = replaceTokens(parseSpintax(SUBVENCIONES_SPINTAX.requisitos, comunidad + "req"), spintaxVars);
+
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10 md:px-6">
-      <header>
-        <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">Subvenciones solares</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-          Ayudas para placas solares en {ccaaName}
-        </h1>
-        <p className="mt-3 text-slate-600">
-          Guia actualizada sobre programas de subvencion para autoconsumo, porcentajes y requisitos en {ccaaName}.
-        </p>
-      </header>
+    <main className="bg-white min-h-screen font-sans">
 
-      <section className="rounded-xl border border-slate-200 p-5">
-        <h2 className="text-2xl font-semibold">Explicacion de ayudas</h2>
-        <p className="mt-3 text-slate-700">
-          Las ayudas autonómicas para energia solar suelen cubrir parte de la inversion en instalaciones fotovoltaicas,
-          baterias y mejoras asociadas a eficiencia. La concesion depende del programa activo, la disponibilidad
-          presupuestaria y la documentacion presentada.
-        </p>
-      </section>
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <section className="bg-slate-900 pt-14 pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.04] bg-center" />
+        <div className="absolute right-0 top-0 w-[500px] h-[500px] rounded-full bg-emerald-600/10 blur-[100px] pointer-events-none translate-x-1/3 -translate-y-1/2" />
 
-      <section className="rounded-xl border border-slate-200 p-5">
-        <h2 className="text-2xl font-semibold">Porcentajes de subvencion</h2>
-        <p className="mt-3 text-slate-700">
-          Promedio estimado: {averagePct != null ? `${averagePct.toFixed(1)}%` : "No disponible"}.
-        </p>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
-          {programs.map((program) => (
-            <li key={program}>{program}</li>
-          ))}
-        </ul>
-      </section>
+        <div className="relative z-10 mx-auto max-w-5xl px-4">
+          <nav className="text-xs text-slate-500 flex items-center gap-2 mb-10" aria-label="Breadcrumb">
+            <a href="/" className="hover:text-slate-300 transition-colors">Inicio</a>
+            <span className="text-slate-700">›</span>
+            <a href="/subvenciones-solares" className="hover:text-slate-300 transition-colors">Subvenciones</a>
+            <span className="text-slate-700">›</span>
+            <span className="text-slate-400">{ccaaName}</span>
+          </nav>
 
-      <section className="rounded-xl border border-slate-200 p-5">
-        <h2 className="text-2xl font-semibold">Como solicitarlas</h2>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
-          <li>Revisar convocatoria activa en la sede electronica autonómica.</li>
-          <li>Preparar memoria tecnica, presupuesto y documentacion del inmueble.</li>
-          <li>Presentar solicitud dentro del plazo oficial y conservar justificantes.</li>
-          <li>Ejecutar la instalacion conforme a requisitos y aportar facturas finales.</li>
-        </ol>
-        <div className="mt-4 rounded-lg bg-slate-50 p-4 text-slate-700">
-          <p className="font-medium">Requisitos frecuentes</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            {maxAmounts.slice(0, 8).map((req) => (
-              <li key={req}>{req}</li>
-            ))}
-          </ul>
+          <div className="grid md:grid-cols-5 gap-10 items-center">
+            <div className="md:col-span-3 space-y-5">
+              <div className="inline-flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 rounded-md">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-emerald-400 text-xs font-semibold tracking-wide uppercase">Comunidad Autónoma · Datos 2026</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+                Subvenciones para{" "}
+                <span className="text-emerald-400">placas solares</span>
+                <br />en {ccaaName}
+              </h1>
+              <p className="text-slate-400 text-lg leading-relaxed">
+                Programa autonómico vigente, requisitos y procedimiento de solicitud. Selecciona tu municipio para ver también la bonificación de IBI e ICIO de tu ayuntamiento.
+              </p>
+              {rows.length > 0 && (
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Subvención máxima</p>
+                    <p className="text-xl font-black text-white">{maxPct}%</p>
+                  </div>
+                  {maxEurAmount ? (
+                    <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Tope por expediente</p>
+                      <p className="text-xl font-black text-emerald-400">{maxEurAmount.toLocaleString("es-ES")} €</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
+                <p className="text-white font-bold mb-1">Busca tu municipio</p>
+                <p className="text-slate-400 text-sm mb-4">Accede directamente a las ayudas IBI e ICIO de tu localidad.</p>
+                <CitySearchInput />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 p-5">
-        <h2 className="text-2xl font-semibold">Preguntas frecuentes</h2>
-        <div className="mt-4 space-y-4">
-          {faqs.map((faq) => (
-            <article key={faq.q}>
-              <h3 className="text-lg font-semibold text-slate-900">{faq.q}</h3>
-              <p className="mt-1 text-slate-700">{faq.a}</p>
-            </article>
-          ))}
+      {/* ── Province selector ──────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-4 py-10">
+        <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+            <h2 className="text-base font-bold text-slate-900">Provincias de {ccaaName}</h2>
+            <p className="text-slate-500 text-xs mt-0.5">Selecciona una provincia para explorar los municipios y sus bonificaciones locales</p>
+          </div>
+          <div className="p-6">
+            <GeoDirectory
+              level="provincias"
+              parentSlug={parsed}
+              baseRoute={`/subvenciones-solares/${parsed}`}
+            />
+          </div>
         </div>
       </section>
+
+      {/* ── Main Content + Sidebar ─────────────────────────────── */}
+      <div className="mx-auto max-w-5xl px-4 pb-16 grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-8">
+
+          {/* Programs */}
+          <section className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+              <h2 className="text-base font-bold text-slate-900">Programas de ayuda vigentes en {ccaaName}</h2>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* Dynamic intro paragraph — changes based on % (high/medium/fiscal) */}
+              {introParagraph ? (
+                <div className="space-y-3">
+                  {introParagraph.split("\n").filter(Boolean).map((para, i) => (
+                    <p key={i} className="text-slate-600 text-sm leading-relaxed">{para.trim()}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  Las subvenciones en {ccaaName} se articulan a través de fondos gestionados por la administración autonómica,
+                  complementados con incentivos fiscales locales. La cuantía final depende del perfil del solicitante y de la potencia instalada.
+                </p>
+              )}
+              <div className="space-y-2">
+                {programs.map((program, idx) => (
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                    <svg className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                    <p className="text-sm font-medium text-slate-800">{program}</p>
+                  </div>
+                ))}
+              </div>
+              {maxAmounts.length > 0 && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">Cuantías máximas estimadas</h3>
+                  <ul className="space-y-1.5">
+                    {maxAmounts.slice(0, 3).map((amt, i) => (
+                      <li key={i} className="text-sm text-slate-700 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                        {amt}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Procedimiento */}
+          <section className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+              <h2 className="text-base font-bold text-slate-900">Procedimiento de solicitud</h2>
+            </div>
+            <div className="p-6">
+              {/* Dynamic requisitos paragraph — generated from Spintax */}
+              <div className="space-y-2 mb-6">
+                {requisitosText.split("\n").filter(Boolean).map((para, i) => (
+                  <p key={i} className="text-slate-600 text-sm leading-relaxed">{para.trim()}</p>
+                ))}
+              </div>
+              <ol className="space-y-5">
+                {[
+                  { t: "Solicitud previa obligatoria", d: "Presentación telemática en sede electrónica autonómica antes del inicio de las obras o de abonar ningún anticipo." },
+                  { t: "Documentación técnica", d: "Memoria de diseño, presupuesto desglosado firmado por instalador habilitado y certificados energéticos requeridos." },
+                  { t: "Instalación y legalización", d: "Ejecución de la obra fotovoltaica. Registro en Industria o equivalente autonómico para la legalización del autoconsumo." },
+                  { t: "Justificación y cobro", d: "Presentación de facturas y justificantes de pago bancario. La administración abona la subvención tras validar la documentación." },
+                ].map((step, i) => (
+                  <li key={i} className="flex gap-4">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">{i + 1}</span>
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">{step.t}</p>
+                      <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">{step.d}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
+          {/* FAQs */}
+          <section className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+              <h2 className="text-base font-bold text-slate-900">Preguntas frecuentes sobre subvenciones en {ccaaName}</h2>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {faqs.map((faq) => (
+                <article key={faq.q} className="px-6 py-5">
+                  <h3 className="font-semibold text-slate-900 text-sm mb-2">{faq.q}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-5">
+          <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-lg sticky top-6 border border-slate-800">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-3">Instaladores verificados</p>
+            <h3 className="text-lg font-bold mb-3 leading-snug">¿Quieres que gestionen la subvención por ti?</h3>
+            <p className="text-sm text-slate-400 mb-5 leading-relaxed">
+              Nuestros partners en {ccaaName} tramitan el expediente completo, desde la solicitud previa hasta el cobro final.
+            </p>
+            <a
+              href="/presupuesto-solar"
+              className="block w-full bg-emerald-600 hover:bg-emerald-500 text-white text-center py-3 rounded-xl font-bold transition-colors text-sm"
+            >
+              Solicitar Presupuesto Gratis →
+            </a>
+            <div className="mt-5 pt-5 border-t border-slate-800">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-3">Ver también</p>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/bonificacion-ibi" className="text-slate-400 hover:text-white transition-colors">→ Bonificación IBI por municipio</a></li>
+                <li><a href="/placas-solares" className="text-slate-400 hover:text-white transition-colors">→ Precios instalación solar</a></li>
+                <li><a href="/calculadoras" className="text-slate-400 hover:text-white transition-colors">→ Calculadora de ahorro</a></li>
+                <li><a href="/subvenciones-solares" className="text-slate-400 hover:text-white transition-colors">→ Comparar todas las CCAA</a></li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
   );
 }

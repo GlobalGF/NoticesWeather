@@ -139,29 +139,31 @@ export function LiveSolarCalculator({
 
       {/* Production gauge + KPIs */}
       <div className="px-6 pb-4 flex flex-col items-center sm:flex-row sm:items-start gap-6">
-        {/* SVG Capacity Ring */}
+        {/* SVG Capacity Ring + Desc */}
         <div className="flex flex-col items-center shrink-0">
-          <svg width="96" height="96" className="transform -rotate-90">
-            <circle
-              cx="48" cy="48" r={ringRadius}
-              stroke="#e2e8f0" strokeWidth="6" fill="none"
-            />
-            <circle
-              cx="48" cy="48" r={ringRadius}
-              stroke={result.capacityPct > 60 ? "#f59e0b" : result.capacityPct > 30 ? "#3b82f6" : "#94a3b8"}
-              strokeWidth="6"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={ringCircumference}
-              strokeDashoffset={ringOffset}
-              className="transition-all duration-700 ease-out"
-            />
-          </svg>
-          <div className="absolute mt-6 text-center" style={{ marginTop: '-66px', position: 'relative' }}>
-            <p className="text-2xl font-extrabold tabular-nums text-slate-900">{result.capacityPct}%</p>
-            <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Capacidad</p>
+          <div className="relative w-24 h-24 mb-2">
+            <svg width="96" height="96" className="transform -rotate-90">
+              <circle
+                cx="48" cy="48" r={ringRadius}
+                stroke="#f1f5f9" strokeWidth="6" fill="none"
+              />
+              <circle
+                cx="48" cy="48" r={ringRadius}
+                stroke={result.capacityPct > 60 ? "#f59e0b" : result.capacityPct > 30 ? "#3b82f6" : "#94a3b8"}
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={ringCircumference}
+                strokeDashoffset={ringOffset}
+                className="transition-all duration-1000 ease-in-out"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p className="text-2xl font-black tabular-nums text-slate-900 leading-none">{result.capacityPct}%</p>
+              <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-1">Capacidad</p>
+            </div>
           </div>
-          <p className="mt-2 text-xs text-slate-500 text-center max-w-[120px]">
+          <p className="text-xs text-slate-500 text-center max-w-[120px]">
             Produciendo <strong className="text-slate-900">{fmt(result.currentOutputW)} W</strong> ahora
           </p>
         </div>

@@ -21,8 +21,8 @@ type Params = {
     params: { comunidad: string };
 };
 
-export async function GET(_req: NextRequest, { params }: Params): Promise<Response> {
-    const { comunidad } = params;
+export async function GET(_req: NextRequest, context?: Params): Promise<Response> {
+    const comunidad = context?.params?.comunidad;
 
     if (!comunidad || !/^[a-z0-9-]+$/.test(comunidad)) {
         return new Response("Not found", { status: 404 });

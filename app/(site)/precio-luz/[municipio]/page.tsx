@@ -59,7 +59,7 @@ function precioColor(precio: number) {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || !hasSupabaseEnv()) return { title: "Precio de la Luz" };
+    if (!slug || !hasSupabaseEnv()) return { title: "Precio de la Luz Hoy en España — PVPC por Municipio en Tiempo Real", description: "Consulta el precio de la luz PVPC hora a hora y compensación de excedentes solares en tu localidad. Datos oficiales de Red Eléctrica de España." };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!d) return { title: "Precio de la Luz" };
 
     return {
-        title: `Precio de la Luz en ${d.municipio} (${d.provincia}) ${new Date().getFullYear()} | PVPC Tiempo Real`,
+        title: `Precio de la luz en ${d.municipio} (${d.provincia}) ${new Date().getFullYear()} | PVPC Tiempo Real`,
         description: `Consulta el precio PVPC hora a hora en ${d.municipio}. Datos oficiales de Red Eléctrica de España. Ahorro estimado con autoconsumo solar.`,
         alternates: { canonical: `/precio-luz/${slug}` },
     };
@@ -131,22 +131,22 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
     const nowStr = now.toLocaleString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
     return (
-        <main className="bg-slate-50 min-h-screen font-sans">
+        <main className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
 
             {/* ── Page Header ─────────────────────────────────────────── */}
             <div className="bg-slate-900 text-white">
                 <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between flex-wrap gap-2">
-                    <nav className="text-xs text-slate-400 flex gap-1.5 items-center">
+                    <nav className="text-[10px] sm:text-xs text-slate-400 flex gap-1.5 items-center">
                         <a href="/" className="hover:text-white transition-colors">Inicio</a>
-                        <span>›</span>
+                        <span className="hidden sm:inline">›</span>
                         <a href="/precio-luz" className="hover:text-white transition-colors">Precio de la Luz</a>
                         <span>›</span>
-                        <span className="text-slate-200">{m.municipio}</span>
+                        <span className="text-slate-200 truncate max-w-[100px] sm:max-w-none">{m.municipio}</span>
                     </nav>
-                    <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span>Actualizado: {nowStr}</span>
-                        <span className="h-3 w-px bg-slate-600" />
-                        <span>Fuente: REE / PVPC 2.0TD</span>
+                    <div className="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
+                        <span className="hidden sm:inline">Actualizado: {nowStr}</span>
+                        <span className="h-3 w-px bg-slate-600 hidden sm:inline-block" />
+                        <span className="hidden sm:inline-block">Fuente: REE / PVPC 2.0TD</span>
                     </div>
                 </div>
 
@@ -156,12 +156,12 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">
                                 Precio de la electricidad · Tarifa regulada PVPC
                             </p>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
-                                {m.municipio}
-                                <span className="text-slate-400 font-normal"> · {m.provincia}, {m.comunidad_autonoma}</span>
+                            <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight">
+                                Precio de la luz en {m.municipio}
+                                <span className="text-slate-400 font-normal text-base sm:text-xl hidden sm:inline"> · {m.provincia}, {m.comunidad_autonoma}</span>
                             </h1>
                             {m.habitantes && (
-                                <p className="mt-1 text-xs text-slate-400">
+                                <p className="mt-1 text-[10px] sm:text-xs text-slate-400">
                                     Municipio de {m.habitantes.toLocaleString("es-ES")} habitantes
                                 </p>
                             )}
@@ -181,8 +181,8 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                     ].map((k) => (
                         <div key={k.label} className="px-4 sm:px-6 py-4">
                             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{k.label}</p>
-                            <p className="mt-1 text-xl font-bold text-slate-900 tabular-nums">{k.value}</p>
-                            <span className={`mt-1 inline-block rounded border px-1.5 py-0.5 text-xs font-semibold ${k.statusClass}`}>{k.status}</span>
+                            <p className="mt-1 text-base sm:text-xl font-bold text-slate-900 tabular-nums">{k.value}</p>
+                            <span className={`mt-1 hidden sm:inline-block rounded border px-1.5 py-0.5 text-xs font-semibold ${k.statusClass}`}>{k.status}</span>
                         </div>
                     ))}
                 </div>
@@ -270,11 +270,11 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr className="bg-slate-50 text-left border-b border-slate-200">
-                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Fecha</th>
-                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">Mín (€/kWh)</th>
-                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">Media (€/kWh)</th>
-                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">Máx (€/kWh)</th>
-                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Clasificación</th>
+                                                <th className="px-4 sm:px-5 py-3 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500">Fecha</th>
+                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right hidden md:table-cell">Mín (€/kWh)</th>
+                                                <th className="px-4 sm:px-5 py-3 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">Media (€/kWh)</th>
+                                                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right hidden md:table-cell">Máx (€/kWh)</th>
+                                                <th className="px-4 sm:px-5 py-3 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500">Estado</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
@@ -282,14 +282,14 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                                 const t = precioColor(row.precio_kwh_media);
                                                 return (
                                                     <tr key={row.fecha} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="px-5 py-3 font-medium text-slate-700">
+                                                        <td className="px-4 sm:px-5 py-3 font-medium text-slate-700 text-xs sm:text-sm">
                                                             {new Date(row.fecha).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
                                                         </td>
-                                                        <td className="px-5 py-3 text-right tabular-nums text-emerald-700 font-mono">{row.precio_kwh_min.toFixed(3)}</td>
-                                                        <td className="px-5 py-3 text-right tabular-nums font-semibold font-mono">{row.precio_kwh_media.toFixed(3)}</td>
-                                                        <td className="px-5 py-3 text-right tabular-nums text-red-600 font-mono">{row.precio_kwh_max.toFixed(3)}</td>
-                                                        <td className="px-5 py-3">
-                                                            <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${t.badge}`}>{t.label}</span>
+                                                        <td className="px-5 py-3 text-right tabular-nums text-emerald-700 font-mono hidden md:table-cell">{row.precio_kwh_min.toFixed(3)}</td>
+                                                        <td className="px-4 sm:px-5 py-3 text-right tabular-nums font-semibold font-mono text-xs sm:text-sm">{row.precio_kwh_media.toFixed(3)}</td>
+                                                        <td className="px-5 py-3 text-right tabular-nums text-red-600 font-mono hidden md:table-cell">{row.precio_kwh_max.toFixed(3)}</td>
+                                                        <td className="px-4 sm:px-5 py-3">
+                                                            <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${t.badge}`}>{t.label}</span>
                                                         </td>
                                                     </tr>
                                                 );

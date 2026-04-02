@@ -151,33 +151,33 @@ export function PrecioLuzWidget() {
                         </div>
                         <p className="mt-1 text-xs text-slate-400">
                             {esActual && `${String(ahora.hora).padStart(2, "0")}:00 · `}
-                            Percentil {ahora.percentil} · Tarifa regulada 2.0TD
+                            <span className="hidden sm:inline">Percentil {ahora.percentil} · </span>Tarifa 2.0TD
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
-                        <span className={`rounded border px-2.5 py-1 text-xs font-bold ${nivel.cls}`}>
+                        <span className={`rounded border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold ${nivel.cls}`}>
                             {nivel.label}
                         </span>
-                        <span className="text-xs text-slate-400">Media hoy: <strong className="text-slate-600">{fmt(avgPrecio)} €</strong></span>
+                        <span className="text-[10px] sm:text-xs text-slate-400">Media: <strong className="text-slate-600">{fmt(avgPrecio)}€</strong></span>
                     </div>
                 </div>
 
                 {/* Min/Max inline */}
                 {minHora && maxHora && (
-                    <div className="mt-3 flex gap-4 text-xs">
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] sm:text-xs">
                         <span className="flex items-center gap-1.5 text-emerald-700">
                             <span className="font-semibold">↓ Mín</span>
                             <span className="font-mono font-bold">{String(minHora.hora).padStart(2, "0")}:00</span>
-                            <span className="text-emerald-500">{fmt(minHora.precio_kwh)} €</span>
+                            <span className="text-emerald-500">{fmt(minHora.precio_kwh)}€</span>
                         </span>
-                        <span className="text-slate-300">|</span>
+                        <span className="text-slate-300 hidden sm:inline">|</span>
                         <span className="flex items-center gap-1.5 text-red-600">
                             <span className="font-semibold">↑ Máx</span>
                             <span className="font-mono font-bold">{String(maxHora.hora).padStart(2, "0")}:00</span>
-                            <span className="text-red-400">{fmt(maxHora.precio_kwh)} €</span>
+                            <span className="text-red-400">{fmt(maxHora.precio_kwh)}€</span>
                         </span>
-                        <span className="text-slate-300">|</span>
-                        <span className="text-slate-500">Δ {fmt(maxHora.precio_kwh - minHora.precio_kwh)} €</span>
+                        <span className="text-slate-300 hidden sm:inline">|</span>
+                        <span className="text-slate-500 hidden sm:inline">Δ {fmt(maxHora.precio_kwh - minHora.precio_kwh)}€</span>
                     </div>
                 )}
             </div>

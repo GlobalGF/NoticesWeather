@@ -5,6 +5,7 @@ export type LeadValueInput = {
   housingType: HousingType;
   location: string;
   electricityPriceEurKwh: number;
+  hasInsterestInBatteries?: boolean;
 };
 
 export type LeadValueOutput = {
@@ -72,14 +73,19 @@ export function calculateSolarLeadValue(input: LeadValueInput): LeadValueOutput 
   const estimatedAnnualSavings = annualSpend * savingsRate;
 
   // Lead value approximates expected gross margin from captured and converted lead.
-  const estimatedLeadValue = estimatedAnnualSavings * 0.55;
+  // We increase it by 30% if batteries are involved (higher ticket price)
+  let estimatedLeadValue = estimatedAnnualSavings * 0.55;
+  if (input.hasInsterestInBatteries) {
+    estimatedLeadValue *= 1.3;
+  }
 
   const spendScore = clamp((annualSpend / 2600) * 45, 0, 45);
   const housingScore = clamp(housingFactor * 30, 0, 30);
   const locationScore = clamp(locationFactor * 15, 0, 15);
   const priceScore = clamp((price / 0.22) * 10, 0, 10);
+  const batteryBonus = input.hasInsterestInBatteries ? 10 : 0;
 
-  const leadScore = Math.round(clamp(spendScore + housingScore + locationScore + priceScore, 0, 100));
+  const leadScore = Math.round(clamp(spendScore + housingScore + locationScore + priceScore + batteryBonus, 0, 100));
   const leadTier = leadScore >= 70 ? "alto" : leadScore >= 45 ? "medio" : "bajo";
 
   return {
