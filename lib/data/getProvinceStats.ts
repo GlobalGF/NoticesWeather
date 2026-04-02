@@ -25,20 +25,22 @@ export interface ProvinceStats {
 export async function getProvinceStats(provinceSlug: string): Promise<ProvinceStats | null> {
   const supabase = await createSupabaseServerClient();
 
+  const allProvs = await getAllProvinces();
+  const mappedProv = allProvs.find(p => p.slug === provinceSlug);
+  if (!mappedProv) return null;
+
+  const provinceName: string = mappedProv.name;
+
   const { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, slug, horas_sol, irradiacion_solar, ahorro_estimado, bonificacion_ibi, habitantes")
-    .not("municipio", "is", null);
+    .eq("provincia", provinceName)
+    .not("municipio", "is", null)
+    .limit(1000);
 
   if (error || !data || data.length === 0) return null;
 
-  const rows = (data as any[]).filter(
-    (d) => slugify(d.provincia as string) === provinceSlug
-  );
-
-  if (rows.length === 0) return null;
-
-  const provinceName: string = rows[0].provincia;
+  const rows = data as any[];
 
   let sumHours = 0, countHours = 0;
   let sumRad = 0, countRad = 0;
@@ -75,25 +77,24 @@ export async function getProvinceStats(provinceSlug: string): Promise<ProvinceSt
   };
 }
 
+// 52 Spanish provinces static list to avoid hitting PostgREST max-row limits
+const SPANISH_PROVINCES = [
+  "A Coruña", "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila",
+  "Badajoz", "Barcelona", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castellón",
+  "Ceuta", "Ciudad Real", "Córdoba", "Cuenca", "Girona", "Granada", "Guadalajara",
+  "Gipuzkoa", "Huelva", "Huesca", "Islas Baleares", "Jaén", "La Rioja", "Las Palmas",
+  "León", "Lleida", "Lugo", "Madrid", "Málaga", "Melilla", "Murcia", "Navarra",
+  "Ourense", "Palencia", "Pontevedra", "Salamanca", "Santa Cruz de Tenerife",
+  "Segovia", "Sevilla", "Soria", "Tarragona", "Teruel", "Toledo", "Valencia",
+  "Valladolid", "Zamora", "Zaragoza"
+];
+
 /**
  * Fetch just the list of all province names + slugs for the mini-selector dropdown.
  */
 export async function getAllProvinces(): Promise<{ name: string; slug: string }[]> {
-  const supabase = await createSupabaseServerClient();
-
-  const { data } = await supabase
-    .from("municipios_energia")
-    .select("provincia")
-    .not("provincia", "is", null);
-
-  if (!data) return [];
-
-  const unique = new Set<string>();
-  (data as any[]).forEach((d) => {
-    if (d.provincia) unique.add(d.provincia);
-  });
-
-  return Array.from(unique)
-    .sort((a, b) => a.localeCompare(b, "es"))
-    .map((name) => ({ name, slug: slugify(name) }));
+  return SPANISH_PROVINCES.map((name) => ({
+    name,
+    slug: slugify(name),
+  })).sort((a, b) => a.name.localeCompare(b.name, "es"));
 }

@@ -24,7 +24,7 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import Fallback from "@/components/solar/Fallback";
 
-import { getMunicipioBySlug, getWeatherBySlug, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy } from "@/lib/data/solar";
+import { getMunicipioBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy } from "@/lib/data/solar";
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
@@ -73,9 +73,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     const { municipio: rawMunicipio } = await params;
     const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
     const municipio = await getMunicipioBySlug(slug);
-    const weather = await getWeatherBySlug(slug);
 
     if (!municipio) return <Fallback message="No se encontró el municipio." />;
+
+    const weather = await getWeatherForLocation(municipio.municipio, municipio.provincia);
     if (!weather) return <Fallback message="No se pudo cargar el clima actual." />;
 
     // Fetch nearby
@@ -119,7 +120,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     });
 
     return (
-        <WeatherProvider municipio={municipio.municipio} municipioSlug={slug}>
+        <WeatherProvider municipio={municipio.municipio} provincia={municipio.provincia} municipioSlug={slug}>
             {/* ── JSON-LD Structured Data (visible to Googlebot) ── */}
             <script
                 type="application/ld+json"

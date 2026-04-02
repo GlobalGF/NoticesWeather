@@ -80,10 +80,11 @@ function writeCache(slug: string, data: WeatherData) {
 type WeatherProviderProps = {
   municipio: string;
   municipioSlug: string;
+  provincia: string;
   children: ReactNode;
 };
 
-export function WeatherProvider({ municipio, municipioSlug, children }: WeatherProviderProps) {
+export function WeatherProvider({ municipio, municipioSlug, provincia, children }: WeatherProviderProps) {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -106,9 +107,9 @@ export function WeatherProvider({ municipio, municipioSlug, children }: WeatherP
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-        const res = await fetch(`/api/weather/${encodeURIComponent(municipio)}`, {
+        const url = `/api/weather?city=${encodeURIComponent(municipio)}&province=${encodeURIComponent(provincia)}`;
+        const res = await fetch(url, {
           signal: controller.signal,
-          // Next.js aggressive caching bypass just in case 
           cache: "no-store",
         });
         clearTimeout(timeout);

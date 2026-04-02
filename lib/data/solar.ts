@@ -12,11 +12,11 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   return data;
 }
 
-export async function getWeatherBySlug(slug: string) {
+export async function getWeatherForLocation(municipioName: string, provinciaName: string) {
   try {
-    return await fetchWeatherApi(slug.replace(/-.*/, ""));
+    return await fetchWeatherApi(municipioName, provinciaName, "Spain");
   } catch (error) {
-    console.error(`[getWeatherBySlug] Failed to fetch weather for ${slug}:`, error);
+    console.error(`[getWeatherForLocation] Failed to fetch weather for ${municipioName}, ${provinciaName}:`, error);
     return null;
   }
 }

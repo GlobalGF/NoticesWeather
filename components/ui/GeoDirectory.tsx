@@ -81,7 +81,8 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
     } else if (level === "provincias") {
         const { data } = await supabase.from("municipios_energia")
             .select("provincia, comunidad_autonoma, irradiacion_solar, horas_sol")
-            .not("provincia", "is", null);
+            .not("provincia", "is", null)
+            .limit(10000);
 
         let filtered = (data ?? []) as any[];
         
@@ -104,7 +105,7 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
             }
         });
 
-        // Merge with static provinces if specific community is selected
+        // Merge with static provinces to ensure we NEVER miss any due to 1000-row limits
         if (parentSlug) {
             const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
             if (PROVINCIAS_POR_COMUNIDAD[normalizedParent]) {
@@ -114,6 +115,13 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                     }
                 });
             }
+        } else {
+            // If no parentSlug, we must show ALL provinces nationally
+            Object.values(PROVINCIAS_POR_COMUNIDAD).flat().forEach(provName => {
+                if (!provinceMap[provName]) {
+                    provinceMap[provName] = { totalRad: 0, totalHours: 0, count: 0 };
+                }
+            });
         }
 
         items = Object.entries(provinceMap).map(([name, stats]) => {
