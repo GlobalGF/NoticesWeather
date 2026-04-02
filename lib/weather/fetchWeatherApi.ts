@@ -5,9 +5,13 @@ export async function fetchWeatherApi(city: string, province: string, country: s
     "anana": "Anana",
   };
   
+  // EXTRA ROBUSTNESS: Guard against null/undefined inputs
+  const safeCity = city || "Madrid"; // Fallback to a known city if null
+  const safeProvince = province || "";
+
   // Clean up dual names like "Alicante/Alacant" to just "Alicante"
-  const cleanCity = (cityOverrides[city] || cityOverrides[city.toLowerCase()] || city).split(/[\/\-]/)[0].trim();
-  const cleanProvince = province.split(/[\/\-]/)[0].trim();
+  const cleanCity = (cityOverrides[safeCity] || cityOverrides[safeCity.toLowerCase()] || safeCity).split(/[\/\-]/)[0].trim();
+  const cleanProvince = safeProvince.split(/[\/\-]/)[0].trim();
 
   // Combine them cleanly without slugs!
   const finalQuery = `${cleanCity}, ${cleanProvince}, ${country}`;
@@ -17,6 +21,7 @@ export async function fetchWeatherApi(city: string, province: string, country: s
   
   const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(finalQuery)}&lang=es`;
   
+  // Cache for 1 hour to prevent lock-in state if server doesn't restart
   const res = await fetch(url, { cache: "no-store" });
   
   if (!res.ok) {

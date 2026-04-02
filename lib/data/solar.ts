@@ -6,7 +6,7 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   const { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
-    .eq("slug", slug)
+    .ilike("slug", slug)
     .maybeSingle();
   if (error) return null;
   return data;
@@ -14,7 +14,8 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
 
 export async function getWeatherForLocation(municipioName: string, provinciaName: string) {
   try {
-    return await fetchWeatherApi(municipioName, provinciaName, "Spain");
+    if (!municipioName) return null;
+    return await fetchWeatherApi(municipioName, provinciaName || "", "Spain");
   } catch (error) {
     console.error(`[getWeatherForLocation] Failed to fetch weather for ${municipioName}, ${provinciaName}:`, error);
     return null;
@@ -22,6 +23,7 @@ export async function getWeatherForLocation(municipioName: string, provinciaName
 }
 
 export async function getNearbyMunicipiosEnergiaByProvince(provincia: string, limit = 6): Promise<any[]> {
+  if (!provincia) return [];
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("municipios_energia")

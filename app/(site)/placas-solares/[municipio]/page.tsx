@@ -56,8 +56,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!data) return {};
 
     const year = new Date().getFullYear();
-    const title = `Placas solares en ${data.municipio} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
-    const description = `Instala paneles solares en ${data.municipio} (${data.provincia}): ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
+    const muniName = data.municipio || "tu localidad";
+    const provName = data.provincia || "";
+    
+    const title = `Placas solares en ${muniName} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
+    const description = `Instala paneles solares en ${muniName}${provName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
 
     return {
         title,
@@ -103,10 +106,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
     /* ── Build JSON-LD structured data ── */
     const schemaData = {
-        municipio: municipio.municipio,
-        provincia: municipio.provincia,
-        comunidadAutonoma: municipio.comunidad_autonoma ?? municipio.provincia,
-        ahorroEstimado: ahorroAnual,
+        municipio: municipio.municipio || "Localidad",
+        provincia: municipio.provincia || "",
+        comunidadAutonoma: municipio.comunidad_autonoma ?? municipio.provincia ?? "",
+        ahorroEstimado: ahorroAnual || 0,
         irradiacionSolar: municipio.irradiacion_solar ?? 1700,
         precioInstalacionMedio: municipio.precio_instalacion_medio_eur ?? null,
         bonificacionIbi: municipio.bonificacion_ibi ?? null,
@@ -214,10 +217,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             {/* Subvenciones y Bonificaciones Dynamic Block */}
                             <SubsidiesSeoBlock
                                 municipio={municipio.municipio}
-                                provincia={municipio.provincia}
+                                provincia={municipio.provincia || ""}
                                 slug={slug}
-                                comunidadSlug={tryParseSlug(municipio.comunidad_autonoma ?? municipio.provincia) || decodeURIComponent(rawMunicipio).split('-')[1] || "andalucia"}
-                                provinciaSlug={tryParseSlug(municipio.provincia) || decodeURIComponent(rawMunicipio).split('-')[1] || "sevilla"}
+                                comunidadSlug={tryParseSlug(municipio.comunidad_autonoma ?? municipio.provincia ?? "") || decodeURIComponent(rawMunicipio).split('-')[1] || "andalucia"}
+                                provinciaSlug={tryParseSlug(municipio.provincia || "") || decodeURIComponent(rawMunicipio).split('-')[1] || "sevilla"}
                                 bonificacionIbi={municipio.bonificacion_ibi}
                                 nearbyItems={nearbyItems}
                             />
