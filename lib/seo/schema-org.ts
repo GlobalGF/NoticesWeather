@@ -62,8 +62,8 @@ export function buildMunicipioFaqs(data: Pick<
   MunicipioPageData,
   "municipio" | "provincia" | "ahorroEstimado" | "irradiacionSolar" | "bonificacionIbi" | "subvencionAutoconsumo" | "precioInstalacionMedio"
 >): FaqItem[] {
-  const ahorro = Math.round(data.ahorroEstimado);
-  const radiacion = Math.round(data.irradiacionSolar);
+  const ahorro = Math.round(data.ahorroEstimado || 0);
+  const radiacion = Math.round(data.irradiacionSolar || 1700);
   const precio = data.precioInstalacionMedio ?? FALLBACK_ES.precio_instalacion_eur;
 
   const faqs: FaqItem[] = [
@@ -168,7 +168,7 @@ export function buildSolarEnergyPageSchema(input: SolarPageSchemaInput) {
         "@type": "Service",
         "@id": serviceId,
         name: `Instalación de placas solares en ${data.municipio}`,
-        description: `Servicio de instalación fotovoltaica para autoconsumo en ${data.municipio} (${data.provincia}). Ahorro estimado: ${Math.round(data.ahorroEstimado)}%. Irradiación solar: ${Math.round(data.irradiacionSolar)} kWh/m²/año.`,
+        description: `Servicio de instalación fotovoltaica para autoconsumo en ${data.municipio} (${data.provincia}). Ahorro estimado: ${Math.round(data.ahorroEstimado || 0)}%. Irradiación solar: ${Math.round(data.irradiacionSolar || 1700)} kWh/m²/año.`,
         areaServed: data.municipio,
         provider: { "@id": localBusinessId },
         url: canonicalUrl,
@@ -179,7 +179,7 @@ export function buildSolarEnergyPageSchema(input: SolarPageSchemaInput) {
         "@type": "Product",
         "@id": productId,
         name: `Kit solar fotovoltaico para autoconsumo — ${data.municipio}`,
-        description: `Instalación solar adaptada a las condiciones de irradiación de ${data.municipio}: ${Math.round(data.irradiacionSolar)} kWh/m²/año.`,
+        description: `Instalación solar adaptada a las condiciones de irradiación de ${data.municipio}: ${Math.round(data.irradiacionSolar || 1700)} kWh/m²/año.`,
         category: "Energía solar fotovoltaica",
         image,
         brand: {

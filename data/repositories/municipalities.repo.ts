@@ -77,7 +77,7 @@ export async function getMunicipalityBySlug(slug: string): Promise<Municipality 
       const { data, error } = await supabase
         .from("municipalities")
         .select("slug,name,province,autonomous_community,priority_score")
-        .eq("slug", slug)
+        .ilike("slug", slug)
         .maybeSingle();
 
       if (error || !data) {

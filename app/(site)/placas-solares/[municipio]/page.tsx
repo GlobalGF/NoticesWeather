@@ -49,78 +49,87 @@ export async function generateStaticParams() {
 
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { municipio: rawMunicipio } = await params;
-    const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase());
-    if (!slug) return {};
-    const data = await getMunicipioBySlug(slug);
-    if (!data) return {};
+    try {
+        const { municipio: rawMunicipio } = await params;
+        const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
+        
+        if (!slug) return {};
+        
+        const data = await getMunicipioBySlug(slug);
+        if (!data) return {};
 
-    const year = new Date().getFullYear();
-    const muniName = data.municipio || "tu localidad";
-    const provName = data.provincia || "";
-    
-    const title = `Placas solares en ${muniName} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
-    const description = `Instala paneles solares en ${muniName}${provName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
+        const year = new Date().getFullYear();
+        const muniName = data.municipio || "tu localidad";
+        const provName = data.provincia || "";
+        
+        const title = `Placas solares en ${muniName} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
+        const description = `Instala paneles solares en ${muniName}${provName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
 
-    return {
-        title,
-        description,
-        openGraph: { title, description },
-        alternates: { canonical: `/placas-solares/${slug}` },
-    };
+        return {
+            title,
+            description,
+            openGraph: { title, description },
+            alternates: { canonical: `/placas-solares/${slug}` },
+        };
+    } catch (error) {
+        console.error("[generateMetadata] Failed to generate metadata:", error);
+        return { title: "Instalación de Placas Solares" };
+    }
 }
 
 /* ---------- page ---------- */
 
 export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     const { municipio: rawMunicipio } = await params;
-    const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
-    const municipio = await getMunicipioBySlug(slug);
+    
+    try {
+        const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
+        const municipio = await getMunicipioBySlug(slug);
 
-    if (!municipio) return <Fallback message="No se encontró el municipio." />;
+        if (!municipio) return <Fallback message="No se encontró el municipio." />;
 
-    const weather = await getWeatherForLocation(municipio.municipio, municipio.provincia);
-    if (!weather) return <Fallback message="No se pudo cargar el clima actual." />;
+        const weather = await getWeatherForLocation(municipio.municipio, municipio.provincia);
+        if (!weather) return <Fallback message="No se pudo cargar el clima actual." />;
 
-    // Fetch nearby
-    const nearbyMunicipios = await getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 6);
-    const nearbyItems = nearbyMunicipios
-        .filter(m => m.slug !== slug)
-        .slice(0, 3)
-        .map(m => ({
-            slug: m.slug,
-            municipio: m.municipio,
-            provincia: m.provincia,
-            ahorroEstimado: m.ahorro_estimado,
-            irradiacionSolar: m.irradiacion_solar,
-            bonificacionIbi: m.bonificacion_ibi,
-        }));
+        // Fetch nearby
+        const nearbyMunicipios = await getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 6);
+        const nearbyItems = nearbyMunicipios
+            .filter(m => m.slug !== slug)
+            .slice(0, 3)
+            .map(m => ({
+                slug: m.slug,
+                municipio: m.municipio,
+                provincia: m.provincia,
+                ahorroEstimado: m.ahorro_estimado,
+                irradiacionSolar: m.irradiacion_solar,
+                bonificacionIbi: m.bonificacion_ibi,
+            }));
 
-    const precioLuz = await getPrecioLuzHoy();
+        const precioLuz = await getPrecioLuzHoy();
 
-    const ahorroHora = precioLuz * 4 * 0.20;
-    const horasSol = municipio.horas_sol ?? 1800;
-    const ahorroAnual = municipio.ahorro_estimado ?? Math.round(horasSol * ahorroHora);
-    const payback = municipio.precio_instalacion_medio_eur && ahorroAnual > 0
-        ? Math.round(municipio.precio_instalacion_medio_eur / ahorroAnual) : null;
+        const ahorroHora = Number(precioLuz) * 4 * 0.20;
+        const horasSol = Number(municipio.horas_sol ?? 1800);
+        const ahorroAnual = Number(municipio.ahorro_estimado ?? Math.round(horasSol * ahorroHora));
+        const payback = municipio.precio_instalacion_medio_eur && ahorroAnual > 0
+            ? Math.round(Number(municipio.precio_instalacion_medio_eur) / ahorroAnual) : null;
 
-    /* ── Build JSON-LD structured data ── */
-    const schemaData = {
-        municipio: municipio.municipio || "Localidad",
-        provincia: municipio.provincia || "",
-        comunidadAutonoma: municipio.comunidad_autonoma ?? municipio.provincia ?? "",
-        ahorroEstimado: ahorroAnual || 0,
-        irradiacionSolar: municipio.irradiacion_solar ?? 1700,
-        precioInstalacionMedio: municipio.precio_instalacion_medio_eur ?? null,
-        bonificacionIbi: municipio.bonificacion_ibi ?? null,
-        subvencionAutoconsumo: municipio.subvencion_autoconsumo ?? null,
-    };
-    const faqs = buildMunicipioFaqs(schemaData);
-    const jsonLd = buildSolarEnergyPageSchema({
-        data: schemaData,
-        pagePath: `/placas-solares/${slug}`,
-        faqs,
-    });
+        /* ── Build JSON-LD structured data ── */
+        const schemaData = {
+            municipio: municipio.municipio || "Localidad",
+            provincia: municipio.provincia || "",
+            comunidadAutonoma: municipio.comunidad_autonoma ?? municipio.provincia ?? "",
+            ahorroEstimado: ahorroAnual || 0,
+            irradiacionSolar: Number(municipio.irradiacion_solar ?? 1700),
+            precioInstalacionMedio: municipio.precio_instalacion_medio_eur ? Number(municipio.precio_instalacion_medio_eur) : null,
+            bonificacionIbi: municipio.bonificacion_ibi ? Number(municipio.bonificacion_ibi) : null,
+            subvencionAutoconsumo: municipio.subvencion_autoconsumo ? Number(municipio.subvencion_autoconsumo) : null,
+        };
+        const faqs = buildMunicipioFaqs(schemaData);
+        const jsonLd = buildSolarEnergyPageSchema({
+            data: schemaData,
+            pagePath: `/placas-solares/${slug}`,
+            faqs,
+        });
 
     return (
         <WeatherProvider municipio={municipio.municipio} provincia={municipio.provincia} municipioSlug={slug}>
@@ -341,5 +350,9 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                 </div>
             </main>
         </WeatherProvider>
-    );
+        );
+    } catch (error) {
+        console.error(`[PlacasSolaresMunicipioPage] Fatal crash for ${rawMunicipio}:`, error);
+        return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
+    }
 }
