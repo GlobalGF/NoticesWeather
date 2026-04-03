@@ -56,21 +56,8 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
     let items: Item[] = [];
 
     if (level === "comunidades") {
-        const { data } = await supabase.from("municipios_energia").select("comunidad_autonoma").not("comunidad_autonoma", "is", null);
-        
-        let uniqueNames = new Set<string>();
-        if (data) {
-            (data as any[]).forEach(d => {
-                if (d.comunidad_autonoma) {
-                    uniqueNames.add(d.comunidad_autonoma);
-                }
-            });
-        }
-        
-        // Always ensure the 17+2 regions are present for SEO
-        COMUNIDADES_ESTATICAS.forEach(name => uniqueNames.add(name));
-        
-        items = Array.from(uniqueNames).sort().map((name) => {
+        // Optimización: Usar lista estática para evitar escaneo de 8,000+ filas
+        items = COMUNIDADES_ESTATICAS.map((name) => {
             const slug = slugify(name);
             return { 
                 name, 
@@ -79,130 +66,66 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
         });
 
     } else if (level === "provincias") {
-        // Fetch all ~8.1k municipalities in parallel chunks (1k per page) to bypass PostgREST limits
-        const pageSize = 1000;
-        const totalPages = 9; // 8132 / 1000 = ~9 pages
-        const pageIndices = Array.from({ length: totalPages }, (_, i) => i);
-
-        const pageResults = await Promise.all(pageIndices.map(page => 
-            supabase.from("municipios_energia")
-                .select("provincia, comunidad_autonoma, irradiacion_solar, horas_sol")
-                .not("provincia", "is", null)
-                .order("provincia") // Stable sort for consistent pagination
-                .range(page * pageSize, (page + 1) * pageSize - 1)
-        ));
-
-        interface MunicipioRow {
-            provincia: string;
-            comunidad_autonoma: string;
-            irradiacion_solar: number | null;
-            horas_sol: number | null;
-        }
-
-        let filtered = pageResults.flatMap(r => (r.data || []) as MunicipioRow[]);
+        // Optimización: Usar listas estáticas de provincias agrupadas por comunidad
+        // Esto elimina el escaneo masivo de la tabla municipios_energia
+        let provinceNames: string[] = [];
         
         if (parentSlug) {
-            // Support both 'ceuta' and 'ceuta-ceuta' as parent slugs
-            // Use the full slug unless it's a known ceuta/melilla variation
-            const normalizedParent = (parentSlug === "ceuta-ceuta" || parentSlug === "melilla-melilla") 
-                ? parentSlug.split("-")[0] 
-                : parentSlug;
-                
-            filtered = filtered.filter((d) => {
-                const comSlug = slugify(d.comunidad_autonoma as string);
-                // Handle common variations: "comunidad-de-madrid" matches "madrid" if coming from home, etc.
-                return comSlug === normalizedParent || comSlug.includes(normalizedParent) || normalizedParent.includes(comSlug);
-            });
+            const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
+            // Buscar la comunidad por slug en nuestro mapa estático
+            const comKey = Object.keys(PROVINCIAS_POR_COMUNIDAD).find(k => k.includes(normalizedParent) || normalizedParent.includes(k));
+            provinceNames = comKey ? PROVINCIAS_POR_COMUNIDAD[comKey] : [];
+        } else {
+            // Si no hay comunidad, mostrar todas las provincias de España
+            provinceNames = Object.values(PROVINCIAS_POR_COMUNIDAD).flat();
         }
 
-        // Group by province SUUG to calculate averages and DE-DUPLICATE
-        // e.g. "Valencia" and "Valencia/València" both map to "valencia"
-        const provinceMap: Record<string, { name: string; totalRad: number; totalHours: number; count: number }> = {};
-        
-        filtered.forEach((d) => {
-            let rawName = d.provincia as string;
-            // Smart handling for bilingual names like "Araba/Álava" or "Alicante/Alacant"
-            let cleanName = rawName;
-            if (rawName.includes("/")) {
-                const parts = rawName.split("/").map(p => p.trim());
-                // Favor Spanish part if it exists (usually the one matching the user's metadata keys)
-                const favorSpanish = parts.find(p => p === "Álava" || p === "Islas Baleares" || p === "Valencia" || p === "Alicante" || p === "Castellón");
-                cleanName = favorSpanish || parts[0];
-            }
-            
-            // Standardize articles: "Coruña, A" -> "A Coruña"
+        // Eliminar duplicados y formatear items
+        const uniqueProvinces = Array.from(new Set(provinceNames)).sort();
+        items = uniqueProvinces.map(name => {
+            // Limpieza de nombres bilingües/especiales que ya tenemos en GeoDirectory
+            let cleanName = name;
             if (cleanName.includes(", ")) {
                 const [main, article] = cleanName.split(", ");
                 cleanName = `${article} ${main}`;
             }
-
-            // Special case for Illes Balears -> Islas Baleares
-            const normalizedLower = cleanName.trim().toLowerCase();
-            if (normalizedLower === "illes balears" || normalizedLower.includes("balears") || normalizedLower === "baleares") {
-                cleanName = "Islas Baleares";
-            }
-            
-            const slug = slugify(cleanName);
-            
-            if (!provinceMap[slug]) {
-                provinceMap[slug] = { name: cleanName, totalRad: 0, totalHours: 0, count: 0 };
-            }
-            if (d.irradiacion_solar) {
-                provinceMap[slug].totalRad += d.irradiacion_solar;
-                provinceMap[slug].totalHours += d.horas_sol || 0;
-                provinceMap[slug].count += 1;
-            }
+            return {
+                name: cleanName,
+                slug: slugify(cleanName)
+            };
         });
 
-        // Merge with static provinces to ensure we NEVER miss any
-        if (parentSlug) {
-            const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
-            if (PROVINCIAS_POR_COMUNIDAD[normalizedParent]) {
-                PROVINCIAS_POR_COMUNIDAD[normalizedParent].forEach(provName => {
-                    const slug = slugify(provName);
-                    if (!provinceMap[slug]) {
-                        provinceMap[slug] = { name: provName, totalRad: 0, totalHours: 0, count: 0 };
-                    }
-                });
-            }
-        } else {
-            Object.values(PROVINCIAS_POR_COMUNIDAD).flat().forEach(provName => {
-                const slug = slugify(provName);
-                if (!provinceMap[slug]) {
-                    provinceMap[slug] = { name: provName, totalRad: 0, totalHours: 0, count: 0 };
-                }
-            });
-        }
-
-        items = Object.entries(provinceMap).map(([slug, stats]) => {
-            return {
-                name: stats.name,
-                slug: slug,
-                radiation: stats.count > 0 ? Math.round(stats.totalRad / stats.count) : undefined,
-                sunHours: stats.count > 0 ? Math.round(stats.totalHours / stats.count) : undefined
-            };
-        }).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-
     } else if (level === "municipios") {
-        let query = supabase.from("municipios_energia").select("municipio, slug, provincia").not("municipio", "is", null);
-
-        const { data } = await query;
-        let filtered = (data ?? []) as any[];
-        
-        if (parentSlug) {
-            filtered = filtered.filter((d) => slugify(d.provincia as string) === parentSlug);
-        }
-
-        // --- Special Case: Ceuta/Melilla ---
-        // If it's Ceuta or Melilla but DB is empty, inject the single city
-        if (filtered.length === 0 && (parentSlug === "ceuta" || parentSlug === "melilla")) {
-            const name = parentSlug === "ceuta" ? "Ceuta" : "Melilla";
-            items = [{ name, slug: parentSlug }];
+        // Optimización: Solo pedir los campos necesarios y filtrar en el servidor (DB)
+        if (!parentSlug) {
+            items = [];
         } else {
-            items = filtered.map((d) => ({
-                name: d.municipio as string,
-                slug: d.slug as string
-            })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+            // Intentar encontrar el nombre real de la provincia para el filtro
+            let provincialName = parentSlug;
+            const allProvincesFlat = Object.values(PROVINCIAS_POR_COMUNIDAD).flat();
+            const matchingProv = allProvincesFlat.find(p => slugify(p) === parentSlug);
+            if (matchingProv) provincialName = matchingProv;
+
+            const { data, error } = await supabase
+                .from("municipios_energia")
+                .select("municipio, slug")
+                .ilike("provincia", provincialName)
+                .order("municipio");
+
+            if (error || !data) {
+                // Fallback para Ceuta/Melilla
+                if (parentSlug === "ceuta" || parentSlug === "melilla") {
+                    const name = parentSlug === "ceuta" ? "Ceuta" : "Melilla";
+                    items = [{ name, slug: parentSlug }];
+                } else {
+                    items = [];
+                }
+            } else {
+                items = (data as any[]).map((d) => ({
+                    name: d.municipio as string,
+                    slug: d.slug as string
+                }));
+            }
         }
     }
 
