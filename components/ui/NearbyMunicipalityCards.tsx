@@ -21,8 +21,13 @@ type NearbyMunicipalityCardsProps = {
     currentMunicipio: string;
 };
 
-function fmt(n: number, decimals = 0): string {
-    return n.toLocaleString("es-ES", { maximumFractionDigits: decimals });
+function fmt(n: number | null | undefined, decimals = 0): string {
+    if (n === null || n === undefined || isNaN(Number(n))) return "0";
+    try {
+        return Number(n).toLocaleString("es-ES", { maximumFractionDigits: decimals });
+    } catch {
+        return String(n);
+    }
 }
 
 function DataBadge({ label, value }: { label: string; value: string }) {

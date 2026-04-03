@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { getTopMunicipalitiesByPriority } from "@/data/repositories/municipalities.repo";
@@ -38,8 +39,27 @@ type Props = {
     params: { municipio: string };
 };
 
-const fmt = (v: number | null | undefined) => v ? new Intl.NumberFormat('es-ES').format(v) : "";
-const fmtEur = (v: number | null | undefined) => v ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v) : "";
+const fmt = (v: number | null | undefined) => {
+    if (v === null || v === undefined || isNaN(Number(v))) return "0";
+    try {
+        return new Intl.NumberFormat('es-ES').format(Number(v));
+    } catch {
+        return String(v);
+    }
+};
+
+const fmtEur = (v: number | null | undefined) => {
+    if (v === null || v === undefined || isNaN(Number(v))) return "0 €";
+    try {
+        return new Intl.NumberFormat('es-ES', { 
+            style: 'currency', 
+            currency: 'EUR', 
+            maximumFractionDigits: 0 
+        }).format(Number(v));
+    } catch {
+        return `${v} €`;
+    }
+};
 
 
 export async function generateStaticParams() {
@@ -237,8 +257,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia || ""}
                                 slug={slug}
-                                comunidadSlug={tryParseSlug(municipio.comunidad_autonoma ?? municipio.provincia ?? "") || decodeURIComponent(rawMunicipio).split('-')[1] || "andalucia"}
-                                provinciaSlug={tryParseSlug(municipio.provincia || "") || decodeURIComponent(rawMunicipio).split('-')[1] || "sevilla"}
+                                comunidadSlug={slugify(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
+                                provinciaSlug={slugify(municipio.provincia || "sevilla")}
                                 bonificacionIbi={municipio.bonificacion_ibi}
                                 nearbyItems={nearbyItems}
                             />

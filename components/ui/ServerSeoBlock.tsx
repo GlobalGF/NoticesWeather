@@ -44,8 +44,13 @@ function getWeatherBucket(condition?: string | null): "sunny" | "cloudy" | "rain
   return "sunny";
 }
 
-function fmt(n: number, d = 0): string {
-  return n.toLocaleString("es-ES", { maximumFractionDigits: d });
+function fmt(n: number | null | undefined, d = 0): string {
+  if (n === null || n === undefined || isNaN(Number(n))) return "0";
+  try {
+    return Number(n).toLocaleString("es-ES", { maximumFractionDigits: d });
+  } catch {
+    return String(n);
+  }
 }
 
 function getStringHash(str: string): number {
@@ -58,6 +63,7 @@ function getStringHash(str: string): number {
 }
 
 function pick<T>(arr: T[], hash: number, offset: number): T {
+  if (!arr || arr.length === 0) return "" as any;
   return arr[(hash + offset) % arr.length];
 }
 
