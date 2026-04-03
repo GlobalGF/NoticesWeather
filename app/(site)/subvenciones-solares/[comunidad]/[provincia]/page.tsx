@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
 import GeoDirectory from "@/components/ui/GeoDirectory";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -32,11 +33,33 @@ const CCAA_NAME_MAP: Record<string, string> = {
 export default async function SubvencionesSolaresProvinciaPage({ params }: Props) {
     const { comunidad, provincia } = await params;
 
+    const supabase = await createSupabaseServerClient();
+
+    // ── URL Validation: Ensure province belongs to the CCAA ──
+    const { data: provValidDataRaw } = await supabase
+        .from("municipios_energia")
+        .select("comunidad_autonoma, provincia")
+        .ilike("provincia", provincia.replace(/-/g, " "))
+        .limit(1)
+        .maybeSingle();
+
+    const provValidData = provValidDataRaw as any;
+    if (!provValidData || !provValidData.comunidad_autonoma || !provValidData.provincia) {
+        notFound();
+    }
+
+    const realCcaaSlug = slugify(provValidData.comunidad_autonoma);
+    const expectedCcaaSlug = slugify(CCAA_NAME_MAP[comunidad] || comunidad.replace(/-/g, " "));
+
+    // Si la CCAA real no coincide con la URL (ej. catalunya/madrid), redirigimos a la correcta (madrid/madrid)
+    if (realCcaaSlug !== slugify(comunidad)) {
+        redirect(`/subvenciones-solares/${realCcaaSlug}/${slugify(provValidData.provincia)}`);
+    }
+
     const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     const ccaaName = CCAA_NAME_MAP[comunidad] || comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     // Fetch CCAA subsidy data to show in the province page
-    const supabase = await createSupabaseServerClient();
     const { data: ccaaRows } = await supabase
         .from("subvenciones_solares_ccaa_es")
         .select("comunidad_autonoma, subvencion_porcentaje, max_subvencion_euros, programa, fecha_fin")
@@ -52,7 +75,7 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     // Fetch province-level stats (radiation, sun hours) from municipios
     const { data: statsRows } = await supabase
         .from("municipios_energia")
-        .select("irradiacion_solar, horas_sol, bonificacion_ibi")
+        .select("municipio, irradiacion_solar, horas_sol, bonificacion_ibi")
         .ilike("provincia", `%${provName.split(" ")[0]}%`)
         .limit(200);
 
@@ -64,6 +87,11 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
         ? Math.round(statsArr.filter(r => r.horas_sol).reduce((s, r) => s + r.horas_sol, 0) / Math.max(1, statsArr.filter(r => r.horas_sol).length))
         : null;
     const municipiosWithIbi = statsArr.filter(r => r.bonificacion_ibi && r.bonificacion_ibi > 0).length;
+
+    const topCitiesForPlaceholder = statsArr.slice(0, 2).map(r => r.municipio).filter(Boolean);
+    const placeholderText = topCitiesForPlaceholder.length === 2
+        ? `Escribe tu ciudad (ej. ${topCitiesForPlaceholder[0]}, ${topCitiesForPlaceholder[1]}...)`
+        : "Escribe tu ciudad (ej. Madrid, Valencia...)";
 
     // ── Spintax SEO Paragraphs with IF data logic ─────────────────
     const spintaxVars = {
@@ -118,49 +146,33 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                         <span className="text-slate-400">{provName}</span>
                     </nav>
 
-                    <div className="grid md:grid-cols-5 gap-10 items-start">
-                        <div className="md:col-span-3 space-y-5">
-                            <div className="inline-flex items-center gap-2 border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 rounded-md">
-                                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-                                <span className="text-blue-400 text-xs font-semibold tracking-wide uppercase">Provincia · {ccaaName}</span>
-                            </div>
-                            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
-                                Subvenciones solares en <span className="text-blue-400">{provName}</span>
-                            </h1>
-                            <p className="text-slate-400 text-base leading-relaxed">
-                                Ayudas del programa de {ccaaName} disponibles en los municipios de {provName}.
-                                Selecciona tu localidad para ver las bonificaciones de IBI e ICIO específicas de tu ayuntamiento.
-                            </p>
-
-                            {/* KPI data pills */}
-                            <div className="flex flex-wrap gap-3 pt-2">
-                                {pct && (
-                                    <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Subvención autonómica</p>
-                                        <p className="text-xl font-black text-white">{pct}%</p>
-                                    </div>
-                                )}
-                                {maxEur && (
-                                    <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Máximo por expediente</p>
-                                        <p className="text-xl font-black text-emerald-400">{Number(maxEur).toLocaleString("es-ES")} €</p>
-                                    </div>
-                                )}
-                                {avgSunHours && (
-                                    <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Horas sol / año</p>
-                                        <p className="text-xl font-black text-amber-400">~{avgSunHours.toLocaleString("es-ES")}</p>
-                                    </div>
-                                )}
-                            </div>
+                    <div className="max-w-3xl space-y-5">
+                        <div className="inline-flex items-center gap-2 border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 rounded-md">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                            <span className="text-blue-400 text-xs font-semibold tracking-wide uppercase">Provincia · {ccaaName}</span>
                         </div>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+                            Subvenciones solares en <span className="text-blue-400">{provName}</span>
+                        </h1>
+                        <p className="text-slate-400 text-base leading-relaxed">
+                            Ayudas del programa de {ccaaName} disponibles en los municipios de {provName}.
+                            Selecciona tu localidad para ver las bonificaciones de IBI e ICIO específicas de tu ayuntamiento.
+                        </p>
 
-                        <div className="md:col-span-2">
-                            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
-                                <p className="text-white font-bold mb-1">Busca tu municipio</p>
-                                <p className="text-slate-400 text-sm mb-4">Localiza las ayudas locales de tu ayuntamiento en segundos.</p>
-                                <CitySearchInput />
-                            </div>
+                        {/* KPI data pills */}
+                        <div className="flex flex-wrap gap-3 pt-2">
+                            {pct && (
+                                <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Subvención autonómica</p>
+                                    <p className="text-xl font-black text-white">{pct}%</p>
+                                </div>
+                            )}
+                            {maxEur && (
+                                <div className="border border-slate-700 bg-slate-800/60 rounded-lg px-4 py-2.5">
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-0.5">Máximo por expediente</p>
+                                    <p className="text-xl font-black text-emerald-400">{Number(maxEur).toLocaleString("es-ES")} €</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -206,20 +218,11 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
             <div className="mx-auto max-w-5xl px-4 pb-10 grid gap-8 md:grid-cols-3">
                 <div className="md:col-span-2 space-y-8">
 
-                    <section className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-base font-bold text-slate-900">Municipios de {provName}</h2>
-                                <p className="text-slate-500 text-xs mt-0.5">Selecciona tu localidad para ver las ayudas exactas de IBI e ICIO</p>
-                            </div>
-                        </div>
-                        <div className="p-6">
-                            <GeoDirectory
-                                level="municipios"
-                                parentSlug={provincia}
-                                baseRoute={`/subvenciones-solares/${comunidad}/${provincia}`}
-                            />
-                        </div>
+                    {/* ── Buscador ──────────────────────────────────── */}
+                    <section className="bg-slate-800 border border-slate-700 rounded-2xl p-6 md:p-8 max-w-2xl mx-auto shadow-xl">
+                        <p className="text-white font-bold text-xl mb-2">Busca tu localidad</p>
+                        <p className="text-slate-400 text-sm mb-6">Localiza las ayudas locales de IBI e ICIO exactas de tu ayuntamiento y comprueba cuánto te descuentan.</p>
+                        <CitySearchInput placeholder={placeholderText} />
                     </section>
 
                     {/* Info panel about provincial subsidies */}

@@ -131,11 +131,27 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
   const parsed = tryParseSlug(comunidad);
   if (!parsed) notFound();
 
-  // --- Redirect Logic for Sticky Header ---
   // If the slug is NOT a known CCAA, check if it's a municipality to redirect to the deep route
   const isCcaa = !!CCAA_NAME_MAP[parsed];
   if (!isCcaa) {
     const supabase = await createSupabaseServerClient();
+    
+    // Check if it's a Province
+    const { data: provData } = await supabase
+      .from("municipios_energia")
+      .select("provincia, comunidad_autonoma")
+      .ilike("provincia", parsed.replace(/-/g, " "))
+      .limit(1)
+      .maybeSingle();
+
+    const prov = provData as any;
+    if (prov && prov.comunidad_autonoma && prov.provincia) {
+      const cSlug = slugify(prov.comunidad_autonoma);
+      const pSlug = slugify(prov.provincia);
+      redirect(`/subvenciones-solares/${cSlug}/${pSlug}`);
+    }
+
+    // Check if it's a Municipio
     const { data: muni } = await supabase
       .from("municipios_energia")
       .select("slug, provincia, comunidad_autonoma")
@@ -153,6 +169,18 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
+
+  // Fetch two cities for the dynamic search placeholder
+  const supabase = await createSupabaseServerClient();
+  const { data: topCitiesData } = await supabase
+    .from("municipios_energia")
+    .select("municipio")
+    .ilike("comunidad_autonoma", `%${ccaaName.split(" ")[0]}%`)
+    .limit(2);
+  const topCities = (topCitiesData || []).map((r: any) => r.municipio).filter(Boolean);
+  const placeholderText = topCities.length === 2
+    ? `Escribe tu ciudad (ej. ${topCities[0]}, ${topCities[1]}...)`
+    : "Escribe tu ciudad (ej. Madrid, Valencia...)";
 
   const percentages = rows.map((r) => r.subvencion_porcentaje).filter((v): v is number => typeof v === "number");
   const maxPct = percentages.length ? Math.max(...percentages) : 40;
@@ -207,8 +235,7 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
             <span className="text-slate-400">{ccaaName}</span>
           </nav>
 
-          <div className="grid md:grid-cols-5 gap-10 items-center">
-            <div className="md:col-span-3 space-y-5">
+          <div className="max-w-3xl space-y-5">
               <div className="inline-flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 rounded-md">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="text-emerald-400 text-xs font-semibold tracking-wide uppercase">Comunidad Autónoma · Datos 2026</span>
@@ -235,33 +262,16 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
                   ) : null}
                 </div>
               )}
-            </div>
-
-            <div className="md:col-span-2">
-              <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
-                <p className="text-white font-bold mb-1">Busca tu municipio</p>
-                <p className="text-slate-400 text-sm mb-4">Accede directamente a las ayudas IBI e ICIO de tu localidad.</p>
-                <CitySearchInput />
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Province selector ──────────────────────────────────── */}
+      {/* ── Buscador ──────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-4 py-10">
-        <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
-            <h2 className="text-base font-bold text-slate-900">Provincias de {ccaaName}</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Selecciona una provincia para explorar los municipios y sus bonificaciones locales</p>
-          </div>
-          <div className="p-6">
-            <GeoDirectory
-              level="provincias"
-              parentSlug={parsed}
-              baseRoute={`/subvenciones-solares/${parsed}`}
-            />
-          </div>
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 md:p-8 max-w-2xl mx-auto shadow-xl">
+          <p className="text-white font-bold text-xl mb-2">Busca tu municipio</p>
+          <p className="text-slate-400 text-sm mb-6">Localiza las ayudas locales de tu ayuntamiento en segundos y comprueba cuánto puedes ahorrar.</p>
+          <CitySearchInput placeholder={placeholderText} />
         </div>
       </section>
 

@@ -9,8 +9,11 @@ interface CityResult {
     subtitle: string;
     url: string;
 }
+interface CitySearchInputProps {
+    placeholder?: string;
+}
 
-export default function CitySearchInput() {
+export default function CitySearchInput({ placeholder = "Escribe tu ciudad (ej. Madrid, Valencia...)" }: CitySearchInputProps) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<CityResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +76,7 @@ export default function CitySearchInput() {
                 <input
                     type="text"
                     className="block w-full pl-11 pr-10 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent text-[16px] transition-all shadow-lg"
-                    placeholder="Escribe tu ciudad (ej. Madrid, Valencia...)"
+                    placeholder={placeholder}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => { if (results.length > 0) setIsOpen(true) }}
