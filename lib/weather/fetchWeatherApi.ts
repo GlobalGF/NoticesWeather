@@ -21,8 +21,8 @@ export async function fetchWeatherApi(city: string, province: string, country: s
   
   const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(finalQuery)}&lang=es`;
   
-  // Cache for 1 hour to prevent lock-in state if server doesn't restart
-  const res = await fetch(url, { cache: "no-store" });
+  // Use revalidate instead of no-store to be compatible with static generation
+  const res = await fetch(url, { next: { revalidate: 3600 } });
   
   if (!res.ok) {
     console.error(`WeatherAPI error for query '${finalQuery}': ` + res.status);
