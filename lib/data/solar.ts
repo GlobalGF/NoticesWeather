@@ -2,20 +2,44 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchWeatherApi } from "@/lib/weather/fetchWeatherApi";
 
 export async function getMunicipioBySlug(slug: string): Promise<any | null> {
+  // DEBUG LOG 1: Start fetch
+  console.info(`[getMunicipioBySlug] Fetching slug: ${slug}`);
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
     .ilike("slug", slug)
     .maybeSingle();
-  if (error) return null;
+    
+  if (error) {
+    console.error(`[getMunicipioBySlug] Supabase Error:`, error);
+    return null;
+  }
+  
+  if (!data) {
+    console.warn(`[getMunicipioBySlug] No record found for slug: ${slug}`);
+    return null;
+  }
+
+  // DEBUG LOG 2: Data success
+  const mData = data as any;
+  if (mData) {
+    console.info(`[getMunicipioBySlug] Found: ${mData.municipio}, ${mData.provincia}`);
+  }
   return data;
 }
 
 export async function getWeatherForLocation(municipioName: string, provinciaName: string) {
   try {
-    if (!municipioName) return null;
-    return await fetchWeatherApi(municipioName, provinciaName || "", "Spain");
+    if (!municipioName) {
+        console.warn(`[getWeatherForLocation] Missing municipio name!`);
+        return null;
+    }
+    // DEBUG LOG 3: Weather request
+    console.info(`[getWeatherForLocation] Requesting weather for: ${municipioName}, ${provinciaName}`);
+    const weather = await fetchWeatherApi(municipioName, provinciaName || "", "Spain");
+    console.info(`[getWeatherForLocation] Weather fetch success.`);
+    return weather;
   } catch (error) {
     console.error(`[getWeatherForLocation] Failed to fetch weather for ${municipioName}, ${provinciaName}:`, error);
     return null;

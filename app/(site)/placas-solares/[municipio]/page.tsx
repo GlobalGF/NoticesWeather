@@ -109,18 +109,28 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     const rawMunicipio = params.municipio;
     
     try {
+        console.info(`[PlacasSolaresMunicipioPage] 1. START for: ${rawMunicipio}`);
         if (!rawMunicipio) return <Fallback message="No se especificó municipio." />;
 
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
+        
+        console.info(`[PlacasSolaresMunicipioPage] 2. FETCHING DB for slug: ${slug}`);
         const municipio = await getMunicipioBySlug(slug);
 
-        if (!municipio) return <Fallback message="No se encontró el municipio." />;
+        if (!municipio) {
+            console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB`);
+            return <Fallback message="No se encontró el municipio." />;
+        }
 
+        console.info(`[PlacasSolaresMunicipioPage] 3. FETCHING WEATHER for: ${municipio.municipio}`);
         const weather = await getWeatherForLocation(municipio.municipio, municipio.provincia);
-        if (!weather) return <Fallback message="No se pudo cargar el clima actual." />;
+        if (!weather) {
+            console.warn(`[PlacasSolaresMunicipioPage] 3b. Weather failed (continuing with fallback)`);
+        }
 
         // Fetch nearby
+        console.info(`[PlacasSolaresMunicipioPage] 4. FETCHING NEARBY for province: ${municipio.provincia}`);
         const nearbyMunicipios = await getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 6);
         const nearbyItems = nearbyMunicipios
             .filter(m => m.slug !== slug)
@@ -134,14 +144,17 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                 bonificacionIbi: m.bonificacion_ibi,
             }));
 
+        console.info(`[PlacasSolaresMunicipioPage] 5. FETCHING ENERGY PRICE`);
         const precioLuz = await getPrecioLuzHoy();
 
+        console.info(`[PlacasSolaresMunicipioPage] 6. CALCULATING STATS`);
         const ahorroHora = Number(precioLuz) * 4 * 0.20;
         const horasSol = Number(municipio.horas_sol ?? 1800);
         const ahorroAnual = Number(municipio.ahorro_estimado ?? Math.round(horasSol * ahorroHora));
         const payback = municipio.precio_instalacion_medio_eur && ahorroAnual > 0
             ? Math.round(Number(municipio.precio_instalacion_medio_eur) / ahorroAnual) : null;
 
+        console.info(`[PlacasSolaresMunicipioPage] 7. PREPARING SCHEMA & RENDER`);
         /* ── Build JSON-LD structured data ── */
         const schemaData = {
             municipio: municipio.municipio || "Localidad",
@@ -160,8 +173,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
             faqs,
         });
 
-    return (
-        <WeatherProvider municipio={municipio.municipio} provincia={municipio.provincia} municipioSlug={slug}>
+        // Pre-calculate saving stats for the dashboard
+        const savingsMonth = Math.round(ahorroAnual / 12);
+
+        console.info(`[PlacasSolaresMunicipioPage] 8. RENDING JSX`);
+        return (
+            <WeatherProvider municipio={municipio.municipio} provincia={municipio.provincia} municipioSlug={slug}>
             {/* ── JSON-LD Structured Data (visible to Googlebot) ── */}
             <script
                 type="application/ld+json"
