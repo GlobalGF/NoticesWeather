@@ -4,7 +4,6 @@ import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
-import { getTopMunicipalitiesByPriority } from "@/data/repositories/municipalities.repo";
 
 import { WeatherProvider } from "@/components/providers/WeatherProvider";
 import { CroUrgencyBanner } from "@/components/ui/CroUrgencyBanner";
@@ -25,8 +24,7 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import Fallback from "@/components/solar/Fallback";
-
-import { getMunicipioBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy } from "@/lib/data/solar";
+import { getMunicipioBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
@@ -65,26 +63,37 @@ const fmtEur = (v: number | null | undefined) => {
 export async function generateStaticParams() {
     return safeGenerateStaticParams(async () => {
         const budget = getStaticPrebuildBudget("PSEO_PREBUILD_MUNICIPIOS", 400);
-        const top = await getTopMunicipalitiesByPriority(budget);
-        return top.map((m) => ({ municipio: m.slug }));
+        const top = await getTopMunicipiosEnergia(budget);
+        
+        // Final sanity filter: only pass slugs that are truly URL-safe
+        const urlSafeRegex = /^[a-z0-9-]+$/;
+        return top
+            .filter(m => m.slug && urlSafeRegex.test(m.slug))
+            .map((m) => ({ municipio: m.slug }));
     });
 }
 
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const rawMunicipio = params.municipio;
+    const year = new Date().getFullYear();
+    const defaultTitle = `Instalación de Placas Solares \u2013 Ahorro y subvenciones ${year}`;
+    const defaultDescription = "Descubre cuánto puedes ahorrar instalando placas solares en tu municipio. Calculadora de rentabilidad, ayudas activas y presupuestos personalizados.";
+
     try {
-        const rawMunicipio = params.municipio;
-        if (!rawMunicipio) return {};
+        if (!rawMunicipio) return { title: defaultTitle, description: defaultDescription };
         
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
         
-        if (!slug) return {};
-        
         const data = await getMunicipioBySlug(slug);
-        if (!data) return {};
+        if (!data) {
+            return { 
+                title: defaultTitle, 
+                description: defaultDescription,
+                alternates: { canonical: `/placas-solares/${rawMunicipio}` }
+            };
+        }
 
-        const year = new Date().getFullYear();
         const muniName = data.municipio || "tu localidad";
         const provName = data.provincia || "";
         
@@ -99,7 +108,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     } catch (error) {
         console.error("[generateMetadata] Failed to generate metadata:", error);
-        return { title: "Instalación de Placas Solares" };
+        return { 
+            title: defaultTitle, 
+            description: defaultDescription 
+        };
     }
 }
 
@@ -121,6 +133,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         if (!municipio) {
             console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB`);
             return <Fallback message="No se encontró el municipio." />;
+        }
+
+        // SANITY CHECK: If critical fields are missing, don't crash, show fallback
+        if (!municipio.municipio || !municipio.provincia) {
+            console.error(`[PlacasSolaresMunicipioPage] 2c. CRITICAL DATA MISSING for ${slug}`);
+            return <Fallback message="Datos geográficos incompletos para este municipio." />;
         }
 
         console.info(`[PlacasSolaresMunicipioPage] 3. FETCHING WEATHER for: ${municipio.municipio}`);

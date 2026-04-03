@@ -3,13 +3,42 @@ import { fetchWeatherApi } from "@/lib/weather/fetchWeatherApi";
 
 export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   // DEBUG LOG 1: Start fetch
+  if (!slug || typeof slug !== "string") return null;
   console.info(`[getMunicipioBySlug] Fetching slug: ${slug}`);
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  
+  // Try exact match first
+  let { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
-    .ilike("slug", slug)
+    .ilike("slug", slug.trim())
     .maybeSingle();
+
+  // FUZZY FALLBACK: If Galician slugs like "ares-coruna-a" fail, try searching for the main parts
+  if (!data && !error && slug.includes("-")) {
+    const parts = slug.split("-").filter(p => p.length > 2);
+    const mainNames = parts.filter(p => !["coruna", "pontevedra", "lugo", "ourense", "galicia", "a"].includes(p));
+    
+    if (mainNames.length > 0) {
+      const searchPattern = `%${mainNames[0]}%`;
+      console.info(`[getMunicipioBySlug] Trying fuzzy for: ${searchPattern}`);
+      const fuzzyResult = await supabase
+        .from("municipios_energia")
+        .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
+        .ilike("slug", searchPattern)
+        .limit(10);
+        
+      const fuzzyData = fuzzyResult.data as any[];
+      if (fuzzyData && fuzzyData.length > 0) {
+        // Try to find the best match containing most parts of the original slug
+        const matching = fuzzyData.find(d => parts.every(p => d.slug.includes(p))) || fuzzyData[0];
+        if (matching) {
+          console.info(`[getMunicipioBySlug] Fuzzy match found: ${matching.slug}`);
+          data = matching;
+        }
+      }
+    }
+  }
     
   if (error) {
     console.error(`[getMunicipioBySlug] Supabase Error:`, error);
@@ -17,7 +46,7 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   }
   
   if (!data) {
-    console.warn(`[getMunicipioBySlug] No record found for slug: ${slug}`);
+    console.warn(`[getMunicipioBySlug] No record found for: ${slug}`);
     return null;
   }
 
@@ -119,5 +148,30 @@ export async function getNationalStats(): Promise<NationalStats> {
     totalMunicipios: 8131, // Valor aproximado real en España para SEO
     avgIBI: countIBI > 0 ? Math.round(sumIBI / countIBI) : 40,
   };
+}
+
+/**
+ * Fetch a list of slugs for the most populated or prioritized municipalities 
+ * for static pre-building (ISR).
+ * Uses the same 'municipios_energia' table as the page content to ensure parity.
+ */
+export async function getTopMunicipiosEnergia(limit = 400): Promise<{ slug: string }[]> {
+  const supabase = await createSupabaseServerClient();
+  
+  // We prioritize by 'habitantes' to pre-build the most visited pages
+  const { data, error } = await supabase
+    .from("municipios_energia")
+    .select("slug")
+    .not("municipio", "is", null)
+    .order("habitantes", { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (error || !data) {
+    console.warn(`[getTopMunicipiosEnergia] Error fetching top municipios:`, error);
+    return [];
+  }
+
+  const typed = data as any[];
+  return typed.map(d => ({ slug: d.slug }));
 }
 
