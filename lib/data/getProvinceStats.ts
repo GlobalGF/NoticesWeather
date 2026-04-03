@@ -30,11 +30,30 @@ export async function getProvinceStats(provinceSlug: string): Promise<ProvinceSt
   if (!mappedProv) return null;
 
   const provinceName: string = mappedProv.name;
+  const unaccented = provinceName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+  // Extract main part of the name for cases like "A Coruña" -> "Coruña" or "Las Palmas" -> "Palmas"
+  const parts = provinceName.split(" ");
+  const mainPart = parts.length > 1 ? parts[parts.length - 1] : provinceName;
+  const unaccentedMain = mainPart.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  // Specific search term optimization for bilingual provinces
+  let searchPattern = `provincia.ilike.%${provinceName}%,provincia.ilike.%${unaccented}%,provincia.ilike.%${mainPart}%,provincia.ilike.%${unaccentedMain}%`;
+  
+  if (provinceName === "Islas Baleares") {
+    searchPattern += `,provincia.ilike.%Balears%`;
+  } else if (provinceName === "Álava") {
+    searchPattern += `,provincia.ilike.%Araba%`;
+  } else if (provinceName === "Gipuzkoa") {
+    searchPattern += `,provincia.ilike.%Guipuzcoa%`;
+  } else if (provinceName === "Bizkaia") {
+    searchPattern += `,provincia.ilike.%Vizcaya%`;
+  }
 
   const { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, slug, horas_sol, irradiacion_solar, ahorro_estimado, bonificacion_ibi, habitantes")
-    .eq("provincia", provinceName)
+    .or(searchPattern)
     .not("municipio", "is", null)
     .limit(1000);
 
@@ -80,7 +99,7 @@ export async function getProvinceStats(provinceSlug: string): Promise<ProvinceSt
 // 52 Spanish provinces static list to avoid hitting PostgREST max-row limits
 const SPANISH_PROVINCES = [
   "A Coruña", "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila",
-  "Badajoz", "Barcelona", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castellón",
+  "Badajoz", "Barcelona", "Bizkaia", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castellón",
   "Ceuta", "Ciudad Real", "Córdoba", "Cuenca", "Girona", "Granada", "Guadalajara",
   "Gipuzkoa", "Huelva", "Huesca", "Islas Baleares", "Jaén", "La Rioja", "Las Palmas",
   "León", "Lleida", "Lugo", "Madrid", "Málaga", "Melilla", "Murcia", "Navarra",

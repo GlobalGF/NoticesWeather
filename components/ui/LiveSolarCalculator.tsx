@@ -183,7 +183,9 @@ export function LiveSolarCalculator({
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Ahorro anual</p>
             <p className="mt-1 text-2xl font-extrabold tabular-nums text-blue-900">{fmt(result.annualSavingsEur)} €</p>
-            <p className="text-[10px] font-medium text-blue-700">estimación total</p>
+            <p className="text-[10px] font-medium text-blue-700 leading-tight mt-0.5">
+              🛒 Equivale a {Math.max(1, Math.round(result.annualSavingsEur / 200))} {Math.max(1, Math.round(result.annualSavingsEur / 200)) === 1 ? 'cesta' : 'cestas'} de la compra completas
+            </p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Paneles recomendados</p>

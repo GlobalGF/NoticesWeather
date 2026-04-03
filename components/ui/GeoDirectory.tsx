@@ -22,7 +22,7 @@ interface Item {
 /* ── Static Fallbacks for PSEO ───────────────────────────────────── */
 
 const COMUNIDADES_ESTATICAS = [
-    "Andalucía", "Aragón", "Principado de Asturias", "Illes Balears", "Canarias",
+    "Andalucía", "Aragón", "Principado de Asturias", "Islas Baleares", "Canarias",
     "Cantabria", "Castilla y León", "Castilla-La Mancha", "Cataluña",
     "Comunitat Valenciana", "Extremadura", "Galicia", "Comunidad de Madrid",
     "Región de Murcia", "Comunidad Foral de Navarra", "País Vasco", "La Rioja",
@@ -33,7 +33,7 @@ const PROVINCIAS_POR_COMUNIDAD: Record<string, string[]> = {
     "andalucia": ["Almería", "Cádiz", "Córdoba", "Granada", "Huelva", "Jaén", "Málaga", "Sevilla"],
     "aragon": ["Huesca", "Teruel", "Zaragoza"],
     "principado-de-asturias": ["Asturias"],
-    "illes-balears": ["Islas Baleares"],
+    "islas-baleares": ["Islas Baleares"],
     "canarias": ["Las Palmas", "Santa Cruz de Tenerife"],
     "cantabria": ["Cantabria"],
     "castilla-y-leon": ["Ávila", "Burgos", "León", "Palencia", "Salamanca", "Segovia", "Soria", "Valladolid", "Zamora"],
@@ -74,61 +74,110 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
             const slug = slugify(name);
             return { 
                 name, 
-                slug: (slug === "ceuta" || slug === "melilla") ? `${slug}-${slug}` : slug 
+                slug: slug 
             };
         });
 
     } else if (level === "provincias") {
-        const { data } = await supabase.from("municipios_energia")
-            .select("provincia, comunidad_autonoma, irradiacion_solar, horas_sol")
-            .not("provincia", "is", null)
-            .limit(10000);
+        // Fetch all ~8.1k municipalities in parallel chunks (1k per page) to bypass PostgREST limits
+        const pageSize = 1000;
+        const totalPages = 9; // 8132 / 1000 = ~9 pages
+        const pageIndices = Array.from({ length: totalPages }, (_, i) => i);
 
-        let filtered = (data ?? []) as any[];
+        const pageResults = await Promise.all(pageIndices.map(page => 
+            supabase.from("municipios_energia")
+                .select("provincia, comunidad_autonoma, irradiacion_solar, horas_sol")
+                .not("provincia", "is", null)
+                .order("provincia") // Stable sort for consistent pagination
+                .range(page * pageSize, (page + 1) * pageSize - 1)
+        ));
+
+        interface MunicipioRow {
+            provincia: string;
+            comunidad_autonoma: string;
+            irradiacion_solar: number | null;
+            horas_sol: number | null;
+        }
+
+        let filtered = pageResults.flatMap(r => (r.data || []) as MunicipioRow[]);
         
         if (parentSlug) {
             // Support both 'ceuta' and 'ceuta-ceuta' as parent slugs
-            const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
-            filtered = filtered.filter((d) => slugify(d.comunidad_autonoma as string) === normalizedParent);
+            // Use the full slug unless it's a known ceuta/melilla variation
+            const normalizedParent = (parentSlug === "ceuta-ceuta" || parentSlug === "melilla-melilla") 
+                ? parentSlug.split("-")[0] 
+                : parentSlug;
+                
+            filtered = filtered.filter((d) => {
+                const comSlug = slugify(d.comunidad_autonoma as string);
+                // Handle common variations: "comunidad-de-madrid" matches "madrid" if coming from home, etc.
+                return comSlug === normalizedParent || comSlug.includes(normalizedParent) || normalizedParent.includes(comSlug);
+            });
         }
 
-        // Group by province to calculate averages
-        const provinceMap: Record<string, { totalRad: number; totalHours: number; count: number }> = {};
+        // Group by province SUUG to calculate averages and DE-DUPLICATE
+        // e.g. "Valencia" and "Valencia/València" both map to "valencia"
+        const provinceMap: Record<string, { name: string; totalRad: number; totalHours: number; count: number }> = {};
+        
         filtered.forEach((d) => {
-            if (!provinceMap[d.provincia]) {
-                provinceMap[d.provincia] = { totalRad: 0, totalHours: 0, count: 0 };
+            let rawName = d.provincia as string;
+            // Smart handling for bilingual names like "Araba/Álava" or "Alicante/Alacant"
+            let cleanName = rawName;
+            if (rawName.includes("/")) {
+                const parts = rawName.split("/").map(p => p.trim());
+                // Favor Spanish part if it exists (usually the one matching the user's metadata keys)
+                const favorSpanish = parts.find(p => p === "Álava" || p === "Islas Baleares" || p === "Valencia" || p === "Alicante" || p === "Castellón");
+                cleanName = favorSpanish || parts[0];
+            }
+            
+            // Standardize articles: "Coruña, A" -> "A Coruña"
+            if (cleanName.includes(", ")) {
+                const [main, article] = cleanName.split(", ");
+                cleanName = `${article} ${main}`;
+            }
+
+            // Special case for Illes Balears -> Islas Baleares
+            const normalizedLower = cleanName.trim().toLowerCase();
+            if (normalizedLower === "illes balears" || normalizedLower.includes("balears") || normalizedLower === "baleares") {
+                cleanName = "Islas Baleares";
+            }
+            
+            const slug = slugify(cleanName);
+            
+            if (!provinceMap[slug]) {
+                provinceMap[slug] = { name: cleanName, totalRad: 0, totalHours: 0, count: 0 };
             }
             if (d.irradiacion_solar) {
-                provinceMap[d.provincia].totalRad += d.irradiacion_solar;
-                provinceMap[d.provincia].totalHours += d.horas_sol || 0;
-                provinceMap[d.provincia].count += 1;
+                provinceMap[slug].totalRad += d.irradiacion_solar;
+                provinceMap[slug].totalHours += d.horas_sol || 0;
+                provinceMap[slug].count += 1;
             }
         });
 
-        // Merge with static provinces to ensure we NEVER miss any due to 1000-row limits
+        // Merge with static provinces to ensure we NEVER miss any
         if (parentSlug) {
             const normalizedParent = parentSlug.includes("-") ? parentSlug.split("-")[0] : parentSlug;
             if (PROVINCIAS_POR_COMUNIDAD[normalizedParent]) {
                 PROVINCIAS_POR_COMUNIDAD[normalizedParent].forEach(provName => {
-                    if (!provinceMap[provName]) {
-                        provinceMap[provName] = { totalRad: 0, totalHours: 0, count: 0 };
+                    const slug = slugify(provName);
+                    if (!provinceMap[slug]) {
+                        provinceMap[slug] = { name: provName, totalRad: 0, totalHours: 0, count: 0 };
                     }
                 });
             }
         } else {
-            // If no parentSlug, we must show ALL provinces nationally
             Object.values(PROVINCIAS_POR_COMUNIDAD).flat().forEach(provName => {
-                if (!provinceMap[provName]) {
-                    provinceMap[provName] = { totalRad: 0, totalHours: 0, count: 0 };
+                const slug = slugify(provName);
+                if (!provinceMap[slug]) {
+                    provinceMap[slug] = { name: provName, totalRad: 0, totalHours: 0, count: 0 };
                 }
             });
         }
 
-        items = Object.entries(provinceMap).map(([name, stats]) => {
-            const slug = slugify(name);
+        items = Object.entries(provinceMap).map(([slug, stats]) => {
             return {
-                name,
-                slug: (slug === "ceuta" || slug === "melilla") ? `${slug}-${slug}` : slug,
+                name: stats.name,
+                slug: slug,
                 radiation: stats.count > 0 ? Math.round(stats.totalRad / stats.count) : undefined,
                 sunHours: stats.count > 0 ? Math.round(stats.totalHours / stats.count) : undefined
             };
@@ -148,7 +197,7 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
         // If it's Ceuta or Melilla but DB is empty, inject the single city
         if (filtered.length === 0 && (parentSlug === "ceuta" || parentSlug === "melilla")) {
             const name = parentSlug === "ceuta" ? "Ceuta" : "Melilla";
-            items = [{ name, slug: `${parentSlug}-${parentSlug}` }];
+            items = [{ name, slug: parentSlug }];
         } else {
             items = filtered.map((d) => ({
                 name: d.municipio as string,
@@ -179,13 +228,22 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                                 className="group relative overflow-hidden rounded-xl flex-none w-[75vw] max-w-[280px] sm:max-w-none sm:w-[320px] lg:w-[360px] aspect-[3/2] snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                 aria-label={`${item.name} — ${meta.description}`}
                             >
+                                <div 
+                                    className="absolute inset-0 bg-slate-800" 
+                                    style={{ 
+                                        backgroundImage: `url(${meta.backgroundUrl})`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center'
+                                    }}
+                                />
                                 <img
                                     src={meta.backgroundUrl}
                                     alt={item.name}
                                     loading="lazy"
+                                    referrerPolicy="no-referrer"
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent opacity-90 transition-opacity" />
                                 <div className="absolute inset-0 p-4 flex flex-col justify-end">
                                     <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest mb-0.5">Provincia</span>
                                     <h3 className="text-lg font-bold text-white mb-1 group-hover:underline decoration-blue-400 decoration-2 underline-offset-4 leading-tight">

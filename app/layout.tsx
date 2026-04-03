@@ -11,7 +11,10 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "Energia Solar en Espana",
   description: "Programmatic SEO para energia solar por municipio en Espana.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com")
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"),
+  verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION_CODE ? {
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION_CODE,
+  } : undefined,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

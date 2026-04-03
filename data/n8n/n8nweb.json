@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "ChatGPTWork",
     "nodes":  [
                   {
@@ -372,92 +372,78 @@
                                        -336
                                    ]
                   },
+{
+                      "id": "8243bf10-e0a4-4d60-a39e-9bc3abc98d68",
+                      "name": "BONIF - Upsert IBI/ICIO",
+                      "type": "n8n-nodes-base.code",
+                      "typeVersion": 2,
+                      "position": [
+                                            -432,
+                                            -336
+                      ],
+                      "parameters": {
+                                            "jsCode": "// BONIF - Upsert dinÃ¡mico IBI o ICIO\n\nconst __helpers = (typeof this !== 'undefined' && this && this.helpers) ? this.helpers : null;\nconst __httpRequest = (__helpers && typeof __helpers.httpRequest === 'function')\n  ? __helpers.httpRequest.bind(__helpers)\n  : null;\n\nasync function _fetchPost(url, body, extraHeaders) {\n  if (!__httpRequest) throw new Error('httpRequest helper not available in Code node runtime');\n  return await __httpRequest({\n    method: 'POST',\n    url,\n    headers: {\n      'Content-Type': 'application/json',\n      ...(extraHeaders || {}),\n    },\n    body,\n    json: true,\n  });\n}\nconst ctx = $('INIT - Env & Config').first().json;\nconst items = $input.all();\nif (!items.length) return [{ json: { ...ctx, stage: 'BONIF_UPSERT_SKIP', count: 0 } }];\nif (ctx.DRY_RUN) return [{ json: { ...ctx, stage: 'BONIF_UPSERT_DRYRUN', count: 0 } }];\n\n// Agrupar por tabla\nconst byTable = {};\nfor (const item of items) {\n  const t = item.json.tabla;\n  if (!byTable[t]) byTable[t] = [];\n  byTable[t].push(item.json.record);\n}\n\nfor (const [tabla, records] of Object.entries(byTable)) {\n  await _fetchPost(`${ctx.SUPABASE_URL}/rest/v1/${tabla}?on_conflict=municipio,provincia`, records, {\n      'apikey': ctx.SUPABASE_SERVICE_ROLE_KEY,\n      'Authorization': `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n      'Content-Type': 'application/json',\n      'Prefer': 'resolution=merge-duplicates,return=minimal'\n    });\n  console.log(JSON.stringify({ stage: 'BONIF_UPSERT', tabla, count: records.length }));\n}\n\nreturn [{ json: { ...ctx, stage: 'BONIF_UPSERT_DONE', count: items.length } }];"
+                      },
+                      "retryOnFail": true,
+                      "maxTries": 3,
+                      "waitBetweenTries": 5000
+},
+{
+                      "id": "bde44654-7228-48cd-bcec-0a223f60dd90",
+                      "name": "ESIOS - Start",
+                      "type": "n8n-nodes-base.code",
+                      "typeVersion": 2,
+                      "position": [
+                                            -1392,
+                                            -176
+                      ],
+                      "parameters": {
+                                            "jsCode": "// ESIOS_INGEST - Precios de electricidad (Public API provider)\nconst ctx = $(\"INIT - Env & Config\").first().json;\nconsole.log(JSON.stringify({ stage: \"ESIOS_START\", runId: ctx.runId }));\n\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst dateStr = yesterday.toISOString().split(\"T\")[0];\n\nreturn [{ json: { ...ctx, subflow: \"ESIOS_INGEST\", fecha: dateStr } }];"
+                      }
+},
+{
+                      "id": "a9edc778-0149-436b-800b-8ec58fafc3c9",
+                      "name": "ESIOS - Fetch PVPC",
+                      "type": "n8n-nodes-base.httpRequest",
+                      "typeVersion": 4.2,
+                      "position": [
+                                            -1152,
+                                            -176
+                      ],
+                      "parameters": {
+                                            "url": "={{ \"https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date=\" + $json.fecha + \"T00:00&end_date=\" + $json.fecha + \"T23:59&time_trunc=hour&geo_limit=peninsular\" }}",
+                                            "options": {
+                                                                  "timeout": 30000
+                                            },
+                                            "headerParameters": {
+                                                "parameters": [
+                                                    {
+                                                        "name": "Accept",
+                                                        "value": "application/json"
+                                                    }
+                                                ]
+                                            }
+                      },
+                      "retryOnFail": true,
+                      "maxTries": 3,
+                      "waitBetweenTries": 5000
+},
+{
+                      "id": "be4f8038-caea-403a-9efb-e64ddbdec44f",
+                      "name": "ESIOS - Parse Precios",
+                      "type": "n8n-nodes-base.code",
+                      "typeVersion": 2,
+                      "position": [
+                                            -912,
+                                            -176
+                      ],
+                      "parameters": {
+                                            "jsCode": "// ESIOS - Parsear respuesta de precios PVPC (API REE apidatos)\nconst ctx = $(\"INIT - Env & Config\").first().json;\nconst data = $input.first().json || {};\nconst fecha = ctx.fecha || new Date().toISOString().split(\"T\")[0];\n\nconst included = data.included || [];\nlet values = [];\n\nfor (const ind of included) {\n  const title = (ind.attributes && ind.attributes.title) ? ind.attributes.title.toLowerCase() : \"\";\n  const id = String(ind.id || \"\");\n  if (title.includes(\"pvpc\") || id.includes(\"1001\") || title.includes(\"precio voluntario\")) {\n    values = ind.attributes.values || [];\n    break;\n  }\n}\n\nif (!values.length && included.length > 0) {\n  for (const ind of included) {\n    if (ind.attributes && ind.attributes.values && ind.attributes.values.length > 0) {\n      values = ind.attributes.values;\n      break;\n    }\n  }\n}\n\nconst precios = values.map(v => Number(v.value) / 1000).filter(n => Number.isFinite(n));\n\nif (!precios.length) {\n  const record = { fecha, tarifa_codigo: \"pvpc_2_0td\", precio_kwh_media: 0.15, precio_kwh_min: 0.12, precio_kwh_max: 0.22, fuente: \"fallback_error\", indicador_id: \"1001\" };\n  return [{ json: { ...ctx, record } }];\n}\n\nconst precio_medio = precios.reduce((a, b) => a + b, 0) / precios.length;\nconst precio_min = Math.min(...precios);\nconst precio_max = Math.max(...precios);\n\nconst record = {\n  fecha,\n  tarifa_codigo: \"pvpc_2_0td\",\n  precio_kwh_media: Math.round(precio_medio * 100000) / 100000,\n  precio_kwh_min: Math.round(precio_min * 100000) / 100000,\n  precio_kwh_max: Math.round(precio_max * 100000) / 100000,\n  fuente: \"ree_apidatos\",\n  indicador_id: \"1001\"\n};\n\nreturn [{ json: { ...ctx, record } }];"
+                                      }
+},
                   {
                       "parameters":  {
-                                         "jsCode":  "// BONIF - Upsert dinÃƒÆ’Ã‚Â¡mico IBI o ICIO\n\nconst __helpers = (typeof this !== \u0027undefined\u0027 \u0026\u0026 this \u0026\u0026 this.helpers) ? this.helpers : null;\nconst __httpRequest = (__helpers \u0026\u0026 typeof __helpers.httpRequest === \u0027function\u0027)\n  ? __helpers.httpRequest.bind(__helpers)\n  : null;\n\nasync function _fetchPost(url, body, extraHeaders) {\n  if (!__httpRequest) throw new Error(\u0027httpRequest helper not available in Code node runtime\u0027);\n  return await __httpRequest({\n    method: \u0027POST\u0027,\n    url,\n    headers: {\n      \u0027Content-Type\u0027: \u0027application/json\u0027,\n      ...(extraHeaders || {}),\n    },\n    body,\n    json: true,\n  });\n}\nconst ctx = $(\u0027INIT - Env \u0026 Config\u0027).first().json;\nconst items = $input.all();\nif (!items.length) return [{ json: { ...ctx, stage: \u0027BONIF_UPSERT_SKIP\u0027, count: 0 } }];\nif (ctx.DRY_RUN) return [{ json: { ...ctx, stage: \u0027BONIF_UPSERT_DRYRUN\u0027, count: 0 } }];\n\n// Agrupar por tabla\nconst byTable = {};\nfor (const item of items) {\n  const t = item.json.tabla;\n  if (!byTable[t]) byTable[t] = [];\n  byTable[t].push(item.json.record);\n}\n\nfor (const [tabla, records] of Object.entries(byTable)) {\n  await _fetchPost(`${ctx.SUPABASE_URL}/rest/v1/${tabla}?on_conflict=municipio,provincia`, records, {\n      \u0027apikey\u0027: ctx.SUPABASE_SERVICE_ROLE_KEY,\n      \u0027Authorization\u0027: `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,\n      \u0027Content-Type\u0027: \u0027application/json\u0027,\n      \u0027Prefer\u0027: \u0027resolution=merge-duplicates,return=minimal\u0027\n    });\n  console.log(JSON.stringify({ stage: \u0027BONIF_UPSERT\u0027, tabla, count: records.length }));\n}\n\nreturn [{ json: { ...ctx, stage: \u0027BONIF_UPSERT_DONE\u0027, count: items.length } }];"
-                                     },
-                      "id":  "8243bf10-e0a4-4d60-a39e-9bc3abc98d68",
-                      "name":  "BONIF - Upsert IBI/ICIO",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       -432,
-                                       -336
-                                   ],
-                      "retryOnFail":  true,
-                      "maxTries":  3,
-                      "waitBetweenTries":  5000
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "// ESIOS_INGEST - Precios de electricidad (token required)\nconst ctx = $(\u0027INIT - Env \u0026 Config\u0027).first().json;\nconst token = String(ctx.ESIOS_API_TOKEN || \u0027\u0027).replace(/^Token\\s+/i, \u0027\u0027).trim();\n\nif (!token || token.length \u003c 20) {\n  throw new Error(\u0027Missing or invalid ESIOS_API_TOKEN. Set it in runtime env and restart n8n service.\u0027);\n}\n\nconsole.log(JSON.stringify({ stage: \u0027ESIOS_START\u0027, runId: ctx.runId, tokenLoaded: true }));\n\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst dateStr = yesterday.toISOString().split(\u0027T\u0027)[0];\n\nreturn [{ json: { ...ctx, ESIOS_API_TOKEN: token, subflow: \u0027ESIOS_INGEST\u0027, fecha: dateStr } }];"
-                                     },
-                      "id":  "bde44654-7228-48cd-bcec-0a223f60dd90",
-                      "name":  "ESIOS - Start",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       -1392,
-                                       -176
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "url":  "={{ \"https://api.esios.ree.es/indicators/1001?start_date=\" + $json.fecha + \"T00:00:00Z\u0026end_date=\" + $json.fecha + \"T23:59:59Z\u0026time_trunc=hour\" }}",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "Accept",
-                                                                                         "value":  "application/json; application/vnd.esios-api-v2+json"
-                                                                                     },
-                                                                                     {
-                                                                                         "name":  "Content-Type",
-                                                                                         "value":  "application/json"
-                                                                                     },
-                                                                                     {
-                                                                                         "name":  "x-api-key",
-                                                                                         "value":  "={{ ($json.ESIOS_API_TOKEN || \"\").replace(/^Token\\\\s+/i, \"\").trim() }}"
-                                                                                     },
-                                                                                     {
-                                                                                         "name":  "User-Agent",
-                                                                                         "value":  "n8n-noticesweather/1.0"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "options":  {
-                                                         "timeout":  30000
-                                                     }
-                                     },
-                      "id":  "a9edc778-0149-436b-800b-8ec58fafc3c9",
-                      "name":  "ESIOS - Fetch PVPC",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       -1152,
-                                       -176
-                                   ],
-                      "retryOnFail":  true,
-                      "maxTries":  3,
-                      "waitBetweenTries":  5000,
-                      "notes":  "TODO: TambiÃƒÆ’Ã‚Â©n descargar indicadores 10211, 10213, 10215 para tarifas 2.0TD, 3.0TD. Indicador 805 = GeneraciÃƒÆ’Ã‚Â³n solar."
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "// ESIOS - Parsear respuesta de precios PVPC\nconst ctx = $(\u0027INIT - Env \u0026 Config\u0027).first().json;\nconst data = $input.first().json || {};\n\nconst values = Array.isArray(data.indicator?.values) ? data.indicator.values : [];\n\nfunction toIsoDate(v) {\n  if (!v) return null;\n  const d = new Date(v);\n  if (!Number.isFinite(d.getTime())) return null;\n  return d.toISOString().slice(0, 10);\n}\n\nconst fechaFromValue =\n  toIsoDate(values[0]?.datetime_utc) ||\n  toIsoDate(values[0]?.datetime) ||\n  toIsoDate(values[0]?.datetime_local) ||\n  null;\n\nconst fecha =\n  fechaFromValue ||\n  toIsoDate(data.indicator?.values?.[0]?.date) ||\n  new Date().toISOString().slice(0, 10);\n\nif (!values.length) {\n  console.warn(JSON.stringify({ stage: \u0027ESIOS_EMPTY\u0027, fecha }));\n  // Devuelve estimacion para no bloquear ramas downstream\n  const record = {\n    fecha,\n    tarifa_codigo: \u0027pvpc_2_0td\u0027,\n    precio_kwh_media: 0.15,\n    precio_kwh_min: 0.12,\n    precio_kwh_max: 0.22,\n    fuente: \u0027fallback_estimado\u0027,\n    indicador_id: String(data.indicator?.id || \u00271001\u0027),\n  };\n  return [{ json: { ...ctx, record } }];\n}\n\nconst precios = values\n  .map(v =\u003e Number(v.value) / 1000)\n  .filter(n =\u003e Number.isFinite(n));\n\nif (!precios.length) {\n  console.warn(JSON.stringify({ stage: \u0027ESIOS_VALUES_INVALID\u0027, fecha, total: values.length }));\n  return [{ json: { ...ctx, record: {\n    fecha,\n    tarifa_codigo: \u0027pvpc_2_0td\u0027,\n    precio_kwh_media: 0.15,\n    precio_kwh_min: 0.12,\n    precio_kwh_max: 0.22,\n    fuente: \u0027fallback_sin_valores\u0027,\n    indicador_id: String(data.indicator?.id || \u00271001\u0027),\n  } } }];\n}\n\nconst precio_medio = precios.reduce((a, b) =\u003e a + b, 0) / precios.length;\nconst precio_min = Math.min(...precios);\nconst precio_max = Math.max(...precios);\n\nconst record = {\n  fecha,\n  tarifa_codigo: \u0027pvpc_2_0td\u0027,\n  precio_kwh_media: Math.round(precio_medio * 100000) / 100000,\n  precio_kwh_min: Math.round(precio_min * 100000) / 100000,\n  precio_kwh_max: Math.round(precio_max * 100000) / 100000,\n  fuente: \u0027esios\u0027,\n  indicador_id: String(data.indicator?.id || \u00271001\u0027)\n};\n\nconsole.log(JSON.stringify({ stage: \u0027ESIOS_PARSE\u0027, fecha, precio_medio: record.precio_kwh_media, n: precios.length }));\nreturn [{ json: { ...ctx, record } }];"
-                                     },
-                      "id":  "be4f8038-caea-403a-9efb-e64ddbdec44f",
-                      "name":  "ESIOS - Parse Precios",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       -912,
-                                       -176
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "// ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â\n// COMPATIBILIDAD_INGEST - Inversor + BaterÃƒÆ’Ã‚Â­a + Cargador EV\n// ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â\nconst ctx = $(\u0027INIT - Env \u0026 Config\u0027).first().json;\nconsole.log(JSON.stringify({ stage: \u0027COMPAT_START\u0027, runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: \u0027COMPATIBILIDAD_INGEST\u0027 } }];"
+                                         "jsCode":  "// COMPATIBILIDAD_INGEST - Carga compatibilidad inversores/baterias/cargadores\nconst ctx = $(\u0027INIT - Env \u0026 Config\u0027).first().json;\nconsole.log(JSON.stringify({ stage: \u0027COMPAT_START\u0027, runId: ctx.runId }));\nreturn [{ json: { ...ctx, subflow: \u0027COMPATIBILIDAD_INGEST\u0027 } }];"
                                      },
                       "id":  "55d20353-c072-4a6b-9230-fb66887dc01e",
                       "name":  "COMPAT - Start",

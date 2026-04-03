@@ -14,16 +14,18 @@ export async function searchLocations(rawQuery: string): Promise<LocationResult[
   const query = rawQuery.trim();
   if (!query || query.length < 2) return [];
 
-  const supabase = await createSupabaseServerClient();
-  const searchPattern = `%${query}%`;
+  const unaccented = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pattern = `%${query}%`;
+  const slugPattern = `%${unaccented}%`;
 
-  // We could just search municipios_energia where we have both provincia and municipio
+  const supabase = await createSupabaseServerClient();
+  // We search by municipio, provincia, and slug (which is always unaccented)
   const { data, error } = await supabase
     .from("municipios_energia")
     .select("municipio, provincia, slug")
-    .or(`municipio.ilike.${searchPattern},provincia.ilike.${searchPattern}`)
+    .or(`municipio.ilike.${pattern},provincia.ilike.${pattern},slug.ilike.${slugPattern}`)
     .order("habitantes", { ascending: false, nullsFirst: false })
-    .limit(10);
+    .limit(12);
 
   if (error || !data) {
     return [];
@@ -35,16 +37,50 @@ export async function searchLocations(rawQuery: string): Promise<LocationResult[
   const results: LocationResult[] = [];
   const addedProvinces = new Set<string>();
 
-  for (const item of rows) {
-    const isProvinciaMatch = item.provincia.toLowerCase().includes(query.toLowerCase());
-    const isMunicipioMatch = item.municipio.toLowerCase().includes(query.toLowerCase());
+  const queryLC = query.toLowerCase();
+  const unaccentedLC = unaccented.toLowerCase();
 
-    if (isProvinciaMatch && !addedProvinces.has(item.provincia)) {
-      addedProvinces.add(item.provincia);
+  for (const item of rows) {
+    const provLC = item.provincia.toLowerCase();
+    const munLC = item.municipio.toLowerCase();
+    const slugLC = item.slug.toLowerCase();
+
+      const isProvinciaMatch = provLC.includes(queryLC) || provLC.includes(unaccentedLC) || slugLC.includes(unaccentedLC);
+      const isMunicipioMatch = munLC.includes(queryLC) || munLC.includes(unaccentedLC) || slugLC.includes(unaccentedLC);
+  
+      // Smart handling for bilingual names like "Araba/Álava" or "Alicante/Alacant"
+      let cleanProvName = item.provincia;
+      if (item.provincia.includes("/")) {
+        const parts = item.provincia.split("/").map(p => p.trim());
+        // If the query matches one part specifically, use that one. 
+        // Otherwise, default to the first part.
+        const matchingPart = parts.find(p => 
+          p.toLowerCase().includes(queryLC) || 
+          p.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(unaccentedLC)
+        );
+        cleanProvName = matchingPart || parts[0];
+      }
+      
+      // Standardize articles: "Balears, Illes" -> "Illes Balears"
+      if (cleanProvName.includes(", ")) {
+        const [main, article] = cleanProvName.split(", ");
+        cleanProvName = `${article} ${main}`;
+      }
+
+      // Special case for Illes Balears -> Islas Baleares
+      const provLower = cleanProvName.trim().toLowerCase();
+      if (provLower === "illes balears" || provLower.includes("balears") || provLower === "baleares") {
+          cleanProvName = "Islas Baleares";
+      }
+      
+      const provSlug = slugify(cleanProvName);
+  
+      if (isProvinciaMatch && !addedProvinces.has(provSlug)) {
+      addedProvinces.add(provSlug);
       results.push({
         type: "provincia",
-        label: `${item.provincia} (Provincia)`,
-        slug: slugify(item.provincia),
+        label: `${cleanProvName} (Provincia)`,
+        slug: provSlug,
         sublabel: "Ver todos los municipios"
       });
     }

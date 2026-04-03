@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const filePath = 'docs/n8nweb.json';
+const filePath = 'data/n8n/n8nweb.json';
 const wf = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 const node = wf.nodes.find((n) => (n.id || '').startsWith('6c0935ea'));
 
@@ -11,7 +11,7 @@ function getCtx() {
   const names = ['INIT – Env & Config', 'INIT - Env & Config', 'INIT â€” Env & Config'];
   for (const n of names) {
     try {
-      const j = $(n).first().json;
+      const j = \$(n).first().json;
       if (j && typeof j === 'object') return j;
     } catch (_) {}
   }
@@ -19,7 +19,7 @@ function getCtx() {
 }
 
 const ctx = getCtx();
-const item = $input.first();
+const item = \$input.first();
 if (!item) return [{ json: { ...ctx, stage: 'ESIOS_UPSERT_SKIP', count: 0 } }];
 if (ctx.DRY_RUN) return [{ json: { ...ctx, stage: 'ESIOS_UPSERT_DRYRUN', count: 0 } }];
 
@@ -33,10 +33,10 @@ const r = item.json.record || {};
 async function postSupabase(pathWithQuery, payload) {
   return await httpRequest({
     method: 'POST',
-    url: `${ctx.SUPABASE_URL}/rest/v1/${pathWithQuery}`,
+    url: \`\${ctx.SUPABASE_URL}/rest/v1/\${pathWithQuery}\`,
     headers: {
       apikey: ctx.SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${ctx.SUPABASE_SERVICE_ROLE_KEY}`,
+      Authorization: \`Bearer \${ctx.SUPABASE_SERVICE_ROLE_KEY}\`,
       'Content-Type': 'application/json',
       Prefer: 'resolution=merge-duplicates,return=minimal',
     },
@@ -115,7 +115,7 @@ return [{
     tarifasMode: t1.mode,
     preciosMode: t2.mode,
   },
-}];`;
+}];\`;
 
 fs.writeFileSync(filePath, JSON.stringify(wf, null, 2), 'utf8');
 console.log('Patched ESIOS node with 400 fallback');

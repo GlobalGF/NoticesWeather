@@ -141,17 +141,19 @@ export function PrecioLuzWidget() {
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                            PVPC {esActual ? "· hora actual" : `· último dato ${String(ahora.hora).padStart(2, "0")}:00`}
+                            {esActual ? "Consumo de red · Ahora" : `Consumo de red · ${String(ahora.hora).padStart(2, "0")}:00`}
                         </p>
                         <div className="mt-1 flex items-baseline gap-2">
-                            <span className="text-4xl font-black tabular-nums tracking-tight text-slate-900">
+                            <span className="text-4xl font-black tabular-nums tracking-tight text-slate-900" title={`${(ahora.precio_kwh * 100).toFixed(1)} céntimos/kWh`}>
                                 {fmt(ahora.precio_kwh)}
                             </span>
-                            <span className="text-base text-slate-500 font-medium">€/kWh</span>
+                            <div className="flex flex-col">
+                                <span className="text-base text-slate-500 font-medium leading-none">€/kWh</span>
+                                <span className="text-[10px] text-slate-400 font-medium mt-1">{(ahora.precio_kwh * 100).toFixed(1)} céntimos</span>
+                            </div>
                         </div>
                         <p className="mt-1 text-xs text-slate-400">
-                            {esActual && `${String(ahora.hora).padStart(2, "0")}:00 · `}
-                            <span className="hidden sm:inline">Percentil {ahora.percentil} · </span>Tarifa 2.0TD
+                            Aplica a la luz que compras directamente de la compañía
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">

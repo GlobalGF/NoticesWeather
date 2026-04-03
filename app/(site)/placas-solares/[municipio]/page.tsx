@@ -12,6 +12,7 @@ import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { SubsidiesSeoBlock } from "@/components/ui/SubsidiesSeoBlock";
+import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
 
 import { BatteryNeedsCalculator } from "@/components/ui/BatteryNeedsCalculator";
 import { SurplusCompensationCalculator } from "@/components/ui/SurplusCompensationCalculator";
@@ -283,6 +284,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                     </div>
                                 </div>
                             </section>
+
+                            <AntiCommercialWarning 
+                                municipio={municipio.municipio} 
+                                irradiacionAnual={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                            />
 
                             {/* ── FAQ Accordion (SSR — visible to Googlebot) ── */}
                             <FaqAccordion faqs={faqs} municipio={municipio.municipio} />
