@@ -13,7 +13,7 @@ export const revalidate = cachePolicy.page.compatibility;
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{ inversor: string; cargador: string; tarifa: string }>;
+  params: { inversor: string; cargador: string; tarifa: string };
 };
 
 export async function generateStaticParams() {
@@ -24,7 +24,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { inversor, cargador, tarifa } = await params;
+  const { inversor, cargador, tarifa } = params;
   const parsedInversor = tryParseSlug(inversor);
   const parsedCargador = tryParseSlug(cargador);
   const parsedTarifa = tryParseSlug(tarifa);
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function InverterEvPage({ params }: Props) {
-  const { inversor, cargador, tarifa } = await params;
+  const { inversor, cargador, tarifa } = params;
   const parsedInversor = tryParseSlug(inversor);
   const parsedCargador = tryParseSlug(cargador);
   const parsedTarifa = tryParseSlug(tarifa);

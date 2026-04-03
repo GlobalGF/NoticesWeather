@@ -7,10 +7,12 @@ import { slugify } from "@/lib/utils/slug";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
+export const dynamicParams = true;
+
 type Props = { params: { comunidad: string; provincia: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { provincia, comunidad } = await params;
+    const { provincia, comunidad } = params;
     const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     const ccaaName = comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     return {
@@ -31,7 +33,7 @@ const CCAA_NAME_MAP: Record<string, string> = {
 };
 
 export default async function SubvencionesSolaresProvinciaPage({ params }: Props) {
-    const { comunidad, provincia } = await params;
+    const { comunidad, provincia } = params;
 
     const supabase = await createSupabaseServerClient();
 

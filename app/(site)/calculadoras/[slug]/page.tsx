@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { getMunicipioBySlug } from "@/lib/data/solar";
 import { CalculadorasClient } from "../CalculadorasClient";
 
+export const dynamicParams = true;
+
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = params;
   const data = await getMunicipioBySlug(slug);
 
   if (!data) return { title: "Calculadoras Solares" };
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CalculadoraMunicipioPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
   const data = await getMunicipioBySlug(slug);
 
   if (!data) notFound();

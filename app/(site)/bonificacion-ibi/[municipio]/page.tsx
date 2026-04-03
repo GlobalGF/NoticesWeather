@@ -13,7 +13,7 @@ export const revalidate = cachePolicy.page.ibi;
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{ municipio: string }>;
+  params: { municipio: string };
 };
 
 export async function generateStaticParams() {
@@ -25,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { municipio } = await params;
+  const { municipio } = params;
   const parsed = tryParseSlug(municipio);
   if (!parsed) return {};
   const data = await getIbiPageData(parsed);
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function IbiMunicipioPage({ params }: Props) {
-  const { municipio } = await params;
+  const { municipio } = params;
   const parsed = tryParseSlug(municipio);
   if (!parsed) notFound();
   const data = await getIbiPageData(parsed);

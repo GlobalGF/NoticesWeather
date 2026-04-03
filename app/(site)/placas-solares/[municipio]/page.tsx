@@ -32,8 +32,10 @@ import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
 
+export const dynamicParams = true;
+
 type Props = {
-    params: Promise<{ municipio: string }>;
+    params: { municipio: string };
 };
 
 const fmt = (v: number | null | undefined) => v ? new Intl.NumberFormat('es-ES').format(v) : "";
@@ -51,8 +53,11 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     try {
-        const { municipio: rawMunicipio } = await params;
-        const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
+        const rawMunicipio = params.municipio;
+        if (!rawMunicipio) return {};
+        
+        const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
+        const slug = tryParseSlug(decoded) || decoded;
         
         if (!slug) return {};
         
@@ -81,10 +86,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /* ---------- page ---------- */
 
 export default async function PlacasSolaresMunicipioPage({ params }: Props) {
-    const { municipio: rawMunicipio } = await params;
+    const rawMunicipio = params.municipio;
     
     try {
-        const slug = tryParseSlug(decodeURIComponent(rawMunicipio).toLowerCase()) || decodeURIComponent(rawMunicipio).toLowerCase();
+        if (!rawMunicipio) return <Fallback message="No se especificó municipio." />;
+
+        const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
+        const slug = tryParseSlug(decoded) || decoded;
         const municipio = await getMunicipioBySlug(slug);
 
         if (!municipio) return <Fallback message="No se encontró el municipio." />;

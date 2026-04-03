@@ -4,6 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
+export const dynamicParams = true;
+
 type Props = { params: { comunidad: string; provincia: string; municipio: string } };
 
 const CCAA_NAME_MAP: Record<string, string> = {
@@ -17,7 +19,7 @@ const CCAA_NAME_MAP: Record<string, string> = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { municipio, provincia, comunidad } = await params;
+    const { municipio, provincia, comunidad } = params;
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase
         .from("municipios_energia")
@@ -37,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SubvencionesSolaresMunicipioPage({ params }: Props) {
-    const { comunidad, provincia, municipio } = await params;
+    const { comunidad, provincia, municipio } = params;
 
     const ccaaName = CCAA_NAME_MAP[comunidad] ?? comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     const supabase = await createSupabaseServerClient();

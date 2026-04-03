@@ -5,11 +5,11 @@ import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 
 type Props = {
-  searchParams: Promise<{ provincia?: string }>;
+  searchParams: { provincia?: string };
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
   const baseMetadata: Metadata = {
     title: "Bonificación del IBI por Placas Solares",
     description: "Consulta los descuentos y bonificaciones en el IBI (Impuesto sobre Bienes Inmuebles) por la instalación de placas solares en tu municipio.",
@@ -27,7 +27,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function BonificacionIbiRootPage({ searchParams }: Props) {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
 
   // ── Province-specific Landing ──────────────────────────────────
   if (provincia) {

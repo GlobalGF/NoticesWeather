@@ -105,7 +105,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { comunidad } = await params;
+  const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
   if (!parsed) return {};
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
@@ -127,7 +127,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 
 export default async function SubsidiesCcaaPage({ params }: Props) {
-  const { comunidad } = await params;
+  const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
   if (!parsed) notFound();
 

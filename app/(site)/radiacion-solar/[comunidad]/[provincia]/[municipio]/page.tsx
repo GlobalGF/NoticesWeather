@@ -14,7 +14,7 @@ export const revalidate = cachePolicy.page.radiation;
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{ comunidad: string; provincia: string; municipio: string }>;
+  params: { comunidad: string; provincia: string; municipio: string };
 };
 
 export async function generateStaticParams() {
@@ -25,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { comunidad, provincia, municipio } = await params;
+  const { comunidad, provincia, municipio } = params;
   const parsedComunidad = tryParseSlug(comunidad);
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RadiationPage({ params }: Props) {
-  const { comunidad, provincia, municipio } = await params;
+  const { comunidad, provincia, municipio } = params;
   const parsedComunidad = tryParseSlug(comunidad);
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);

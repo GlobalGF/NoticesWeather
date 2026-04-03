@@ -6,11 +6,11 @@ import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 
 type Props = {
-  searchParams: Promise<{ provincia?: string }>;
+  searchParams: { provincia?: string };
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
   const baseMetadata: Metadata = {
     title: "Coeficientes de Reparto para Autoconsumo Colectivo",
     description: "Encuentra los coeficientes de reparto óptimos para instalaciones de autoconsumo colectivo y compartido en tu Comunidad Autónoma y Municipio.",
@@ -28,7 +28,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function CoeficienteAutoconsumoRootPage({ searchParams }: Props) {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
 
   // ── Province-specific Landing ──────────────────────────────────
   if (provincia) {

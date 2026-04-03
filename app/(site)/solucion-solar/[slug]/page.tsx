@@ -16,7 +16,7 @@ export const revalidate = cachePolicy.page.genericSolarSlug;
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
 export async function generateStaticParams() {
@@ -28,7 +28,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = params;
   const parsed = tryParseSlug(slug);
   if (!parsed) return {};
 
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GenericSolarSlugPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
   const parsed = tryParseSlug(slug);
   if (!parsed) notFound();
 

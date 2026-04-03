@@ -8,11 +8,11 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ m?: string }>;
+  searchParams: { m?: string };
 };
 
 export default async function CalculadorasPage({ searchParams }: Props) {
-  const { m: slug } = await searchParams;
+  const { m: slug } = searchParams;
 
   let municipioNombre = "España";
   let horasSolAnuales = 2500;

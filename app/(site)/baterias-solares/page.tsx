@@ -8,11 +8,11 @@ import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 
 type Props = {
-  searchParams: Promise<{ provincia?: string }>;
+  searchParams: { provincia?: string };
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
   const baseMetadata: Metadata = {
     title: "Baterías Solares: Precios, Rentabilidad y Ayudas por Municipio",
     description: "Encuentra instaladores, calcula el ahorro nocturno y descubre las ayudas disponibles para instalar baterías solares en tu localidad.",
@@ -30,7 +30,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function BateriasSolaresRootPage({ searchParams }: Props) {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
 
   // ── Province-specific Landing ──────────────────────────────────
   if (provincia) {

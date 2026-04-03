@@ -8,11 +8,11 @@ import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 
 type Props = {
-  searchParams: Promise<{ provincia?: string }>;
+  searchParams: { provincia?: string };
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
@@ -28,7 +28,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function PlacasSolaresIndexPage({ searchParams }: Props) {
-  const { provincia } = await searchParams;
+  const { provincia } = searchParams;
 
   // ── Province-specific Landing ──────────────────────────────────
   if (provincia) {

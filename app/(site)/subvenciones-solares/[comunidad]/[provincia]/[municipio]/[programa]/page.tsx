@@ -14,12 +14,12 @@ export const revalidate = cachePolicy.page.subsidy;
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{
+  params: {
     comunidad: string;
     provincia: string;
     municipio: string;
     programa: string;
-  }>;
+  };
 };
 
 export async function generateStaticParams() {
@@ -37,7 +37,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { comunidad, provincia, municipio, programa } = await params;
+  const { comunidad, provincia, municipio, programa } = params;
   const parsedComunidad = tryParseSlug(comunidad);
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SubsidyPage({ params }: Props) {
-  const { comunidad, provincia, municipio, programa } = await params;
+  const { comunidad, provincia, municipio, programa } = params;
   const parsedComunidad = tryParseSlug(comunidad);
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
