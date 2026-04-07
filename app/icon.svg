@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#2B4C9B"/>
+  <g transform="translate(256,256)" stroke="#F5C518" stroke-linecap="round" fill="none" stroke-width="28">
+    <!-- center ring -->
+    <circle r="60" fill="#F5C518" stroke="none"/>
+    <circle r="60" fill="#2B4C9B" stroke="none" transform="scale(0.55)"/>
+    <!-- rays -->
+    <line y1="-100" y2="-140"/>
+    <line y1="-100" y2="-140" transform="rotate(45)"/>
+    <line y1="-100" y2="-140" transform="rotate(90)"/>
+    <line y1="-100" y2="-140" transform="rotate(135)"/>
+    <line y1="-100" y2="-140" transform="rotate(180)"/>
+    <line y1="-100" y2="-140" transform="rotate(225)"/>
+    <line y1="-100" y2="-140" transform="rotate(270)"/>
+    <line y1="-100" y2="-140" transform="rotate(315)"/>
+  </g>
+</svg>
