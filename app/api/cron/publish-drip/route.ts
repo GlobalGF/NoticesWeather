@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
         const supabase = createSupabaseAdminClient();
 
         // 1. How many pages to publish today? (You can adjust this later)
-        const PAGES_PER_DAY = 150;
+        const PAGES_PER_DAY = 500;
 
-        // 2. Find the top 150 pending pages sorted by priority score
+        // 2. Find the top 500 pending pages sorted by priority score
         const { data: pendingItems, error: selectError } = await supabase
             .from("publish_queue")
             .select("id, slug, ruta_tipo")
