@@ -4,6 +4,7 @@ import { tryParseSlug } from "@/lib/utils/params";
 import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
+import { cachePolicy } from "@/lib/cache/policy";
 
 import { WeatherProvider } from "@/components/providers/WeatherProvider";
 import { CroUrgencyBanner } from "@/components/ui/CroUrgencyBanner";
@@ -21,16 +22,18 @@ import { SolarFinancingCalculator } from "@/components/ui/SolarFinancingCalculat
 
 import { NearbyMunicipalityCards } from "@/components/ui/NearbyMunicipalityCards";
 import GeoDirectory from "@/components/ui/GeoDirectory";
-
+import { SiloNavigation } from "@/components/ui/SiloNavigation";
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import Fallback from "@/components/solar/Fallback";
 import { getMunicipioBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
 
+export const revalidate = cachePolicy.page.solarCity;
 export const dynamicParams = true;
 
 type Props = {
@@ -57,6 +60,17 @@ const fmtEur = (v: number | null | undefined) => {
     } catch {
         return `${v} €`;
     }
+};
+
+const cleanLocationName = (name: string) => {
+    if (!name) return "";
+    if (name.includes("/")) {
+        const parts = name.split("/");
+        // In many datasets, it's "Bilingual/Spanish" or "Original/Official"
+        // We prefer the second part if available, as it's often the more recognizable Spanish name
+        return (parts[1] || parts[0]).trim();
+    }
+    return name.trim();
 };
 
 
@@ -94,24 +108,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             };
         }
 
-        const muniName = data.municipio || "tu localidad";
-        const provName = data.provincia || "";
+        const muniName = cleanLocationName(data.municipio || "tu localidad");
+        const provName = cleanLocationName(data.provincia || "");
         
         const title = `Placas solares en ${muniName} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
-        const description = `Instala paneles solares en ${muniName}${provName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
+        const description = `Instala paneles solares en ${muniName}${provName && provName !== muniName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
 
-        return {
+        return buildMetadata({
             title,
             description,
-            openGraph: { title, description },
-            alternates: { canonical: `/placas-solares/${slug}` },
-        };
+            pathname: `/placas-solares/${slug}`,
+        });
     } catch (error) {
         console.error("[generateMetadata] Failed to generate metadata:", error);
-        return { 
-            title: defaultTitle, 
-            description: defaultDescription 
-        };
+        
+        const fallbackName = rawMunicipio 
+          ? rawMunicipio.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+          : "tu localidad";
+
+        return buildMetadata({ 
+            title: `Placas solares en ${fallbackName} – Instalación y Rentabilidad ${year}`, 
+            description: `Consulta el ahorro y disponibilidad para instalación de placas solares en ${fallbackName}. Datos y presupuestos sin compromiso garantizados.`,
+            pathname: `/placas-solares/${rawMunicipio}`
+        });
     }
 }
 
@@ -122,7 +141,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
     
     try {
         console.info(`[PlacasSolaresMunicipioPage] 1. START for: ${rawMunicipio}`);
-        if (!rawMunicipio) return <Fallback message="No se especificó municipio." />;
+        if (!rawMunicipio) notFound();
 
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
@@ -132,13 +151,13 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
         if (!municipio) {
             console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB`);
-            return <Fallback message="No se encontró el municipio." />;
+            notFound();
         }
 
-        // SANITY CHECK: If critical fields are missing, don't crash, show fallback
+        // SANITY CHECK: If critical fields are missing, don't crash, show 404
         if (!municipio.municipio || !municipio.provincia) {
             console.error(`[PlacasSolaresMunicipioPage] 2c. CRITICAL DATA MISSING for ${slug}`);
-            return <Fallback message="Datos geográficos incompletos para este municipio." />;
+            notFound();
         }
 
         console.info(`[PlacasSolaresMunicipioPage] 3. FETCHING WEATHER for: ${municipio.municipio}`);
@@ -169,8 +188,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         const ahorroHora = Number(precioLuz) * 4 * 0.20;
         const horasSol = Number(municipio.horas_sol ?? 1800);
         const ahorroAnual = Number(municipio.ahorro_estimado ?? Math.round(horasSol * ahorroHora));
-        const payback = municipio.precio_instalacion_medio_eur && ahorroAnual > 0
-            ? Math.round(Number(municipio.precio_instalacion_medio_eur) / ahorroAnual) : null;
+        const precioInstalacion = Number(municipio.precio_instalacion_medio_eur ?? 6500);
+        const payback = ahorroAnual > 0 ? Math.round(precioInstalacion / ahorroAnual) : null;
 
         console.info(`[PlacasSolaresMunicipioPage] 7. PREPARING SCHEMA & RENDER`);
         /* ── Build JSON-LD structured data ── */
@@ -213,7 +232,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             <span>›</span>
                             <a href="/placas-solares" className="hover:text-white transition-colors">Energía Solar</a>
                             <span>›</span>
-                            <span className="text-slate-200">{municipio.municipio}</span>
+                            <span className="text-slate-200">{cleanLocationName(municipio.municipio)}</span>
                         </nav>
                         <div className="flex items-center gap-3 text-xs text-slate-400">
                             <LiveUpdateTime />
@@ -227,8 +246,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                     Calculadora solar · Rentabilidad y ayudas
                                 </p>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
-                                    Placas solares en {municipio.municipio}
-                                    <span className="text-slate-400 font-normal text-lg sm:text-xl"> · {municipio.provincia}</span>
+                                    Placas solares en {cleanLocationName(municipio.municipio)}
+                                    {cleanLocationName(municipio.municipio) !== cleanLocationName(municipio.provincia) && (
+                                        <span className="text-slate-400 font-normal text-lg sm:text-xl"> · {cleanLocationName(municipio.provincia)}</span>
+                                    )}
                                 </h1>
                             </div>
                         </div>
@@ -360,9 +381,17 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             {/* Related municipalities */}
                             <NearbyMunicipalityCards items={nearbyItems} currentMunicipio={municipio.municipio} />
 
+                            <SiloNavigation
+                                currentSilo="placas-solares"
+                                municipioName={cleanLocationName(municipio.municipio)}
+                                municipioSlug={slug}
+                                provinciaName={municipio.provincia}
+                                comunidadName={municipio.comunidad_autonoma || undefined}
+                            />
+
                             <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden">
                                 <h2 className="text-xl font-bold text-slate-900 mb-6">Más localidades con placas solares por provincia</h2>
-                                <GeoDirectory level="provincias" baseRoute="/placas-solares" />
+                                <GeoDirectory level="provincias" baseRoute="/placas-solares" queryParam="provincia" />
                             </section>
                         </div>
 
@@ -371,7 +400,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             {/* Local Stats Box with source citations */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="bg-slate-900 px-5 py-4">
-                                    <h3 className="text-lg font-bold text-white">Datos solares de {municipio.municipio}</h3>
+                                    <h3 className="text-lg font-bold text-white">Datos solares de {cleanLocationName(municipio.municipio)}</h3>
                                 </div>
                                 <div className="p-5 space-y-4">
                                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -408,7 +437,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             {/* Hook Lead Form into sidebar */}
                             <div className="sticky top-6">
                                 <LeadForm
-                                    municipio={municipio.municipio}
+                                    municipio={cleanLocationName(municipio.municipio)}
                                     municipioSlug={slug}
                                     provincia={municipio.provincia}
                                     ahorroEstimado={municipio.ahorro_estimado}

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Cookies | SolaryEco",
+  title: "Política de Cookies",
   description: "Información sobre el uso de cookies en SolaryEco según la directiva ePrivacy europea.",
   robots: { index: false, follow: true },
 };

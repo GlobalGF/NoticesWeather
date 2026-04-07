@@ -143,12 +143,53 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validateStep()) return;
 
     trackStepEvent("submit");
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      // Map vivienda to tipo_vivienda expected by API
+      const tipoMap: Record<string, string> = {
+        "Piso": "piso",
+        "Casa unifamiliar": "unifamiliar",
+        "Comunidad de vecinos": "empresa",
+        "Local comercial": "empresa",
+      };
+
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: form.nombre.trim(),
+          telefono: form.telefono.replace(/\s+/g, ""),
+          email: form.email,
+          tipo_vivienda: tipoMap[form.vivienda] ?? "unifamiliar",
+          consumo_mensual: form.consumoMensual,
+          tejado: form.tejado,
+          bateria: form.bateria,
+          municipio,
+          provincia: provincia ?? "",
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? "Error al enviar. Inténtalo de nuevo.");
+        setSubmitting(false);
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Error de conexión. Inténtalo de nuevo.");
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -167,9 +208,6 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
             ({leadValue.leadTier}).
           </p>
         ) : null}
-        <p className="mt-4 text-sm text-slate-600">
-          Si prefieres acelerar el proceso, puedes llamarnos al <strong>900 000 000</strong>.
-        </p>
       </div>
     );
   }
@@ -343,18 +381,25 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         ) : (
           <button
             type="submit"
-            className="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+            disabled={submitting}
+            className="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Quiero mi estudio gratis
+            {submitting ? "Enviando..." : "Quiero mi estudio gratis"}
           </button>
         )}
       </div>
 
-      <ul className="mt-5 space-y-1 text-sm text-slate-600">
-        <li>Datos protegidos y uso exclusivo para el estudio solar.</li>
-        <li>Sin llamadas insistentes ni permanencia.</li>
-        <li>Instaladores certificados en {municipio} y provincia.</li>
-      </ul>
+      <p className="mt-5 text-xs leading-relaxed text-slate-500">
+        Solo llamadas en horario comercial.
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-slate-500">
+        Al enviar aceptas que tus datos sean cedidos a instaladores solares certificados en tu zona.
+        {" "}
+        Consulta nuestra{" "}
+        <a href="/legal/politica-privacidad" className="underline hover:text-slate-600">
+          política de privacidad
+        </a>.
+      </p>
     </form>
   );
 }

@@ -29,7 +29,13 @@ export async function GET() {
     lastmod: nowIso
   }));
 
-  const xml = toSitemapIndexXml([...paginatedLocations, ...ccaaLocations]);
+  // Subvenciones sitemap (CCAA + provincia + municipio hierarchy)
+  const subvencionesLocation = {
+    loc: `${base}/sitemaps/sitemap-subvenciones.xml`,
+    lastmod: nowIso
+  };
+
+  const xml = toSitemapIndexXml([...paginatedLocations, ...ccaaLocations, subvencionesLocation]);
 
   return new NextResponse(xml, {
     headers: {

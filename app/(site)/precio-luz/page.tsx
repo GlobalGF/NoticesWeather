@@ -6,6 +6,9 @@ import { getNationalStats, getPrecioLuzHoy } from "@/lib/data/solar";
 import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { cachePolicy } from "@/lib/cache/policy";
+
+export const revalidate = cachePolicy.page.solarCity;
 
 type Props = {
   searchParams: { provincia?: string };
@@ -14,16 +17,16 @@ type Props = {
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
   const baseMetadata: Metadata = {
-    title: "Precio de la Luz por Municipio",
-    description: "Consulta el precio de la luz y compensación de excedentes en tu localidad.",
+    title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real",
+    description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica. Compara tarifas luz por municipio.",
   };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return {
-      title: `Precio de la Luz en ${name} | Tarifas y Excedentes Hoy`,
-      description: `Consulta el precio de la luz PVPC actualizado y la tarifa de compensación de excedentes solares para todos los municipios de la provincia de ${name}.`,
+      title: `Tarifa Luz Hoy en ${name} — Precio por Hora Actualizado`,
+      description: `Consulta la tarifa de la luz hoy en ${name}: precio PVPC hora a hora actualizado ahora. Tarifas luz y compensación de excedentes solares por municipio.`,
     };
   }
   return baseMetadata;

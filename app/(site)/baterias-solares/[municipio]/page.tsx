@@ -8,7 +8,10 @@ import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { tryParseSlug } from "@/lib/utils/params";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { LeadForm } from "@/components/ui/LeadForm";
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { SiloNavigation } from "@/components/ui/SiloNavigation";
 
 export const revalidate = 604800; // 1 semana
 export const dynamicParams = true;
@@ -48,6 +51,15 @@ type BateriaRow = {
 };
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
+function cleanLocationName(name: string) {
+    if (!name) return "";
+    if (name.includes("/")) {
+        const parts = name.split("/");
+        return (parts[1] || parts[0]).trim();
+    }
+    return name.trim();
+}
+
 function nd(v: number | null | undefined, suffix = "", dec = 0): string {
     if (v == null) return "—";
     return v.toLocaleString("es-ES", { maximumFractionDigits: dec }) + suffix;
@@ -61,14 +73,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: raw } = await supabase.from("municipios_energia").select("municipio, provincia").eq("slug", slug).single();
+    
     const d = raw as any;
     if (!d) return { title: "Baterías Solares" };
 
-    return {
-        title: `Baterías Solares en ${d.municipio} (${d.provincia}) ${new Date().getFullYear()} | Rentabilidad y Precios`,
-        description: `Descubra si es rentable instalar baterías solares de litio en ${d.municipio}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión.`,
-        alternates: { canonical: `/baterias-solares/${slug}` },
-    };
+    const muniClean = cleanLocationName(d.municipio);
+    const provClean = cleanLocationName(d.provincia);
+
+    return buildMetadata({
+        title: `Baterías Solares en ${muniClean} (${provClean}) ${new Date().getFullYear()} | Rentabilidad y Precios`,
+        description: `Descubra si es rentable instalar baterías solares de litio en ${muniClean}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión.`,
+        pathname: `/baterias-solares/${slug}`,
+    });
 }
 
 /* ── Sub-components ──────────────────────────────────────────────── */
@@ -122,10 +138,44 @@ export default async function BateriasMunicipioPage({ params }: Props) {
     const ahorroExtraBateria = Math.round(ahorroSolarBase * 0.45); // Asumimos un 45% de ahorro extra
     const ahorroTotal = ahorroSolarBase + ahorroExtraBateria;
 
-    // Calcular el precio medio aproximado basándose en una media de 500€ / kWh de las baterías de la BBDD
+    // Calcular el precio medio basándose en eur/kWh estimado de mercado
+    function getBatPriceEst(b: BateriaRow) {
+        let rate = 480;
+        if (b.fabricante === "Tesla") return 7000;
+        if (b.fabricante.includes("Huawei")) rate = 500;
+        if (b.fabricante.includes("BYD")) rate = 450;
+        if (b.fabricante.includes("Enphase")) rate = 650;
+        if (b.fabricante.includes("Sigenergy")) rate = 550;
+        return Math.round(b.capacidad_kwh * rate);
+    }
+    
+    // Average capacity and average derived market price
     const capMedia = baterias.length > 0 ? (baterias.reduce((acc, curr) => acc + curr.capacidad_kwh, 0) / baterias.length) : 5;
-    const precioMedioBateria = Math.round(capMedia * 480); // 480 EUR por kWh
+    const precioMedioBateria = baterias.length > 0 
+        ? Math.round(baterias.reduce((acc, curr) => acc + getBatPriceEst(curr), 0) / baterias.length)
+        : Math.round(capMedia * 480);
+    
     const paybackBateria = Math.round((precioMedioBateria / ahorroExtraBateria) * 10) / 10;
+
+    const muniName = cleanLocationName(m.municipio);
+    const provName = cleanLocationName(m.provincia);
+
+    // Generar textos dinámicos spintax
+    const spintaxP1 = "{La decisión|La elección|El paso|El hecho} de {agregar|incorporar|sumar|instalar} {baterías físicas|baterías solares|acumuladores de litio|sistemas de almacenamiento} a {un sistema fotovoltaico|su instalación fotovoltaica|sus placas solares} {depende estrictamente|está directamente ligado|se basa principalmente} en la {relación|diferencia|brecha} entre {el precio de la red|el coste de la electricidad|las tarifas del mercado libre} (<a href=\"/precio-luz/[SLUG]\" class=\"text-blue-600 hover:underline\">PVPC alto en horas nocturnas</a>) y la {compensación de excedentes|venta de la energía sobrante|remuneración de excedentes} ({que suele ser baja|extremadamente reducida|baja} {durante las horas diurnas|en las horas centrales del día|mientras brilla el sol} en [PROV]).";
+    
+    const spintaxP2 = "{En la actualidad|A día de hoy|Hoy en día|Actualmente}, {instalar|apostar por|optar por|montar} una {batería de litio|batería|solución de almacenamiento} LiFePO4 (LFP) {reduce casi a cero|disminuye significativamente|minimiza enormemente|elimina la mayor parte de} la {exposición|dependencia} al {mercado mayorista|mercado eléctrico|precio variable} de la red {eléctrica|convencional}, {incrementando|elevando|subiendo} el porcentaje de <strong>autoconsumo {real|directo} {hasta un 85% o 90%|por encima del 80%}</strong>. {Las baterías|Estos acumuladores|Los equipos de litio} {acumulan|guardan|almacenan} la {energía barata|electricidad excedente|producción gratis} generada al mediodía {para descargarla|para usarla|para liberarla} en los picos de demanda de {la tarde-noche|las horas finales del día|la noche}.";
+    
+    const spintaxVirtual = "Alternativa sin hardware. Las comercializadoras en [CCAA] pueden {guardar|acumular|retener} el {valor económico de sus excedentes|saldo generado por sus placas|dinero de los excedentes} no compensables ({el margen que sobra|el importe sobrante|el capital sobrante} al llegar a {factura 0€|una factura de 0 euros} de consumo) en un “monedero virtual”. {Esta modalidad|Este sistema|Esta opción} <strong>{reduce sus facturas|baja sus recibos de luz|abarata sus costes} en {meses de invierno o en segundas residencias|las épocas de bajo sol o viviendas vacacionales}</strong> sin {invertir|gastar|desembolsar} en equipos de Litio, aunque {ofrece menor autonomía|brinda menos independencia|aporta menos protección} frente a subidas puntuales del PVPC.";
+
+    const spintaxVars = {
+        PROV: provName,
+        CCAA: m.comunidad_autonoma,
+        SLUG: slug
+    };
+
+    const textP1 = generateDynamicText(spintaxP1, slug, spintaxVars);
+    const textP2 = generateDynamicText(spintaxP2, slug, spintaxVars);
+    const textVirtual = generateDynamicText(spintaxVirtual, slug, spintaxVars);
 
     const yearNow = new Date().getFullYear();
     const nowStr = new Date().toLocaleString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -142,7 +192,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                         <span>›</span>
                         <a href="/baterias-solares" className="hover:text-white transition-colors">Baterías</a>
                         <span>›</span>
-                        <span className="text-slate-200 truncate max-w-[100px] sm:max-w-none">{m.municipio}</span>
+                        <span className="text-slate-200 truncate max-w-[100px] sm:max-w-none">{muniName}</span>
                     </nav>
                     <div className="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
                         <span className="hidden sm:inline">Actualizado: {nowStr}</span>
@@ -158,11 +208,11 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                                 SISTEMAS DE ALMACENAMIENTO · LÍTIO LFP
                             </p>
                             <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight">
-                                Baterías Solares en {m.municipio}
+                                Baterías Solares en {muniName}
                                 <span className="text-slate-400 font-normal hidden sm:inline"> · Independencia Energética</span>
                             </h1>
                             <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-light">
-                                Consulte el impacto financiero de añadir módulos de almacenamiento a {m.municipio}. Eleve el autoconsumo por encima del 80%.
+                                Consulte el impacto financiero de añadir módulos de almacenamiento a {muniName}. Eleve el autoconsumo por encima del 80%.
                             </p>
                         </div>
                     </div>
@@ -218,15 +268,11 @@ export default async function BateriasMunicipioPage({ params }: Props) {
 
                         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-100">
-                                <h2 className="text-xl font-bold text-slate-900">Análisis: ¿Merece la pena en {m.municipio}?</h2>
+                                <h2 className="text-xl font-bold text-slate-900">Análisis: ¿Merece la pena en {muniName}?</h2>
                             </div>
                             <div className="p-6 prose prose-slate max-w-none text-slate-600 leading-relaxed text-sm">
-                                <p>
-                                    La decisión de agregar baterías físicas a un sistema fotovoltaico depende estrictamente de la relación entre el precio de la red (<a href={`/precio-luz/${slug}`}>PVPC alto en horas nocturnas</a>) y la compensación de excedentes (baja durante las horas diurnas de sol en {m.provincia}).
-                                </p>
-                                <p>
-                                    En la actualidad, instalar una batería de litio LiFePO4 (LFP) reduce casi a cero la exposición al mercado mayorista de la red eléctrica, incrementando el porcentaje de <strong>autoconsumo real hasta un 85% o 90%</strong>. Las baterías acumulan la energía barata producida al mediodía para descargarla en los picos de demanda de la tarde-noche.
-                                </p>
+                                <p dangerouslySetInnerHTML={{ __html: textP1 }} />
+                                <p dangerouslySetInnerHTML={{ __html: textP2 }} />
                             </div>
                         </div>
 
@@ -253,7 +299,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {baterias.map((bat, i) => {
-                                            const precioProd = Math.round(bat.capacidad_kwh * 480);
+                                            const precioProd = getBatPriceEst(bat);
                                             return (
                                                 <tr key={i} className="hover:bg-slate-50 transition-colors">
                                                     <td className="px-4 sm:px-6 py-3">
@@ -288,13 +334,18 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                             </div>
                         </div>
 
-                        {/* Alternativa Virtual Compacta */}
                         <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
                             <h3 className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide border-b pb-2 border-slate-100">La Batería Virtual (Monedero)</h3>
-                            <p className="text-slate-600 text-sm leading-relaxed mt-3">
-                                Alternativa sin hardware. Las comercializadoras en {m.comunidad_autonoma} pueden guardar el valor económico de sus excedentes no compensables (el margen que sobra al llegar a factura 0€ de consumo) en un “monedero virtual”. Esta modalidad <strong>reduce sus facturas en meses de invierno o en segundas residencias</strong> sin invertir en equipos de Litio, aunque ofrece menor autonomía frente a subidas puntuales del PVPC.
-                            </p>
+                            <p className="text-slate-600 text-sm leading-relaxed mt-3" dangerouslySetInnerHTML={{ __html: textVirtual }} />
                         </div>
+
+                        <SiloNavigation
+                            currentSilo="baterias-solares"
+                            municipioName={muniName}
+                            municipioSlug={slug}
+                            provinciaName={provName}
+                            comunidadName={m.comunidad_autonoma}
+                        />
 
                     </div>
 
@@ -306,7 +357,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                             <div className="px-5 pt-4 pb-2 border-b border-slate-100">
                                 <SectionHeader
                                     title={`Contexto Financiero`}
-                                    subtitle={`Datos de ${m.provincia}`}
+                                    subtitle={`Datos de ${provName}`}
                                 />
                             </div>
                             <div className="px-5 pb-4">
@@ -353,9 +404,9 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                                     Cotice una instalación híbrida (Paneles + Batería LFP) con técnicos certificados en {m.provincia}.
                                 </p>
                                 <LeadForm
-                                    municipio={m.municipio}
+                                    municipio={muniName}
                                     municipioSlug={slug}
-                                    provincia={m.provincia}
+                                    provincia={provName}
                                     ahorroEstimado={ahorroTotal}
                                 />
                             </div>
@@ -372,13 +423,13 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                         <div>
                             <p className="font-bold text-slate-700 mb-2 text-sm">Metodología Financiera</p>
                             <p className="leading-relaxed">
-                                Los análisis de amortización se elaboran modelando un incremento del 45% en la tasa de autoconsumo sobre los datos base procesados por el satélite SARAH (PVGIS) para las coordenadas de {m.municipio}. Los precios orientativos de equipos LFP se han estandarizado aplicando un ratio estadístico actual de 480 € por kilovatio hora (kWh) de almacenamiento útil, exención de IVA no incluida.
+                                Los análisis de amortización se elaboran modelando un incremento del 45% en la tasa de autoconsumo sobre los datos base procesados por el satélite SARAH (PVGIS) para las coordenadas de {muniName}. Los precios orientativos de equipos LFP se han estandarizado basándose en los costes actuales del mercado por kilovatio hora (kWh) según el fabricante, exención de IVA no incluida.
                             </p>
                         </div>
                         <div>
                             <p className="font-bold text-slate-700 mb-2 text-sm">Aviso Legal Energético</p>
                             <p className="leading-relaxed">
-                                La base de datos técnica (Huawei, BYD, Fronius, Enphase) se actualiza de fuentes oficiales. Los datos dinámicos no constituyen una recomendación irrevocable de inversión financiera. Al decidir ampliar su infraestructura fotovoltaica con acumuladores electroquímicos preste atención al estado límite de carga (SOC) y garantías de degradación del fabricante en las condiciones térmicas de {m.comunidad_autonoma}.
+                                La base de datos técnica (Huawei, BYD, Fronius, Enphase, Tesla) se actualiza de fuentes oficiales. Los datos dinámicos no constituyen una recomendación irrevocable de inversión. Al decidir ampliar su infraestructura fotovoltaica con acumuladores electroquímicos preste atención al estado límite de carga (SOC) y garantías de degradación del fabricante en las condiciones térmicas de {m.comunidad_autonoma}.
                             </p>
                         </div>
                     </div>

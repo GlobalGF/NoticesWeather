@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/config";
 import { createClient } from "@supabase/supabase-js";
+import { cachePolicy } from "@/lib/cache/policy";
 
 export async function createSupabaseServerClient() {
   const url = getSupabaseUrl();
@@ -16,7 +17,14 @@ export async function createSupabaseServerClient() {
       auth: {
         autoRefreshToken: false,
         persistSession: false
-      }
+      },
+      global: {
+        fetch: (input, init) =>
+          fetch(input, {
+            ...init,
+            next: { revalidate: cachePolicy.data.municipalityDetail },
+          }),
+      },
     });
   }
 

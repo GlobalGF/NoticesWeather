@@ -8,8 +8,10 @@ import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { tryParseSlug } from "@/lib/utils/params";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { PrecioLuzWidget } from "@/components/ui/PrecioLuzWidget";
 import { LeadForm } from "@/components/ui/LeadForm";
+import { SiloNavigation } from "@/components/ui/SiloNavigation";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -48,6 +50,15 @@ function nd(v: number | null | undefined, suffix = "", dec = 0): string {
     return v.toLocaleString("es-ES", { maximumFractionDigits: dec }) + suffix;
 }
 
+function cleanLocationName(name: string) {
+    if (!name) return "";
+    if (name.includes("/")) {
+        const parts = name.split("/");
+        return (parts[1] || parts[0]).trim();
+    }
+    return name.trim();
+}
+
 function precioColor(precio: number) {
     if (precio < 0.10) return { bg: "bg-emerald-600", text: "text-white", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", label: "Muy barata" };
     if (precio < 0.15) return { bg: "bg-emerald-500", text: "text-white", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", label: "Barata" };
@@ -59,19 +70,29 @@ function precioColor(precio: number) {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || !hasSupabaseEnv()) return { title: "Precio de la Luz Hoy en España — PVPC por Municipio en Tiempo Real", description: "Consulta el precio de la luz PVPC hora a hora y compensación de excedentes solares en tu localidad. Datos oficiales de Red Eléctrica de España." };
+    if (!slug || !hasSupabaseEnv()) return { title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real", description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica de España." };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: raw } = await supabase.from("municipios_energia").select("municipio, provincia, precio_medio_luz").eq("slug", slug).single();
     const d = raw as any;
-    if (!d) return { title: "Precio de la Luz" };
+    if (!d) {
+        const fallbackName = slug ? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "tu localidad";
+        return buildMetadata({ 
+            title: `Tarifa Luz Hoy en ${fallbackName} — Precio por Hora ${new Date().getFullYear()}`, 
+            description: `Tarifa de la luz hoy en ${fallbackName}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica de España.`,
+            pathname: `/precio-luz/${slug}`
+        });
+    }
 
-    return {
-        title: `Precio de la luz en ${d.municipio} (${d.provincia}) ${new Date().getFullYear()} | PVPC Tiempo Real`,
-        description: `Consulta el precio PVPC hora a hora en ${d.municipio}. Datos oficiales de Red Eléctrica de España. Ahorro estimado con autoconsumo solar.`,
-        alternates: { canonical: `/precio-luz/${slug}` },
-    };
+    const muniClean = cleanLocationName(d.municipio);
+    const provClean = cleanLocationName(d.provincia);
+
+    return buildMetadata({
+        title: `Tarifa Luz Hoy en ${muniClean} (${provClean}) — Precio por Hora ${new Date().getFullYear()}`,
+        description: `Tarifa de la luz hoy en ${muniClean}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica. Ahorro con autoconsumo solar en ${provClean}.`,
+        pathname: `/precio-luz/${slug}`,
+    });
 }
 
 /* ── Sub-components ──────────────────────────────────────────────── */
@@ -123,8 +144,8 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
     const horasSol = m.horas_sol ?? 1800;
     const ahorroHora = precioHoy * 4 * 0.20;
     const ahorroAnual = m.ahorro_estimado ?? Math.round(horasSol * ahorroHora);
-    const payback = m.precio_instalacion_medio_eur && ahorroAnual > 0
-        ? Math.round(m.precio_instalacion_medio_eur / ahorroAnual) : null;
+    const precioInstalacion = Number(m.precio_instalacion_medio_eur ?? 6500);
+    const payback = ahorroAnual > 0 ? Math.round(precioInstalacion / ahorroAnual) : null;
 
     const yearNow = new Date().getFullYear();
     const now = new Date();
@@ -253,7 +274,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                 </p>
                             </div>
                             <div className="p-5">
-                                <PrecioLuzWidget />
+                                <PrecioLuzWidget initialPrecio={precioHoy} />
                             </div>
                         </div>
 
@@ -330,6 +351,15 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                 </p>
                             </div>
                         </div>
+
+                        <SiloNavigation
+                            currentSilo="precio-luz"
+                            municipioName={m.municipio}
+                            municipioSlug={slug}
+                            provinciaName={m.provincia}
+                            comunidadName={m.comunidad_autonoma}
+                        />
+
                     </div>
 
                     {/* Right column (1/3) */}

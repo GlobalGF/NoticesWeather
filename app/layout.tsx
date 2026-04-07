@@ -9,8 +9,11 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Energia Solar en Espana",
-  description: "Programmatic SEO para energia solar por municipio en Espana.",
+  title: {
+    default: "SolaryEco — Energía Solar y Precio de la Luz en España",
+    template: "%s | SolaryEco",
+  },
+  description: "Portal de datos de autoconsumo solar: tarifa de la luz hoy, rendimiento fotovoltaico, subvenciones y precios de instalación para más de 8.000 municipios españoles.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"),
   verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION_CODE ? {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION_CODE,

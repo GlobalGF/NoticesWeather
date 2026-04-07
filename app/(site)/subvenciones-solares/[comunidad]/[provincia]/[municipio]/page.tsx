@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
 export const dynamicParams = true;
+export const revalidate = 86400;
 
 type Props = { params: { comunidad: string; provincia: string; municipio: string } };
 
@@ -26,16 +28,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .select("municipio, provincia")
         .eq("slug", municipio)
         .limit(1)
-        .single();
+        .maybeSingle();
 
     const muniName = (data as any)?.municipio ?? municipio.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     const provName = (data as any)?.provincia ?? provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
-    return {
-        title: `Subvenciones Placas Solares en ${muniName} (${provName}) 2026 | Ayudas e IBI`,
+    return buildMetadata({
+        title: `Subvenciones Placas Solares en ${muniName} (${provName}) ${new Date().getFullYear()} | Ayudas e IBI`,
         description: `Consulta las subvenciones del ${CCAA_NAME_MAP[comunidad] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
-        alternates: { canonical: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}` },
-    };
+        pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}`,
+    });
 }
 
 export default async function SubvencionesSolaresMunicipioPage({ params }: Props) {
@@ -45,12 +47,15 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
     const supabase = await createSupabaseServerClient();
 
     // 1. Fetch municipio data — use real "municipio" name from DB (avoids slug artifact like "Aiguafreda Barcelona")
-    const { data: muniRaw } = await supabase
+    const { data: muniRaw, error: muniError } = await supabase
         .from("municipios_energia")
-        .select("municipio, provincia, habitants, horas_sol, irradiacion_solar, bonificacion_ibi, bonificacion_icio, ahorro_estimado")
+        .select("municipio, provincia, habitantes, horas_sol, irradiacion_solar, bonificacion_ibi, bonificacion_icio, ahorro_estimado")
         .eq("slug", municipio)
         .limit(1)
-        .single();
+        .maybeSingle();
+
+    // 404 for non-existent municipalities
+    if (muniError || !muniRaw) notFound();
 
     const muniRow = muniRaw as any;
 
@@ -62,9 +67,9 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
     const { data: ccaaRaw } = await supabase
         .from("subvenciones_solares_ccaa_es")
         .select("subvencion_porcentaje, max_subvencion_euros, programa, fecha_fin")
-        .ilike("comunidad_autonoma", `%${ccaaName.split(" ")[0]}%`)
+        .eq("comunidad_autonoma", ccaaName)
         .limit(1)
-        .single();
+        .maybeSingle();
 
     const ccaaRow = ccaaRaw as any;
 
@@ -314,7 +319,7 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
                                     </a>
                                 </li>
                                 <li><a href={`/subvenciones-solares/${comunidad}`} className="text-slate-400 hover:text-white transition-colors">← {ccaaName}</a></li>
-                                <li><a href="/bonificacion-ibi" className="text-slate-400 hover:text-white transition-colors">→ Buscador IBI Nacional</a></li>
+                                <li><a href="/placas-solares" className="text-slate-400 hover:text-white transition-colors">→ Precios instalación solar</a></li>
                                 <li><a href="/calculadoras" className="text-slate-400 hover:text-white transition-colors">→ Calculadora de ahorro</a></li>
                             </ul>
                         </div>

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidad | SolaryEco",
+  title: "Política de Privacidad",
   description: "Protección de datos y política de privacidad de SolaryEco en base al RGPD europeo.",
   robots: { index: false, follow: true },
 };
@@ -21,7 +21,7 @@ export default function PoliticaPrivacidadPage() {
             <h2 className="text-xl font-bold text-slate-900 text-amber-500 mb-4 mt-0">1. Quiénes somos</h2>
             <p>
               El responsable del tratamiento de los datos personales recogidos en <strong>solaryeco.es</strong> es SolaryEco,
-              con correo electrónico de contacto: <a href="mailto:contact@globalgrowthframework.com" className="text-blue-600 font-medium">contact@globalgrowthframework.com</a>.
+              con correo electrónico de contacto: <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 font-medium">contact@globalgrowthframework.dev</a>.
             </p>
           </section>
 
@@ -96,7 +96,7 @@ export default function PoliticaPrivacidadPage() {
             </div>
             <p className="mt-5">
               Para ejercer cualquiera de estos derechos, basta con enviar un email a 
-              <strong> <a href="mailto:contact@globalgrowthframework.com" className="text-blue-600 hover:underline">contact@globalgrowthframework.com</a> </strong>
+              <strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a> </strong>
               adjuntando una copia de tu DNI e indicando el derecho que deseas ejercer.
             </p>
           </section>

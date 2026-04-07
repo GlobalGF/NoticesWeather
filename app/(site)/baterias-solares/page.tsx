@@ -6,6 +6,9 @@ import { getNationalStats } from "@/lib/data/solar";
 import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { cachePolicy } from "@/lib/cache/policy";
+
+export const revalidate = cachePolicy.page.solarCity;
 
 type Props = {
   searchParams: { provincia?: string };

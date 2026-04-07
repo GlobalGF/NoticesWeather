@@ -91,10 +91,10 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
                                     Ver rentabilidad
                                 </Link>
                                 <Link
-                                    href={`/bonificacion-ibi/${m.slug}`}
+                                    href={`/precio-luz/${m.slug}`}
                                     className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 shadow-sm"
                                 >
-                                    Ficha IBI
+                                    Precio luz
                                 </Link>
                             </div>
                         </article>

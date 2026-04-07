@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sobre Nosotros | El Proyecto SolaryEco",
+  title: "Sobre Nosotros — El Proyecto SolaryEco",
   description: "Conoce a SolaryEco, el portal independiente líder en España para el cálculo de rendimiento, precios y ahorro en energía solar fotovoltaica.",
 };
 
@@ -85,7 +85,7 @@ export default function SobreNosotrosPage() {
             en nuestro directorio, prensa o quejas formales:
             <br /><br />
             <strong>Compañía:</strong> SolaryEco<br/>
-            <strong>Responsable de Contacto:</strong> <a href="mailto:contact@globalgrowthframework.com" className="text-blue-300 hover:text-white underline">contact@globalgrowthframework.com</a><br/>
+            <strong>Responsable de Contacto:</strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-300 hover:text-white underline">contact@globalgrowthframework.dev</a><br/>
             <strong>Domicilio Social:</strong> España (En constitución)<br />
           </p>
 

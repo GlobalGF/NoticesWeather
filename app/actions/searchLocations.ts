@@ -43,10 +43,15 @@ export async function searchLocations(rawQuery: string): Promise<LocationResult[
   for (const item of rows) {
     const provLC = item.provincia.toLowerCase();
     const munLC = item.municipio.toLowerCase();
+    // Extract the municipality part of the slug (strip the province suffix)
     const slugLC = item.slug.toLowerCase();
+    const provSuffix = `-${slugify(item.provincia)}`;
+    const munSlugLC = slugLC.endsWith(provSuffix) ? slugLC.slice(0, -provSuffix.length) : slugLC;
 
-      const isProvinciaMatch = provLC.includes(queryLC) || provLC.includes(unaccentedLC) || slugLC.includes(unaccentedLC);
-      const isMunicipioMatch = munLC.includes(queryLC) || munLC.includes(unaccentedLC) || slugLC.includes(unaccentedLC);
+      // Province match: only match against the province name itself
+      const isProvinciaMatch = provLC.includes(queryLC) || provLC.includes(unaccentedLC);
+      // Municipality match: match against name or the municipality-only part of the slug
+      const isMunicipioMatch = munLC.includes(queryLC) || munLC.includes(unaccentedLC) || munSlugLC.includes(unaccentedLC);
   
       // Smart handling for bilingual names like "Araba/Álava" or "Alicante/Alacant"
       let cleanProvName = item.provincia;
@@ -97,6 +102,8 @@ export async function searchLocations(rawQuery: string): Promise<LocationResult[
     }
   }
 
-  // Return max 8 results
-  return results.slice(0, 8);
+  // Return max 8 results, municipalities first
+  const municipios = results.filter(r => r.type === "municipio");
+  const provincias = results.filter(r => r.type === "provincia");
+  return [...municipios, ...provincias].slice(0, 8);
 }

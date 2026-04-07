@@ -10,6 +10,23 @@ import { GUIDE_SLUGS } from "@/lib/seo/sitemap-guides";
 
 export const SITEMAP_CHUNK_SIZE = 5000;
 
+/** Important static / hub pages that should always be in the sitemap. */
+const STATIC_PAGES: Array<{ path: string; changefreq: "daily" | "weekly" | "monthly"; priority: number }> = [
+  { path: "/", changefreq: "daily", priority: 1.0 },
+  { path: "/placas-solares", changefreq: "weekly", priority: 0.9 },
+  { path: "/precio-luz", changefreq: "daily", priority: 0.9 },
+  { path: "/baterias-solares", changefreq: "weekly", priority: 0.9 },
+  { path: "/subvenciones-solares", changefreq: "weekly", priority: 0.9 },
+  { path: "/bonificacion-ibi", changefreq: "weekly", priority: 0.8 },
+  { path: "/calculadoras", changefreq: "monthly", priority: 0.7 },
+  { path: "/radiacion-solar", changefreq: "monthly", priority: 0.7 },
+  { path: "/autoconsumo-compartido", changefreq: "monthly", priority: 0.7 },
+  { path: "/coeficiente-autoconsumo", changefreq: "monthly", priority: 0.7 },
+  { path: "/normativa-solar", changefreq: "monthly", priority: 0.7 },
+  { path: "/presupuesto-solar", changefreq: "monthly", priority: 0.8 },
+  { path: "/sobre-nosotros", changefreq: "monthly", priority: 0.5 },
+];
+
 type SitemapUrl = {
   loc: string;
   lastmod?: string;
@@ -68,10 +85,11 @@ async function getSitemapCounts(): Promise<SitemapCounts> {
 export async function getSitemapPageCount(): Promise<number> {
   const { municipiosCount, pseoSlugCount } = await getSitemapCounts();
 
-  // 3 URL types per municipality (placas-solares, bonificacion-ibi, autoconsumo-compartido)
+  // 3 URL types per municipality (placas-solares, precio-luz, baterias-solares)
   const dynamicLocalUrls = municipiosCount * 3;
   const guideUrls = GUIDE_SLUGS.length;
-  const totalUrls = dynamicLocalUrls + guideUrls + pseoSlugCount;
+  const staticUrls = STATIC_PAGES.length;
+  const totalUrls = dynamicLocalUrls + guideUrls + pseoSlugCount + staticUrls;
 
   return Math.max(1, Math.ceil(totalUrls / SITEMAP_CHUNK_SIZE));
 }
@@ -104,18 +122,19 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
   const end = start + SITEMAP_CHUNK_SIZE - 1;
 
   const sections = [
-    { key: "municipio" as const, from: 0, to: totalMunicipioUrlsPerType - 1 },
-    { key: "ibi" as const, from: totalMunicipioUrlsPerType, to: totalMunicipioUrlsPerType * 2 - 1 },
-    { key: "autoconsumo" as const, from: totalMunicipioUrlsPerType * 2, to: totalMunicipioUrlsPerType * 3 - 1 },
+    { key: "static" as const, from: 0, to: STATIC_PAGES.length - 1 },
+    { key: "municipio" as const, from: STATIC_PAGES.length, to: STATIC_PAGES.length + totalMunicipioUrlsPerType - 1 },
+    { key: "precio-luz" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 - 1 },
+    { key: "baterias" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 - 1 },
     {
       key: "guia" as const,
-      from: totalMunicipioUrlsPerType * 3,
-      to: totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length - 1
+      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3,
+      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length - 1
     },
     {
       key: "pseo_slug" as const,
-      from: totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length,
-      to: totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length + pseoSlugCount - 1
+      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length,
+      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length + pseoSlugCount - 1
     }
   ];
 
@@ -126,6 +145,20 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
     const overlapTo = Math.min(end, section.to);
 
     if (overlapFrom > overlapTo) continue;
+
+    if (section.key === "static") {
+      const staticStart = overlapFrom - section.from;
+      const staticEnd = overlapTo - section.from;
+      for (const page of STATIC_PAGES.slice(staticStart, staticEnd + 1)) {
+        urls.push({
+          loc: `${baseUrl}${page.path}`,
+          lastmod: DEPLOY_DATE,
+          changefreq: page.changefreq,
+          priority: page.priority
+        });
+      }
+      continue;
+    }
 
     if (section.key === "guia") {
       const guideStart = overlapFrom - section.from;
@@ -165,9 +198,9 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
       const path =
         section.key === "municipio"
           ? `/placas-solares/${slug}`
-          : section.key === "ibi"
-            ? `/bonificacion-ibi/${slug}`
-            : `/autoconsumo-compartido/${slug}`;
+          : section.key === "precio-luz"
+            ? `/precio-luz/${slug}`
+            : `/baterias-solares/${slug}`;
 
       urls.push({
         loc: `${baseUrl}${path}`,

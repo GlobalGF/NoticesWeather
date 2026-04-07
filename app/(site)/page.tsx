@@ -3,11 +3,16 @@ import { getTopMunicipiosEnergiaSlugs } from "@/data/repositories/municipios-ene
 import { getNationalStats, getPrecioLuzHoy } from "@/lib/data/solar";
 import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { cachePolicy } from "@/lib/cache/policy";
 
-export const metadata = {
-  title: "SolaryEco | El Portal de Datos de Autoconsumo en España",
-  description: "Descubre el rendimiento fotovoltaico, horas de sol, compensación de excedentes y precios actualizados de la luz para más de 8.000 municipios españoles.",
-};
+export const revalidate = cachePolicy.page.solarCity;
+
+export const metadata = buildMetadata({
+  title: "Tarifa Luz Hoy, Placas Solares y Autoconsumo en España",
+  description: "Consulta la tarifa de la luz hoy, rendimiento fotovoltaico, horas de sol y subvenciones para placas solares en más de 8.000 municipios españoles.",
+  pathname: "/",
+});
 
 const mainHubs = [
   {
@@ -111,7 +116,7 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchema) }} />
       
       {/* ── Corporate Hero with Search ── */}
-      <div className="bg-slate-900 border-t border-slate-800 pb-20 pt-16 overflow-hidden relative shadow-lg">
+      <div className="bg-slate-900 border-t border-slate-800 pb-20 pt-16 relative shadow-lg">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))]"></div>
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
         
@@ -329,15 +334,41 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 text-center">
             <h2 className="text-xl font-bold text-slate-900 mb-8">Municipios Más Buscados</h2>
             <div className="flex flex-wrap justify-center gap-3">
-              {topSlugs.map((slug) => (
-                <Link 
-                  key={slug} 
-                  href={`/placas-solares/${slug}`}
-                  className="bg-white border border-slate-300 px-4 py-2 rounded-full text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                >
-                  {slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
-                </Link>
-              ))}
+              {rows.map((row) => {
+                const muni = row.municipio || "";
+                const prov = row.provincia || "";
+                
+                // Deduplication logic: If muni contains provincial name or vice versa, show only once
+                let displayName = muni;
+                const muniLower = muni.toLowerCase();
+                const provLower = prov.toLowerCase();
+                
+                if (muniLower === provLower) {
+                  displayName = muni;
+                } else if (muniLower.includes(provLower)) {
+                  displayName = muni;
+                } else if (provLower.includes(muniLower)) {
+                  displayName = prov;
+                } else {
+                  displayName = `${muni} (${prov})`;
+                }
+
+                // Handle bilingual names (e.g. Alacant/Alicante -> Alicante)
+                if (displayName.includes("/")) {
+                  const parts = displayName.split("/");
+                  displayName = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+                }
+
+                return (
+                  <Link 
+                    key={row.slug} 
+                    href={`/placas-solares/${row.slug}`}
+                    className="bg-white border border-slate-300 px-4 py-2 rounded-full text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    {displayName}
+                  </Link>
+                );
+              })}
               <Link 
                   href="/placas-solares"
                   className="bg-blue-600 border border-blue-600 px-4 py-2 rounded-full text-sm font-bold text-white hover:bg-blue-700 transition-colors flex items-center gap-1"

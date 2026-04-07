@@ -5,7 +5,11 @@ import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 import { getNationalStats } from "@/lib/data/solar";
 import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { cachePolicy } from "@/lib/cache/policy";
+
+export const revalidate = cachePolicy.page.solarCity;
 
 type Props = {
   searchParams: { provincia?: string };
@@ -16,15 +20,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
+    return buildMetadata({
       title: `Placas Solares en ${name}: Rendimiento, Precios y Subvenciones`,
       description: `Encuentra tu municipio en ${name} y accede al estudio completo de irradiación solar, rentabilidad financiera y bonificaciones fiscales (IBI/ICIO). ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
-    };
+      pathname: `/placas-solares?provincia=${encodeURIComponent(provincia)}`,
+    });
   }
-  return {
+  return buildMetadata({
     title: "Placas Solares en España: Estudio de Rendimiento y Precios",
     description: "Descubre el potencial solar de tu localidad. Buscador de rendimiento energético, precios de instalación y subvenciones para placas solares en España.",
-  };
+    pathname: "/placas-solares",
+  });
 }
 
 export default async function PlacasSolaresIndexPage({ searchParams }: Props) {

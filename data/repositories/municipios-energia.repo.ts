@@ -131,18 +131,18 @@ export const getMunicipioEnergiaBySlug = cache(async (slug: string): Promise<Mun
   }
 });
 
-export async function getTopMunicipiosEnergiaSlugs(limit: number): Promise<Array<{ slug: string }>> {
+export async function getTopMunicipiosEnergiaSlugs(limit: number): Promise<Array<{ slug: string; municipio: string; provincia: string }>> {
   const cachedQuery = unstable_cache(
     async () => {
       if (!hasSupabaseEnv()) {
-        return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug }));
+        return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug, municipio: row.municipio, provincia: row.provincia }));
       }
 
       try {
         const supabase = await createSupabaseServerClient();
         const { data, error } = await supabase
           .from("municipios_energia")
-          .select("slug")
+          .select("slug, municipio, provincia")
           .order("habitantes", { ascending: false })
           .limit(limit);
 
@@ -153,13 +153,17 @@ export async function getTopMunicipiosEnergiaSlugs(limit: number): Promise<Array
               message: error.message
             });
           }
-          return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug }));
+          return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug, municipio: row.municipio, provincia: row.provincia }));
         }
 
-        return (data as Array<{ slug: string }>).map((row) => ({ slug: row.slug }));
+        return (data as Array<{ slug: string; municipio: string; provincia: string }>).map((row) => ({ 
+          slug: row.slug,
+          municipio: row.municipio,
+          provincia: row.provincia
+        }));
       } catch (error) {
         console.error("[Supabase] municipios_energia slugs unexpected error", error);
-        return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug }));
+        return fallbackRows.slice(0, limit).map((row) => ({ slug: row.slug, municipio: row.municipio, provincia: row.provincia }));
       }
     },
     [`municipios-energia:top-slugs:${limit}`],

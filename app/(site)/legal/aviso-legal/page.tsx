@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Aviso Legal | SolaryEco",
+  title: "Aviso Legal",
   description: "Términos de uso y condiciones legales del portal energético SolaryEco.",
   robots: { index: false, follow: true }, // No necesitamos indexar páginas puramente legales en buscadores
 };
@@ -26,11 +26,11 @@ export default function AvisoLegalPage() {
             </p>
             <ul className="list-disc pl-5 space-y-2 mt-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
               <li><strong>Denominación comercial:</strong> SolaryEco</li>
-              <li><strong>Titularidad:</strong> [Pendiente de constitución / En trámite]</li>
-              <li><strong>NIF/CIF:</strong> [Pendiente]</li>
-              <li><strong>Domicilio Social:</strong> [Dirección pendiente de habilitación comercial, España]</li>
-              <li><strong>Correo electrónico de contacto:</strong> <a href="mailto:contact@globalgrowthframework.com" className="text-blue-600 hover:underline">contact@globalgrowthframework.com</a></li>
+              <li><strong>Correo electrónico de contacto:</strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a></li>
             </ul>
+            <p className="mt-3 text-xs text-slate-500">
+              El resto de datos identificativos (NIF/CIF, domicilio social) se actualizarán una vez completada la constitución formal de la actividad.
+            </p>
           </section>
 
           <section>

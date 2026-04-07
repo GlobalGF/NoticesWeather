@@ -5,13 +5,11 @@ import { useWeather } from "@/components/providers/WeatherProvider";
 
 /* ── Solar physics constants ────────────────────────────────────── */
 
-const PANEL_AREA_M2 = 1.7;           // typical 400W panel
-const PANEL_EFFICIENCY = 0.20;        // 20% module efficiency
 const PERFORMANCE_RATIO = 0.80;       // system losses (wiring, inverter, etc.)
 const TEMP_COEFF = -0.004;            // -0.4%/°C above 25°C (typical mono-Si)
 const REFERENCE_TEMP = 25;            // STC reference temp
 const ELECTRICITY_PRICE = 0.22;       // default €/kWh (overrideable via prop)
-const PANEL_PEAK_W = 440;             // peak wattage per panel
+const PANEL_PEAK_W = 440;             // peak wattage per panel (STC @ 1000 W/m²)
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -44,15 +42,15 @@ function calculate(
   const tempDerating = 1 + TEMP_COEFF * tempDelta; // e.g. 0.97 at 32°C
   const tempDeratingPct = Math.round((1 - tempDerating) * 100);
 
-  // Current output per panel (W)
-  const rawOutputW = ghiWm2 * PANEL_AREA_M2 * PANEL_EFFICIENCY * PERFORMANCE_RATIO;
-  const currentOutputW = rawOutputW * tempDerating;
+  // Current output per panel (W) — using panel nameplate rating at STC (1000 W/m²)
+  const solarFraction = ghiWm2 / 1000;
+  const currentOutputW = solarFraction * PANEL_PEAK_W * PERFORMANCE_RATIO * tempDerating;
 
-  // Capacity % relative to panel peak
-  const capacityPct = Math.min(100, Math.round((currentOutputW / PANEL_PEAK_W) * 100));
+  // Capacity % = solar resource fraction (100% at STC 1000 W/m²)
+  const capacityPct = Math.min(100, Math.round(solarFraction * tempDerating * 100));
 
-  // Estimated daily production per panel (assume ~5.5 peak sun hours avg Spain)
-  const peakSunHours = Math.max(2, Math.min(8, ghiWm2 / 200)); // rough scaling
+  // Peak sun hours — scale from instantaneous GHI (avg Spain ~4.5h PSH)
+  const peakSunHours = Math.max(3, Math.min(7, 4.5 * (ghiWm2 / 500)));
   const dailyKwhPerPanel = (PANEL_PEAK_W / 1000) * peakSunHours * PERFORMANCE_RATIO * tempDerating;
 
   // Recommended panels
@@ -92,17 +90,45 @@ export function LiveSolarCalculator({
   const { data, loading, error } = useWeather();
   const [consumo, setConsumo] = useState(300); // kWh/month
 
-  // No weather data? Show minimal fallback
+  // No weather data? Show SEO-visible fallback with static estimates
   if (loading) {
+    // Static estimate: assume ~500 W/m² avg GHI, 25°C
+    const staticResult = calculate(500, 25, consumo, precioMedioLuz, "auto");
     return (
-      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 min-h-[220px]">
-        <div className="h-6 w-64 bg-slate-200 rounded animate-pulse mb-4" />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="h-24 rounded-xl bg-slate-100 animate-pulse" />
-          <div className="h-24 rounded-xl bg-slate-100 animate-pulse" />
-          <div className="h-24 rounded-xl bg-slate-100 animate-pulse" />
-          <div className="h-24 rounded-xl bg-slate-100 animate-pulse" />
+      <section
+        className="mt-8 rounded-2xl border border-slate-200 bg-white p-6"
+        aria-label={`Calculadora solar para ${municipio}`}
+      >
+        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
+          <span aria-hidden="true" className="text-amber-500">⚡</span>
+          Calculadora de producción solar en {municipio}
+        </h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Una instalación típica de {staticResult.recommendedPanels} paneles de {PANEL_PEAK_W}W
+          en {municipio} produce aproximadamente {fmt(staticResult.dailyProductionKwh, 1)} kWh
+          diarios, generando un ahorro estimado de {fmt(staticResult.annualSavingsEur)} € al año
+          al precio de {precioMedioLuz.toFixed(2)} €/kWh. Los datos en tiempo real se cargan
+          con la información meteorológica actual.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Producción diaria</p>
+            <p className="mt-1 text-2xl font-extrabold text-amber-900">{fmt(staticResult.dailyProductionKwh, 1)} kWh</p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Ahorro mensual</p>
+            <p className="mt-1 text-2xl font-extrabold text-emerald-900">{fmt(staticResult.monthlySavingsEur)} €</p>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Ahorro anual</p>
+            <p className="mt-1 text-2xl font-extrabold text-blue-900">{fmt(staticResult.annualSavingsEur)} €</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Paneles recomendados</p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900">{staticResult.recommendedPanels}</p>
+          </div>
         </div>
+        <p className="mt-3 text-xs text-slate-400">Cargando datos meteorológicos en tiempo real…</p>
       </section>
     );
   }

@@ -48,6 +48,20 @@ export async function getProvinceStats(provinceSlug: string): Promise<ProvinceSt
     searchPattern += `,provincia.ilike.%Guipuzcoa%`;
   } else if (provinceName === "Bizkaia") {
     searchPattern += `,provincia.ilike.%Vizcaya%`;
+  } else if (provinceName === "A Coruña") {
+    searchPattern += `,provincia.ilike.%La Coruña%,provincia.ilike.%La Coruna%`;
+  } else if (provinceName === "Ourense") {
+    searchPattern += `,provincia.ilike.%Orense%`;
+  } else if (provinceName === "Lleida") {
+    searchPattern += `,provincia.ilike.%Lérida%,provincia.ilike.%Lerida%`;
+  } else if (provinceName === "Girona") {
+    searchPattern += `,provincia.ilike.%Gerona%`;
+  } else if (provinceName === "Alicante") {
+    searchPattern += `,provincia.ilike.%Alacant%`;
+  } else if (provinceName === "Castellón") {
+    searchPattern += `,provincia.ilike.%Castelló%,provincia.ilike.%Castello%`;
+  } else if (provinceName === "Valencia") {
+    searchPattern += `,provincia.ilike.%València%`;
   }
 
   const { data, error } = await supabase

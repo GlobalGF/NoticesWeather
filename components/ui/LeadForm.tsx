@@ -307,7 +307,7 @@ export function LeadForm({
                     <p className="text-xs text-slate-400 leading-relaxed">
                         Al enviar aceptas que tus datos sean cedidos a instaladores solares certificados en tu zona.
                         Consulta nuestra{" "}
-                        <a href="/privacidad" className="underline hover:text-slate-600">
+                        <a href="/legal/politica-privacidad" className="underline hover:text-slate-600">
                             política de privacidad
                         </a>
                         .

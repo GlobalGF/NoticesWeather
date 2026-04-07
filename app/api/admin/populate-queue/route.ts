@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const supabase = createSupabaseAdminClient();
 
     // The routes we want to drip-feed initially
-    const targetRoutes = ["placas-solares", "subvenciones-solares", "bonificacion-ibi"];
+    const targetRoutes = ["placas-solares", "subvenciones-solares", "precio-luz"];
 
     console.log("Fetching all municipalities from Supabase...");
     

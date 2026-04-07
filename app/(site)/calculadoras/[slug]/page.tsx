@@ -4,6 +4,7 @@ import { getMunicipioBySlug } from "@/lib/data/solar";
 import { CalculadorasClient } from "../CalculadorasClient";
 
 export const dynamicParams = true;
+export const revalidate = 86400;
 
 type Props = {
   params: { slug: string };

@@ -54,21 +54,12 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
     context.municipioSlug
   );
 
-  const normativaGeoPath = withGeoPath(
-    "/normativa-solar",
-    context.provincia,
-    context.comunidadAutonoma,
-    context.municipioSlug
-  );
-
   const baseUrls = [
     `/placas-solares/${context.municipioSlug}`,
-    `/bonificacion-ibi/${context.municipioSlug}`,
-    `/autoconsumo-compartido/${context.municipioSlug}`,
     buildBatteryUrl(context.tarifa, context.consumo),
+    `/precio-luz/${context.municipioSlug}`,
     `/solucion-solar/placas-solares-${context.municipioSlug}`,
-    subvencionesGeoPath ? `${subvencionesGeoPath}/nextgen-autoconsumo` : null,
-    normativaGeoPath ? `${normativaGeoPath}/licencia-obras` : null
+    subvencionesGeoPath ? `${subvencionesGeoPath}` : null,
   ];
 
   if (!context.provincia) {
@@ -83,8 +74,8 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
 
   const nearbyUrls = nearby.flatMap((m) => [
     `/placas-solares/${m.slug}`,
-    `/autoconsumo-compartido/${m.slug}`,
-    `/bonificacion-ibi/${m.slug}`
+    `/baterias-solares/${m.slug}`,
+    `/precio-luz/${m.slug}`
   ]);
 
   return uniqueUrls([...baseUrls, ...nearbyUrls]);
@@ -93,7 +84,7 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
 export function buildMunicipalityLinks(slug: string) {
   return [
     `/placas-solares/${slug}`,
-    `/bonificacion-ibi/${slug}`,
-    `/autoconsumo-compartido/${slug}`
+    `/baterias-solares/${slug}`,
+    `/precio-luz/${slug}`
   ];
 }

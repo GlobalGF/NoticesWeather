@@ -41,7 +41,7 @@ function fmtFull(p: number) { return p.toFixed(3) + " €/kWh"; }
 const CHART_H = 120; // px total chart height
 const CHART_PADDING_TOP = 12; // px reserved above max bar
 
-export function PrecioLuzWidget() {
+export function PrecioLuzWidget({ initialPrecio }: { initialPrecio?: number }) {
     const [data, setData] = useState<PrecioLuzData | null>(null);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(false);
@@ -88,6 +88,20 @@ export function PrecioLuzWidget() {
     }, []);
 
     if (loading) {
+        if (initialPrecio != null) {
+            const nivel = nivelLabel(initialPrecio);
+            return (
+                <div className="rounded-lg border border-slate-200 p-5 bg-white">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Precio PVPC · Media diaria</p>
+                    <div className="mt-1 flex items-baseline gap-2">
+                        <span className="text-4xl font-black tabular-nums tracking-tight text-slate-900">{fmt(initialPrecio)}</span>
+                        <span className="text-base text-slate-500 font-medium">€/kWh</span>
+                    </div>
+                    <span className={`mt-2 inline-block rounded border px-2 py-0.5 text-xs font-bold ${nivel.cls}`}>{nivel.label}</span>
+                    <p className="mt-2 text-xs text-slate-400">Cargando datos hora a hora…</p>
+                </div>
+            );
+        }
         return (
             <div className="rounded-lg border border-slate-200 p-5 animate-pulse bg-white">
                 <div className="h-4 w-48 bg-slate-200 rounded mb-4" />

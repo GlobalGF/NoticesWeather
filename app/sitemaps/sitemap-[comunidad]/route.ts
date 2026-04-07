@@ -15,7 +15,7 @@ import { NextRequest } from "next/server";
 export const revalidate = 21600; // 6 hours
 
 const SITE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://tudominio.com";
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
 
 type Params = {
     params: { comunidad: string };
@@ -53,19 +53,23 @@ export async function GET(_req: NextRequest, context?: Params): Promise<Response
 </urlset>`);
     }
 
-    const urls = items.map((item) => {
-        const ruta = item.ruta_tipo ?? "placas-solares";
-        const loc = `${SITE_URL}/${ruta}/${item.slug}`;
+    // Each published municipality gets 3 URLs (one per route type)
+    const ROUTE_TYPES = ["placas-solares", "precio-luz", "baterias-solares"];
+
+    const urls = items.flatMap((item) => {
         const lastmod = item.published_at
             ? item.published_at.split("T")[0]
             : new Date().toISOString().split("T")[0];
 
-        return `  <url>
+        return ROUTE_TYPES.map((ruta) => {
+            const loc = `${SITE_URL}/${ruta}/${item.slug}`;
+            return `  <url>
     <loc>${escapeXml(loc)}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>${ruta === "placas-solares" ? "0.8" : "0.7"}</priority>
   </url>`;
+        });
     });
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

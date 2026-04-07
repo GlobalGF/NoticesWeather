@@ -8,6 +8,7 @@ import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
 export const dynamicParams = true;
+export const revalidate = 86400;
 
 type Props = { params: { comunidad: string; provincia: string } };
 
@@ -65,9 +66,9 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     const { data: ccaaRows } = await supabase
         .from("subvenciones_solares_ccaa_es")
         .select("comunidad_autonoma, subvencion_porcentaje, max_subvencion_euros, programa, fecha_fin")
-        .ilike("comunidad_autonoma", `%${comunidad.split("-")[0]}%`)
+        .eq("comunidad_autonoma", ccaaName)
         .limit(1)
-        .single();
+        .maybeSingle();
 
     const pct = (ccaaRows as any)?.subvencion_porcentaje ?? null;
     const maxEur = (ccaaRows as any)?.max_subvencion_euros ?? null;
@@ -330,7 +331,7 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                                     </a>
                                 </li>
                                 <li><a href="/subvenciones-solares" className="text-slate-400 hover:text-white transition-colors">← Todas las comunidades</a></li>
-                                <li><a href="/bonificacion-ibi" className="text-slate-400 hover:text-white transition-colors">→ Bonificación IBI</a></li>
+                                <li><a href="/placas-solares" className="text-slate-400 hover:text-white transition-colors">→ Precios instalación solar</a></li>
                                 <li><a href="/calculadoras" className="text-slate-400 hover:text-white transition-colors">→ Calculadora de ahorro</a></li>
                             </ul>
                         </div>

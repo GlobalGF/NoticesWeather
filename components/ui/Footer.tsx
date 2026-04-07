@@ -37,7 +37,7 @@ export function Footer() {
               <li><Link href="/legal/aviso-legal" className="hover:text-amber-400 transition-colors">Aviso Legal</Link></li>
               <li><Link href="/legal/politica-privacidad" className="hover:text-amber-400 transition-colors">Política de Privacidad</Link></li>
               <li><Link href="/legal/politica-cookies" className="hover:text-amber-400 transition-colors">Política de Cookies</Link></li>
-              <li><a href="mailto:contact@globalgrowthframework.com" className="hover:text-blue-400 transition-colors">Contacto RGPD</a></li>
+              <li><a href="mailto:contact@globalgrowthframework.dev" className="hover:text-blue-400 transition-colors">Contacto RGPD</a></li>
             </ul>
           </div>
         </div>

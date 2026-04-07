@@ -386,7 +386,7 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
             <div className="mt-5 pt-5 border-t border-slate-800">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-3">Ver también</p>
               <ul className="space-y-2 text-sm">
-                <li><a href="/bonificacion-ibi" className="text-slate-400 hover:text-white transition-colors">→ Bonificación IBI por municipio</a></li>
+                <li><a href="/precio-luz" className="text-slate-400 hover:text-white transition-colors">→ Precio de la luz hoy</a></li>
                 <li><a href="/placas-solares" className="text-slate-400 hover:text-white transition-colors">→ Precios instalación solar</a></li>
                 <li><a href="/calculadoras" className="text-slate-400 hover:text-white transition-colors">→ Calculadora de ahorro</a></li>
                 <li><a href="/subvenciones-solares" className="text-slate-400 hover:text-white transition-colors">→ Comparar todas las CCAA</a></li>

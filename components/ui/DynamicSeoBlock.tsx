@@ -206,7 +206,26 @@ export function DynamicSeoBlock({
 }: DynamicSeoBlockProps) {
   const { data, loading, error } = useWeather();
 
-  if (loading || error || !data) return null;
+  // SSR / loading fallback — visible to crawlers that don't execute JS
+  if (loading || error || !data) {
+    const annualStr = irradiacionAnual ? `${irradiacionAnual.toLocaleString("es-ES")} kWh/m²` : "alta irradiación";
+    return (
+      <section className="mt-5 rounded-xl border border-slate-200 p-5">
+        <h2 className="text-2xl font-semibold text-slate-900">
+          Producción solar en tiempo real en {municipio}
+        </h2>
+        <p className="mt-3 leading-relaxed text-slate-700">
+          {municipio} ({provincia}) registra {annualStr} de irradiación
+          solar anual, lo que supone un alto potencial fotovoltaico. Una
+          instalación típica de 5 kW genera un ahorro directo en la factura
+          eléctrica al precio actual de {precioMedioLuz.toFixed(2)} €/kWh.
+          Los datos de producción en vivo se cargan automáticamente con la
+          información meteorológica actual.
+        </p>
+        <p className="mt-2 text-xs text-slate-400">Cargando datos meteorológicos en tiempo real…</p>
+      </section>
+    );
+  }
 
   const ghi = data.ghi ?? data.short_rad ?? null;
   const time = getTimeSlot();

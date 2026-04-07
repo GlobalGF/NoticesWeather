@@ -23,10 +23,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createHash } from "crypto";
+import { Resend } from "resend";
 
 /* ── Config ──────────────────────────────────────────────── */
 const MAX_BODY_BYTES = 4_096;
 const DEDUP_WINDOW_HOURS = 24;
+const LEAD_NOTIFY_EMAIL = process.env.LEAD_NOTIFY_EMAIL ?? "contact@globalgrowthframework.dev";
 
 /* ── Validation helpers ──────────────────────────────────── */
 function normalisePhone(raw: string): string | null {
@@ -68,6 +70,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const municipio = typeof body.municipio === "string" ? body.municipio : "";
     const slug = typeof body.municipio_slug === "string" ? body.municipio_slug : null;
     const provincia = typeof body.provincia === "string" ? body.provincia : "";
+    const email = typeof body.email === "string" && body.email.includes("@") ? body.email.trim() : null;
+
+    /* Extra fields from LeadCaptureForm */
+    const tejado = typeof body.tejado === "string" ? body.tejado : null;
+    const bateria = typeof body.bateria === "string" ? body.bateria : null;
+    const consumoMensual = typeof body.consumo_mensual === "string" ? body.consumo_mensual : null;
 
     const telefono = normalisePhone(rawPhone);
     if (!telefono) {
@@ -125,6 +133,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         .insert({
             nombre: nombre.trim(),
             telefono,
+            email,
             tipo_vivienda: tipo,
             consumo_kwh: consumo,
             municipio_nombre: municipio,
@@ -166,6 +175,41 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         }).catch((err) => {
             // Non-critical: log but don't fail the request
             console.warn("[api/leads] n8n webhook failed:", err?.message);
+        });
+    }
+
+    /* -- Send email notification (non-blocking) -- */
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey) {
+        const resend = new Resend(resendKey);
+        const extraLines = [
+            tejado ? `Tejado: ${tejado}` : null,
+            bateria ? `Interés baterías: ${bateria}` : null,
+            consumoMensual ? `Consumo mensual: ${consumoMensual}` : null,
+            email ? `Email cliente: ${email}` : null,
+        ].filter(Boolean).join("\n");
+
+        resend.emails.send({
+            from: "SolaryEco Leads <onboarding@resend.dev>",
+            to: LEAD_NOTIFY_EMAIL,
+            subject: `🔆 Nuevo lead solar: ${nombre.trim()} — ${municipio} (${provincia})`,
+            text: [
+                `Nuevo lead recibido en SolaryEco`,
+                ``,
+                `ID: ${inserted.id}`,
+                `Nombre: ${nombre.trim()}`,
+                `Teléfono: ${telefono}`,
+                `Municipio: ${municipio}`,
+                `Provincia: ${provincia}`,
+                `Tipo vivienda: ${tipo ?? "—"}`,
+                `Consumo anual: ${consumo ? consumo + " kWh" : "—"}`,
+                extraLines,
+                ``,
+                `Fuente: ${referer || "directo"}`,
+                `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,
+            ].filter(Boolean).join("\n"),
+        }).catch((err) => {
+            console.warn("[api/leads] Email notification failed:", err?.message ?? err);
         });
     }
 

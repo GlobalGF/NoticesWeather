@@ -172,7 +172,7 @@ export function SolarWeatherWidget({ municipio }: SolarWeatherWidgetProps) {
 
       {/* Footer */}
       <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <p className="text-[10px] text-slate-400">Fuente: WeatherAPI · Actualización cada 30 min</p>
+        <p className="text-[10px] text-slate-400">Fuentes: WeatherAPI y Open-Meteo · Actualizado</p>
         <p className="text-[10px] text-slate-300">{isDay ? "☀️ Día" : "🌙 Noche"}</p>
       </div>
     </section>
