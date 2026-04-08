@@ -13,7 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
-  if (isBlockedSlug(slug)) return { title: "Calculadoras Solares" };
+  if (isBlockedSlug(slug)) notFound();
   const data = await getMunicipioBySlug(slug);
 
   if (!data) return { title: "Calculadoras Solares" };

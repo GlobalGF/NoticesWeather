@@ -108,7 +108,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
-  if (!parsed || isBlockedSlug(parsed)) return {};
+  if (!parsed || isBlockedSlug(parsed)) notFound();
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));

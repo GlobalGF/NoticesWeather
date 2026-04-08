@@ -71,7 +71,8 @@ function precioColor(precio: number) {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || isBlockedSlug(slug) || !hasSupabaseEnv()) return { title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real", description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica de España." };
+    if (!slug || isBlockedSlug(slug)) notFound();
+    if (!hasSupabaseEnv()) return { title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real", description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica de España." };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,6 +152,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
     const yearNow = new Date().getFullYear();
     const now = new Date();
     const nowStr = now.toLocaleString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const mesActual = now.toLocaleString("es-ES", { month: "long" });
 
     return (
         <main className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">
@@ -341,15 +343,21 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                     <strong>Comisión Nacional de Mercados y la Competencia (CNMC)</strong>.
                                 </p>
                                 <p className="mt-3">
-                                    El precio se calcula diariamente a partir de las ofertas del mercado mayorista de electricidad (OMIE)
-                                    y es <strong>idéntico para toda la España peninsular</strong>, independientemente del municipio.
-                                    Los precios se publican a las <strong>20:30 CET</strong> del día anterior.
+                                    El precio de la luz se calcula cada día a partir de las ofertas del mercado mayorista de electricidad (OMIE),
+                                    expresado en €/MWh. Es <strong>idéntico para toda la España peninsular</strong>, independientemente del municipio.
+                                    Los precios se publican a las <strong>20:30 CET</strong> del día anterior y cambian hora a hora.
                                 </p>
                                 <p className="mt-3">
-                                    A diferencia de las tarifas del mercado libre ofrecidas por comercializadoras como <strong>Endesa</strong>,{" "}
-                                    <strong>Iberdrola</strong> o <strong>Naturgy</strong>, el PVPC varía cada hora según el coste real de la energía.
-                                    Los clientes con bono social o tarifas reguladas verán el impacto directo en su factura de la luz.
-                                    Optar por autoconsumo fotovoltaico reduce la dependencia tanto del precio de la electricidad como del gas natural.
+                                    A diferencia de las tarifas fijas del mercado libre, el PVPC varía cada hora del día según el
+                                    coste real de la energía en €/MWh. Tu factura de la luz depende del consumo en kWh y la potencia
+                                    contratada en kW. En las horas valle (00–08 h) el precio es más barato, mientras que en horas
+                                    punta la tarifa sube. Los clientes con bono social o tarifas reguladas verán el impacto directo
+                                    en su factura mensual.
+                                </p>
+                                <p className="mt-3">
+                                    Optar por autoconsumo fotovoltaico reduce la dependencia del precio de la electricidad y del gas
+                                    natural. En {mesActual} de {yearNow}, la producción solar es especialmente favorable, lo que permite
+                                    compensar una mayor parte del consumo eléctrico y reducir el importe de la factura de la luz.
                                 </p>
                                 <p className="mt-3">
                                     Para <strong>{m.municipio}</strong>, los datos de irradiación solar y horas de sol proceden de la base de datos
@@ -366,6 +374,47 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             provinciaName={m.provincia}
                             comunidadName={m.comunidad_autonoma}
                         />
+
+                        {/* Tariff structure & consumption guide */}
+                        <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div className="px-5 py-4 border-b border-slate-100">
+                                <SectionHeader
+                                    title={`Precio de la luz por tramos horarios — ${mesActual} ${yearNow}`}
+                                    subtitle={`Tarifa PVPC 2.0TD · Consumo y potencia contratada`}
+                                />
+                            </div>
+                            <div className="px-5 py-4 prose prose-sm max-w-none text-slate-600">
+                                <p>
+                                    El precio de la luz en la tarifa PVPC 2.0TD se divide en <strong>tres periodos horarios</strong> cada día.
+                                    Conocer estos tramos permite ajustar el consumo eléctrico a las horas más baratas y reducir la factura de la luz:
+                                </p>
+                                <ul className="mt-3 space-y-2">
+                                    <li>
+                                        <strong>Hora valle (00:00–08:00 h):</strong> precio más bajo en €/kWh. Ideal para programar electrodomésticos
+                                        de alto consumo como lavadora, lavavajillas o carga de vehículo eléctrico.
+                                    </li>
+                                    <li>
+                                        <strong>Hora llana (08:00–10:00 h, 14:00–18:00 h, 22:00–00:00 h):</strong> tarifas intermedias.
+                                        Buen momento para el consumo habitual del hogar.
+                                    </li>
+                                    <li>
+                                        <strong>Hora punta (10:00–14:00 h, 18:00–22:00 h):</strong> precios más altos del día,
+                                        cuando la demanda de potencia en la red es máxima.
+                                    </li>
+                                </ul>
+                                <p className="mt-3">
+                                    La factura de la luz tiene dos componentes principales: el <strong>término de consumo</strong> (kWh
+                                    consumidos × precio por hora) y el <strong>término de potencia</strong> (kW contratados × precio fijo al día).
+                                    Reducir la potencia contratada de 5,75 kW a 4,6 kW puede suponer un ahorro fijo en la factura mensual.
+                                </p>
+                                <p className="mt-3">
+                                    En {mesActual} de {yearNow}, los precios del mercado mayorista en €/MWh reflejan una tendencia más
+                                    estable gracias a la menor dependencia del gas natural para generación eléctrica. El autoconsumo
+                                    solar permite cubrir gran parte de las horas punta y llana, cuando el precio de la luz es más alto,
+                                    maximizando el ahorro en tu factura cada día.
+                                </p>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -477,7 +526,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <p className="leading-relaxed">
                                 La información publicada tiene carácter orientativo y no constituye asesoramiento fiscal,
                                 energético ni jurídico. Los ahorros en factura son proyecciones basadas en condiciones medias
-                                del precio de la energía y pueden variar según el consumo real, tarifa contratada (PVPC o mercado libre con Endesa, Iberdrola, etc.),
+                                del precio de la energía y pueden variar según el consumo real, tarifa contratada (PVPC o mercado libre),
                                 orientación de cubierta y cambios regulatorios. Consulte siempre con un instalador homologado.
                             </p>
                             <p className="mt-3 leading-relaxed">

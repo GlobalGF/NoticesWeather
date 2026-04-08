@@ -23,13 +23,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
       title: `Precio Luz Hoy en ${name} — Tarifa kWh y Factura Energética`,
-      description: `Precio de la luz hoy en ${name}: tarifa PVPC en kWh hora a hora. Compara con tarifas de Endesa e Iberdrola. Ahorro en factura y compensación de excedentes solares por municipio.`,
+      description: `Precio de la luz hoy en ${name}: tarifa PVPC en €/kWh hora a hora. Compara precios, tarifas de consumo y potencia contratada. Ahorro en factura y compensación de excedentes solares por municipio.`,
       pathname: `/precio-luz?provincia=${provincia}`,
     });
   }
   return buildMetadata({
     title: "Precio de la Luz Hoy — Tarifa kWh, Factura y Ahorro Energético",
-    description: "Precio de la luz hoy hora a hora: tarifa PVPC en kWh actualizada con datos de Red Eléctrica. Compara con tarifas de Endesa e Iberdrola. Ahorra en tu factura.",
+    description: "Precio de la luz hoy hora a hora: tarifa PVPC en €/kWh actualizada con datos de Red Eléctrica. Consulta precios por día, consumo y potencia contratada. Ahorra en tu factura.",
     pathname: "/precio-luz",
   });
 }
@@ -136,7 +136,7 @@ async function GenericPrecioLuzPage() {
           </h1>
           
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            Consulta el precio de la energía hoy, compara tarifas PVPC frente al mercado libre (Endesa, Iberdrola) y calcula cuánto puedes ahorrar en tu factura de la luz con autoconsumo solar.
+            Consulta el precio de la luz hoy hora a hora, compara tarifas PVPC frente al mercado libre y calcula cuánto puedes ahorrar en tu factura. Precios actualizados cada día en €/kWh y €/MWh según tu consumo y potencia contratada.
           </p>
 
           <LocationSearchBar baseRoute="/precio-luz" placeholder="Escribe tu ciudad o provincia..." />

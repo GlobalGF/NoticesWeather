@@ -100,7 +100,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
 
-        if (isBlockedSlug(slug)) return { title: defaultTitle, description: defaultDescription };
+        if (isBlockedSlug(slug)) notFound();
         
         const data = await getMunicipioBySlug(slug);
         if (!data) {

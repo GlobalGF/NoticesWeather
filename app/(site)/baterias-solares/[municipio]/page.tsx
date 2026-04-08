@@ -69,7 +69,8 @@ function nd(v: number | null | undefined, suffix = "", dec = 0): string {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || isBlockedSlug(slug) || !hasSupabaseEnv()) return { title: "Baterías Solares" };
+    if (!slug || isBlockedSlug(slug)) notFound();
+    if (!hasSupabaseEnv()) return { title: "Baterías Solares" };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
