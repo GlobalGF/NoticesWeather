@@ -1,14 +1,17 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 type Props = { params: { comunidad: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { comunidad } = params;
-    return {
-        title: `Coeficiente Autoconsumo en ${comunidad.replace(/-/g, " ")}`,
-        description: `Encuentra las provincias y coeficientes de reparto óptimos para instalaciones de autoconsumo en ${comunidad.replace(/-/g, " ")}.`,
-    };
+    const name = comunidad.replace(/-/g, " ");
+    return buildMetadata({
+        title: `Coeficiente Autoconsumo en ${name}`,
+        description: `Encuentra las provincias y coeficientes de reparto óptimos para instalaciones de autoconsumo en ${name}.`,
+        pathname: `/coeficiente-autoconsumo/${comunidad}`,
+    });
 }
 
 export default function CoeficienteAutoconsumoComunidadPage({ params }: Props) {

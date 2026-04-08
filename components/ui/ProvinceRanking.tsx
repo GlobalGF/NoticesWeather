@@ -55,6 +55,7 @@ export function ProvinceRanking({ items, provincia, currentSlug }: ProvinceRanki
 
             <div className="mt-5 overflow-x-auto rounded-lg border border-slate-200">
                 <table className="w-full text-sm text-left" role="table" aria-label={`Ranking solar en ${provincia}`}>
+                    <caption className="sr-only">Ranking de municipios por ahorro solar estimado en {provincia}</caption>
                     <thead className="bg-slate-50">
                         <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
                             <th className="py-3 pl-4" scope="col">#</th>

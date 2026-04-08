@@ -94,7 +94,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
         highlights: ["Llanuras infinitas", "Potencial solar"]
     },
     "cordoba": {
-        backgroundUrl: "https://www.gestilar.com/uploads/iStock-1088432392_2.jpg",
+        backgroundUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Mezquita_de_C%C3%B3rdoba_desde_el_aire_%28Córdoba%2C_España%29.jpg/1280px-Mezquita_de_C%C3%B3rdoba_desde_el_aire_%28Córdoba%2C_España%29.jpg",
         description: "Altas temperaturas compensadas por una de las mayores irradiancias de España.",
         highlights: ["Sol andaluz", "Ayudas activas"]
     },

@@ -6,9 +6,13 @@ type MetadataInput = {
   pathname: string;
 };
 
+const SITE_NAME = "SolaryEco";
+const DEFAULT_OG_IMAGE = "/og-default.png";
+
 export function buildMetadata(input: MetadataInput): Metadata {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://solaryeco.es";
   const canonical = `${base}${input.pathname}`;
+  const ogImageUrl = `${base}${DEFAULT_OG_IMAGE}`;
 
   return {
     title: input.title,
@@ -18,12 +22,24 @@ export function buildMetadata(input: MetadataInput): Metadata {
       title: input.title,
       description: input.description,
       url: canonical,
-      type: "article"
+      siteName: SITE_NAME,
+      locale: "es_ES",
+      type: "article",
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: input.title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: input.title,
       description: input.description,
+      site: "@solaryeco",
+      images: [ogImageUrl],
     },
   };
-}
+}

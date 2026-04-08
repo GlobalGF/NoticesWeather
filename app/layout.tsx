@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -15,9 +14,19 @@ export const metadata: Metadata = {
     template: "%s | SolaryEco",
   },
   description: "Portal de datos de autoconsumo solar: tarifa de la luz hoy, rendimiento fotovoltaico, subvenciones y precios de instalación para más de 8.000 municipios españoles.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://solaryeco.es"),
   verification: {
     google: "IVu8bUUUoiOINKqraPzS1UtF2VRKS1nMdBSujHUN7Ao",
+  },
+  openGraph: {
+    siteName: "SolaryEco",
+    locale: "es_ES",
+    type: "website",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "SolaryEco — Energía Solar en España" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@solaryeco",
   },
 };
 
@@ -26,15 +35,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <head>
         <meta name="google-adsense-account" content="ca-pub-9143435761704783" />
-      </head>
-      <body className={manrope.className}>
-        {children}
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9143435761704783"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
+      </head>
+      <body className={manrope.className}>
+        {children}
       </body>
     </html>
   );

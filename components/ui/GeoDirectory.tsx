@@ -162,6 +162,8 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                                 <img
                                     src={meta.backgroundUrl}
                                     alt={item.name}
+                                    width={360}
+                                    height={240}
                                     loading="lazy"
                                     referrerPolicy="no-referrer"
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -169,9 +171,9 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent opacity-90 transition-opacity" />
                                 <div className="absolute inset-0 p-4 flex flex-col justify-end">
                                     <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest mb-0.5">Provincia</span>
-                                    <h3 className="text-lg font-bold text-white mb-1 group-hover:underline decoration-blue-400 decoration-2 underline-offset-4 leading-tight">
+                                    <p className="text-lg font-bold text-white mb-1 group-hover:underline decoration-blue-400 decoration-2 underline-offset-4 leading-tight">
                                         {item.name}
-                                    </h3>
+                                    </p>
                                     <div className="flex gap-2 mt-1">
                                         {item.radiation && (
                                             <div className="bg-white/10 backdrop-blur-md rounded-md px-2 py-1 border border-white/20">
@@ -205,9 +207,9 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                             href={href}
                             className="group block bg-white rounded-lg border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
-                            <h3 className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors truncate">
+                            <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors truncate">
                                 {item.name}
-                            </h3>
+                            </p>
                         </Link>
                     );
                 })}

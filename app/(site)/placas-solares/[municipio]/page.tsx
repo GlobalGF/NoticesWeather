@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { tryParseSlug } from "@/lib/utils/params";
+import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
@@ -98,6 +99,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
+
+        if (isBlockedSlug(slug)) return { title: defaultTitle, description: defaultDescription };
         
         const data = await getMunicipioBySlug(slug);
         if (!data) {
@@ -145,6 +148,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
         const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
         const slug = tryParseSlug(decoded) || decoded;
+
+        if (isBlockedSlug(slug)) notFound();
         
         console.info(`[PlacasSolaresMunicipioPage] 2. FETCHING DB for slug: ${slug}`);
         const municipio = await getMunicipioBySlug(slug);
@@ -243,7 +248,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                         <div className="flex flex-wrap items-end gap-3">
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">
-                                    Calculadora solar · Rentabilidad y ayudas
+                                    Instalación fotovoltaica · Panel solar · Rentabilidad y ayudas
                                 </p>
                                 <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
                                     Placas solares en {cleanLocationName(municipio.municipio)}
@@ -260,10 +265,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                 <div className="bg-white border-b border-slate-200 shadow-sm relative z-10 -mb-12">
                     <div className="mx-auto max-w-5xl px-4 py-0 grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100">
                         {[
-                            { label: "Irradiación solar", value: `${fmt(municipio.irradiacion_solar)} kWh/m²`, status: "Dato estimado", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
+                            { label: "Irradiación solar", value: `${fmt(municipio.irradiacion_solar)} kWh/m²`, status: "Panel fotovoltaico", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
                             { label: "Horas de sol anuales", value: `${fmt(municipio.horas_sol)} h`, status: "PVGIS · Comisión Europea", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
-                            { label: "Ahorro estimado anual", value: `${fmt(ahorroAnual)} €`, status: `Potencial máximo`, statusClass: "bg-blue-100 text-blue-700 border-blue-200" },
-                            { label: "Periodo de retorno", value: payback ? `${payback} años` : "—", status: "ROI estimado", statusClass: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+                            { label: "Ahorro con placas solares", value: `${fmt(ahorroAnual)} €/año`, status: `Instalación fotovoltaica`, statusClass: "bg-blue-100 text-blue-700 border-blue-200" },
+                            { label: "Amortización paneles", value: payback ? `${payback} años` : "—", status: "ROI instalación solar", statusClass: "bg-emerald-100 text-emerald-700 border-emerald-200" },
                         ].map((k) => (
                             <div key={k.label} className="px-4 sm:px-6 py-4 bg-white">
                                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{k.label}</p>
@@ -335,12 +340,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                             Calculadoras Solares para {municipio.municipio}
                                         </h2>
                                         <p className="text-slate-300 text-base leading-relaxed mb-6 max-w-lg font-light">
-                                            Descubre el número exacto de placas que necesitas, calcula el impacto real de financiar tu instalación y estima los ingresos por verter tus excedentes a la red en {municipio.provincia}.
+                                            Dimensiona tu instalación fotovoltaica: calcula el número exacto de paneles solares, simula la financiación de tus placas y estima los ingresos por verter excedentes a la red eléctrica en {municipio.provincia}.
                                         </p>
                                         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
                                                 <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                                                Dimensionador de Paneles
+                                                Dimensionador de Paneles Solares
                                             </li>
                                             <li className="flex items-center gap-2 text-sm text-slate-400">
                                                 <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
@@ -390,7 +395,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             />
 
                             <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden">
-                                <h2 className="text-xl font-bold text-slate-900 mb-6">Más localidades con placas solares por provincia</h2>
+                                <h2 className="text-xl font-bold text-slate-900 mb-6">Instalación de paneles solares y placas fotovoltaicas por provincia</h2>
                                 <GeoDirectory level="provincias" baseRoute="/placas-solares" queryParam="provincia" />
                             </section>
                         </div>
@@ -400,7 +405,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             {/* Local Stats Box with source citations */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="bg-slate-900 px-5 py-4">
-                                    <h3 className="text-lg font-bold text-white">Datos solares de {cleanLocationName(municipio.municipio)}</h3>
+                                    <h3 className="text-lg font-bold text-white">Datos solares y fotovoltaicos de {cleanLocationName(municipio.municipio)}</h3>
                                 </div>
                                 <div className="p-5 space-y-4">
                                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -412,7 +417,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                         <span className="font-semibold text-slate-900">{fmt(municipio.irradiacion_solar)} kWh/m²</span>
                                     </div>
                                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                                        <span className="text-sm text-slate-500">Coste Medio Instal.</span>
+                                        <span className="text-sm text-slate-500">Coste instalación solar</span>
                                         <span className="font-semibold text-slate-900">{municipio.precio_instalacion_medio_eur ? `${fmt(municipio.precio_instalacion_medio_eur)}€` : 'N/A'}</span>
                                     </div>
                                     <div className="flex justify-between items-center border-b border-slate-100 pb-2">

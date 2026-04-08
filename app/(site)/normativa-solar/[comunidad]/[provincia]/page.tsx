@@ -1,14 +1,17 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 type Props = { params: { comunidad: string; provincia: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { provincia } = params;
-    return {
-        title: `Normativa Solar en ${provincia.replace(/-/g, " ")}`,
-        description: `Consulta la normativa, permisos y licencias requeridas para paneles solares en la provincia de ${provincia.replace(/-/g, " ")}.`,
-    };
+    const { comunidad, provincia } = params;
+    const name = provincia.replace(/-/g, " ");
+    return buildMetadata({
+        title: `Normativa Solar en ${name}`,
+        description: `Consulta la normativa, permisos y licencias requeridas para paneles solares en la provincia de ${name}.`,
+        pathname: `/normativa-solar/${comunidad}/${provincia}`,
+    });
 }
 
 export default function NormativaSolarProvinciaPage({ params }: Props) {

@@ -5,6 +5,7 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 import { cachePolicy } from "@/lib/cache/policy";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -14,20 +15,21 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
-  const baseMetadata: Metadata = {
-    title: "Coeficientes de Reparto para Autoconsumo Colectivo",
-    description: "Encuentra los coeficientes de reparto óptimos para instalaciones de autoconsumo colectivo y compartido en tu Comunidad Autónoma y Municipio.",
-  };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
+    return buildMetadata({
       title: `Coeficientes de Reparto en la provincia de ${name}`,
       description: `Consulta los coeficientes horarios de reparto de energía para instalaciones de autoconsumo colectivo en los municipios de ${name}.`,
-    };
+      pathname: `/coeficiente-autoconsumo?provincia=${provincia}`,
+    });
   }
-  return baseMetadata;
+  return buildMetadata({
+    title: "Coeficientes de Reparto para Autoconsumo Colectivo",
+    description: "Encuentra los coeficientes de reparto óptimos para instalaciones de autoconsumo colectivo y compartido en tu Comunidad Autónoma y Municipio.",
+    pathname: "/coeficiente-autoconsumo",
+  });
 }
 
 export default async function CoeficienteAutoconsumoRootPage({ searchParams }: Props) {
@@ -55,6 +57,8 @@ export default async function CoeficienteAutoconsumoRootPage({ searchParams }: P
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1280}
+              height={720}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />

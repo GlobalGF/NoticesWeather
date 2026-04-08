@@ -8,6 +8,7 @@ import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { tryParseSlug } from "@/lib/utils/params";
+import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { PrecioLuzWidget } from "@/components/ui/PrecioLuzWidget";
 import { LeadForm } from "@/components/ui/LeadForm";
@@ -70,7 +71,7 @@ function precioColor(precio: number) {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || !hasSupabaseEnv()) return { title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real", description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica de España." };
+    if (!slug || isBlockedSlug(slug) || !hasSupabaseEnv()) return { title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real", description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica de España." };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,7 +121,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 /* ── Page ────────────────────────────────────────────────────────── */
 export default async function PrecioLuzMunicipioPage({ params }: Props) {
     const slug = tryParseSlug(params.municipio);
-    if (!slug) notFound();
+    if (!slug || isBlockedSlug(slug)) notFound();
     if (!hasSupabaseEnv()) return <div className="p-10 text-center text-slate-400">Supabase no configurado.</div>;
 
     const supabase = await createSupabaseServerClient();
@@ -175,7 +176,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                     <div className="flex flex-wrap items-end gap-3">
                         <div className="flex-1 min-w-0">
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">
-                                Precio de la electricidad · Tarifa regulada PVPC
+                                Precio de la electricidad · Tarifa regulada PVPC · Factura de la luz
                             </p>
                             <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight">
                                 Precio de la luz en {m.municipio}
@@ -197,8 +198,8 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                     {[
                         { label: "Precio PVPC medio hoy", value: `${precioHoy.toFixed(3)} €/kWh`, status: theme.label, statusClass: theme.badge },
                         { label: "Horas de sol anuales", value: nd(m.horas_sol, " h"), status: "PVGIS · Comisión Europea", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
-                        { label: "Ahorro estimado anual", value: nd(ahorroAnual, " €"), status: `Instalación 4 kWp`, statusClass: "bg-blue-100 text-blue-700 border-blue-200" },
-                        { label: "Periodo de retorno", value: payback ? `${payback} años` : "—", status: "ROI inversión solar", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
+                        { label: "Ahorro en factura", value: nd(ahorroAnual, " €/año"), status: `Instalación 4 kWp`, statusClass: "bg-blue-100 text-blue-700 border-blue-200" },
+                        { label: "Amortización energía solar", value: payback ? `${payback} años` : "—", status: "ROI inversión solar", statusClass: "bg-slate-100 text-slate-500 border-slate-200" },
                     ].map((k) => (
                         <div key={k.label} className="px-4 sm:px-6 py-4">
                             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{k.label}</p>
@@ -249,7 +250,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             key={b.label}
                             href={b.href}
                             target="_blank"
-                            rel="noopener noreferrer"
+                            rel="nofollow noopener noreferrer"
                             title={b.title}
                             className={`rounded border px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer ${b.cls}`}
                         >
@@ -283,7 +284,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="px-5 py-4 border-b border-slate-100">
                                     <SectionHeader
-                                        title="Evolución del precio PVPC"
+                                        title={`Evolución del precio PVPC en ${cleanLocationName(m.municipio)}`}
                                         subtitle={`Últimos ${history.length} días · Tarifa 2.0TD · España peninsular`}
                                     />
                                 </div>
@@ -328,7 +329,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                         <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
                             <div className="px-5 py-4 border-b border-slate-100">
                                 <SectionHeader
-                                    title="Marco regulatorio del PVPC"
+                                    title={`Marco regulatorio del PVPC — ${cleanLocationName(m.municipio)}`}
                                     subtitle="Información sobre la tarifa regulada de electricidad en España"
                                 />
                             </div>
@@ -343,6 +344,12 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                     El precio se calcula diariamente a partir de las ofertas del mercado mayorista de electricidad (OMIE)
                                     y es <strong>idéntico para toda la España peninsular</strong>, independientemente del municipio.
                                     Los precios se publican a las <strong>20:30 CET</strong> del día anterior.
+                                </p>
+                                <p className="mt-3">
+                                    A diferencia de las tarifas del mercado libre ofrecidas por comercializadoras como <strong>Endesa</strong>,{" "}
+                                    <strong>Iberdrola</strong> o <strong>Naturgy</strong>, el PVPC varía cada hora según el coste real de la energía.
+                                    Los clientes con bono social o tarifas reguladas verán el impacto directo en su factura de la luz.
+                                    Optar por autoconsumo fotovoltaico reduce la dependencia tanto del precio de la electricidad como del gas natural.
                                 </p>
                                 <p className="mt-3">
                                     Para <strong>{m.municipio}</strong>, los datos de irradiación solar y horas de sol proceden de la base de datos
@@ -376,7 +383,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <div className="px-5 pb-4">
                                 <DataRow label="Irradiación solar anual" value={nd(m.irradiacion_solar, " kWh/m²")} note="PVGIS" />
                                 <DataRow label="Horas de sol al año" value={nd(m.horas_sol, " h")} />
-                                <DataRow label="Precio electricidad (hoy)" value={`${precioHoy.toFixed(3)} €/kWh`} note="PVPC" />
+                                <DataRow label="Precio kWh electricidad (hoy)" value={`${precioHoy.toFixed(3)} €/kWh`} note="PVPC" />
                                 <DataRow label="Coste instalación 4 kWp" value={`${nd(m.precio_instalacion_min_eur)} – ${nd(m.precio_instalacion_max_eur)} €`} />
                                 {m.eur_por_watio && <DataRow label="Coste por Watio pico" value={nd(m.eur_por_watio, " €/Wp", 2)} />}
                             </div>
@@ -393,7 +400,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <div className="px-5 pb-4">
                                 <DataRow label="Bonificación IBI" value={nd(m.bonificacion_ibi, "%")} note="al instalar autoconsumo" />
                                 <DataRow label="Subvención autonómica" value={nd(m.subvencion_autoconsumo, "%")} />
-                                <DataRow label="Ahorro estimado anual" value={nd(ahorroAnual, " €")} note="instalación 4 kWp" />
+                                <DataRow label="Ahorro en factura de la luz" value={nd(ahorroAnual, " €")} note="instalación 4 kWp" />
                                 <DataRow label="Retorno de inversión" value={payback ? `${payback} años` : "—"} />
                             </div>
                         </div>
@@ -401,7 +408,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                         {/* Savings calculator compact */}
                         <div className="bg-slate-900 rounded-lg text-white p-5">
                             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
-                                Simulación de ahorro · Instalación residencial
+                                Simulación de ahorro en factura · Instalación residencial
                             </p>
                             <div className="space-y-3">
                                 {[
@@ -469,9 +476,9 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <p className="font-bold text-slate-700 mb-2 text-sm">Aviso legal</p>
                             <p className="leading-relaxed">
                                 La información publicada tiene carácter orientativo y no constituye asesoramiento fiscal,
-                                energético ni jurídico. Los ahorros estimados son proyecciones basadas en condiciones medias
-                                y pueden variar según el consumo real, orientación de cubierta, condiciones meteorológicas y
-                                cambios regulatorios. Consulte siempre con un instalador homologado.
+                                energético ni jurídico. Los ahorros en factura son proyecciones basadas en condiciones medias
+                                del precio de la energía y pueden variar según el consumo real, tarifa contratada (PVPC o mercado libre con Endesa, Iberdrola, etc.),
+                                orientación de cubierta y cambios regulatorios. Consulte siempre con un instalador homologado.
                             </p>
                             <p className="mt-3 leading-relaxed">
                                 Precio PVPC regulado por el <strong>Real Decreto 216/2014</strong> y supervisado por la <strong>CNMC</strong>.

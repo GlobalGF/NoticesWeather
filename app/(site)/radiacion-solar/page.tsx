@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Radiación Solar por Comunidad Autónoma",
   description: "Consulta el nivel de radiación solar y horas de sol equivalentes por Comunidad Autónoma en España.",
-};
+  pathname: "/radiacion-solar",
+});
 
 export default function RadiacionSolarRootPage() {
   return (

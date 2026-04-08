@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { tryParseSlug } from "@/lib/utils/params";
+import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import GeoDirectory from "@/components/ui/GeoDirectory";
@@ -107,7 +108,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
-  if (!parsed) return {};
+  if (!parsed || isBlockedSlug(parsed)) return {};
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
@@ -129,7 +130,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SubsidiesCcaaPage({ params }: Props) {
   const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
-  if (!parsed) notFound();
+  if (!parsed || isBlockedSlug(parsed)) notFound();
 
   // If the slug is NOT a known CCAA, check if it's a municipality to redirect to the deep route
   const isCcaa = !!CCAA_NAME_MAP[parsed];
@@ -164,6 +165,9 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
       const pSlug = slugify(m.provincia);
       redirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
     }
+
+    // Slug is not a valid CCAA, province, or municipio — 404
+    notFound();
   }
 
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;

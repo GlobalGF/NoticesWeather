@@ -51,7 +51,7 @@ export function SiloNavigation({ currentSilo, municipioName, municipioSlug, prov
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-hidden my-8">
             <div className="flex items-center gap-2 mb-4">
                 <span className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-500 font-black text-xs">ℹ</span>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Otras consultas sobre energía en {municipioName}</h3>
+                <p className="text-lg font-bold text-slate-900 tracking-tight">Otras consultas sobre energía en {municipioName}</p>
             </div>
             <p className="text-sm text-slate-500 mb-5">
                 Para maximizar tu ahorro energético en {municipioName}, te recomendamos consultar también la viabilidad y rentabilidad de:

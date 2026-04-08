@@ -1,15 +1,17 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 type Props = { params: { comunidad: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { comunidad } = params;
-    // We could decode or un-slugify, but just falling back to generic for now
-    return {
-        title: `Radiación Solar en ${comunidad.replace(/-/g, " ")}`,
-        description: `Conoce las provincias con mayor radiación solar en ${comunidad.replace(/-/g, " ")}.`,
-    };
+    const name = comunidad.replace(/-/g, " ");
+    return buildMetadata({
+        title: `Radiación Solar en ${name}`,
+        description: `Conoce las provincias con mayor radiación solar en ${name}.`,
+        pathname: `/radiacion-solar/${comunidad}`,
+    });
 }
 
 export default function RadiacionSolarComunidadPage({ params }: Props) {

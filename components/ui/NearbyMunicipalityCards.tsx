@@ -60,9 +60,9 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
                             {/* Header */}
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-900 group-hover:text-blue-700">
+                                    <p className="font-bold text-slate-900 group-hover:text-blue-700">
                                         {m.municipio}
-                                    </h3>
+                                    </p>
                                     <p className="text-xs uppercase tracking-widest text-slate-500">{m.provincia}</p>
                                 </div>
                                 {m.ahorroEstimado != null && (

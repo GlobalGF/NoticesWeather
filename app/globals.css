@@ -11,6 +11,7 @@ html,
 body {
   background: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
 }
 
 @layer components {

@@ -1,14 +1,17 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 type Props = { params: { comunidad: string; provincia: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { provincia } = params;
-    return {
-        title: `Radiación Solar en ${provincia.replace(/-/g, " ")}`,
-        description: `Consulta el nivel de radiación solar en los municipios de la provincia de ${provincia.replace(/-/g, " ")}.`,
-    };
+    const { comunidad, provincia } = params;
+    const name = provincia.replace(/-/g, " ");
+    return buildMetadata({
+        title: `Radiación Solar en ${name}`,
+        description: `Consulta el nivel de radiación solar en los municipios de la provincia de ${name}.`,
+        pathname: `/radiacion-solar/${comunidad}/${provincia}`,
+    });
 }
 
 export default function RadiacionSolarProvinciaPage({ params }: Props) {

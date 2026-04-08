@@ -7,6 +7,7 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 import { cachePolicy } from "@/lib/cache/policy";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -16,20 +17,21 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
-  const baseMetadata: Metadata = {
-    title: "Tarifa de la Luz Hoy — Precio por Hora en Tiempo Real",
-    description: "Consulta la tarifa de la luz hoy hora a hora. Precio PVPC actualizado ahora con datos oficiales de Red Eléctrica. Compara tarifas luz por municipio.",
-  };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
-      title: `Tarifa Luz Hoy en ${name} — Precio por Hora Actualizado`,
-      description: `Consulta la tarifa de la luz hoy en ${name}: precio PVPC hora a hora actualizado ahora. Tarifas luz y compensación de excedentes solares por municipio.`,
-    };
+    return buildMetadata({
+      title: `Precio Luz Hoy en ${name} — Tarifa kWh y Factura Energética`,
+      description: `Precio de la luz hoy en ${name}: tarifa PVPC en kWh hora a hora. Compara con tarifas de Endesa e Iberdrola. Ahorro en factura y compensación de excedentes solares por municipio.`,
+      pathname: `/precio-luz?provincia=${provincia}`,
+    });
   }
-  return baseMetadata;
+  return buildMetadata({
+    title: "Precio de la Luz Hoy — Tarifa kWh, Factura y Ahorro Energético",
+    description: "Precio de la luz hoy hora a hora: tarifa PVPC en kWh actualizada con datos de Red Eléctrica. Compara con tarifas de Endesa e Iberdrola. Ahorra en tu factura.",
+    pathname: "/precio-luz",
+  });
 }
 
 export default async function PrecioLuzRootPage({ searchParams }: Props) {
@@ -57,6 +59,8 @@ export default async function PrecioLuzRootPage({ searchParams }: Props) {
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1280}
+              height={720}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />
@@ -132,7 +136,7 @@ async function GenericPrecioLuzPage() {
           </h1>
           
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            Encuentra las condiciones del mercado eléctrico, tarifas PVPC y cuánto te pagarán por tu energía solar sobrante en tu localidad.
+            Consulta el precio de la energía hoy, compara tarifas PVPC frente al mercado libre (Endesa, Iberdrola) y calcula cuánto puedes ahorrar en tu factura de la luz con autoconsumo solar.
           </p>
 
           <LocationSearchBar baseRoute="/precio-luz" placeholder="Escribe tu ciudad o provincia..." />
@@ -146,15 +150,15 @@ async function GenericPrecioLuzPage() {
                 <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-blue-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </span>
-                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Precio Medio</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Precio kWh</p>
                 <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">0.12€</p>
-                <p className="text-[10px] font-bold text-blue-600 hidden sm:block">por kWh consumido</p>
+                <p className="text-[10px] font-bold text-blue-600 hidden sm:block">tarifa luz por kWh</p>
             </div>
             <div className="flex flex-col items-center text-center px-1 sm:px-2 pl-2 sm:pl-8">
                 <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-emerald-100 text-emerald-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-emerald-200/50 scale-90 sm:scale-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>
                 </span>
-                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Excedentes</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Excedentes Energía</p>
                 <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">0.05€</p>
                 <p className="text-[10px] font-bold text-emerald-600 hidden sm:block">por kWh vertido</p>
             </div>
@@ -164,7 +168,7 @@ async function GenericPrecioLuzPage() {
                 </span>
                 <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Horas Valle</p>
                 <p className="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">00-08h</p>
-                <p className="text-[10px] font-bold text-indigo-600 hidden sm:block">tramo más ecológico</p>
+                <p className="text-[10px] font-bold text-indigo-600 hidden sm:block">tarifa más barata del día</p>
             </div>
             <div className="flex flex-col items-center text-center px-1 sm:px-2 pl-2 sm:pl-8 mt-4 sm:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-4 sm:pt-0">
                 <span className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-amber-100 text-amber-600 rounded-2xl mb-3 sm:mb-4 shadow-inner border border-amber-200/50 scale-90 sm:scale-100">
@@ -179,9 +183,9 @@ async function GenericPrecioLuzPage() {
 
       <div className="mx-auto max-w-5xl px-4 pb-24">
         <div className="mb-12 text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Precio de la luz por municipio</h2>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Precio de la luz y tarifa eléctrica por municipio</h2>
             <p className="text-slate-500">
-                Si prefieres navegar manualmente, selecciona tu provincia a continuación para visualizar las horas solares pico y el precio adaptado a tu geografía.
+                Selecciona tu provincia para consultar el precio de la energía, tarifa PVPC en kWh y cómo reducir tu factura de la luz con paneles solares.
             </p>
         </div>
 

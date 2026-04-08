@@ -1,14 +1,17 @@
 import { Metadata } from "next";
 import GeoDirectory from "@/components/ui/GeoDirectory";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 type Props = { params: { comunidad: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { comunidad } = params;
-    return {
-        title: `Normativa Solar en ${comunidad.replace(/-/g, " ")}`,
-        description: `Consulta los permisos y normativas para instalaciones solares en ${comunidad.replace(/-/g, " ")}.`,
-    };
+    const name = comunidad.replace(/-/g, " ");
+    return buildMetadata({
+        title: `Normativa Solar en ${name}`,
+        description: `Consulta los permisos y normativas para instalaciones solares en ${name}.`,
+        pathname: `/normativa-solar/${comunidad}`,
+    });
 }
 
 export default function NormativaSolarComunidadPage({ params }: Props) {

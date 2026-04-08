@@ -4,6 +4,7 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 import { cachePolicy } from "@/lib/cache/policy";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -13,20 +14,21 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
-  const baseMetadata: Metadata = {
-    title: "Normativa Solar y Permisos por Comunidad",
-    description: "Consulta la normativa vigente, permisos y regulaciones requeridas para instalar paneles solares en tu Comunidad Autónoma y Municipio.",
-  };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
+    return buildMetadata({
       title: `Normativa Solar y Permisos en la Provincia de ${name}`,
       description: `Requisitos, licencias de obra y normativas urbanísticas para la instalación de placas solares en los municipios de ${name}.`,
-    };
+      pathname: `/normativa-solar?provincia=${provincia}`,
+    });
   }
-  return baseMetadata;
+  return buildMetadata({
+    title: "Normativa Solar y Permisos por Comunidad",
+    description: "Consulta la normativa vigente, permisos y regulaciones requeridas para instalar paneles solares en tu Comunidad Autónoma y Municipio.",
+    pathname: "/normativa-solar",
+  });
 }
 
 export default async function NormativaSolarRootPage({ searchParams }: Props) {
@@ -54,6 +56,8 @@ export default async function NormativaSolarRootPage({ searchParams }: Props) {
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1280}
+              height={720}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />

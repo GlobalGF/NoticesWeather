@@ -1,9 +1,11 @@
 import { LeadCaptureForm } from "@/components/ui/LeadCaptureForm";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Presupuesto de Placas Solares | Compara Instaladores en tu Zona",
   description: "Solicita hasta 3 presupuestos gratuitos de empresas instaladoras de placas solares verificadas. Ahorra en tu instalación fotovoltaica con SolaryEco.",
-};
+  pathname: "/presupuesto-solar",
+});
 
 export default function PresupuestoSolarPage() {
   return (
@@ -17,6 +19,8 @@ export default function PresupuestoSolarPage() {
             Analizamos tu caso y te conectamos con las mejores <strong>empresas de placas solares</strong> en tu provincia. Ahorra tiempo y dinero comparando ofertas reales.
           </p>
         </div>
+
+        <h2 className="text-2xl font-bold text-slate-900 mb-8">Solicita tu Presupuesto de Instalación Fotovoltaica</h2>
 
         <div className="grid lg:grid-cols-3 gap-12 items-start">
           {/* Form Side */}

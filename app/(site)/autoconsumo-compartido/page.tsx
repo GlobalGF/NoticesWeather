@@ -4,6 +4,7 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 import { cachePolicy } from "@/lib/cache/policy";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -13,20 +14,21 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
-  const baseMetadata: Metadata = {
-    title: "Autoconsumo Compartido",
-    description: "Únete a un proyecto de autoconsumo compartido en tu municipio y ahorra en tu factura de luz.",
-  };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
+    return buildMetadata({
       title: `Autoconsumo Compartido en la Provincia de ${name}`,
       description: `Comunidades energéticas y proyectos de autoconsumo compartido en los municipios de ${name}. Únete y ahorra en tu factura.`,
-    };
+      pathname: `/autoconsumo-compartido?provincia=${provincia}`,
+    });
   }
-  return baseMetadata;
+  return buildMetadata({
+    title: "Autoconsumo Compartido",
+    description: "Únete a un proyecto de autoconsumo compartido en tu municipio y ahorra en tu factura de luz.",
+    pathname: "/autoconsumo-compartido",
+  });
 }
 
 export default async function AutoconsumoCompartidoRootPage({ searchParams }: Props) {
@@ -54,6 +56,8 @@ export default async function AutoconsumoCompartidoRootPage({ searchParams }: Pr
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1280}
+              height={720}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />

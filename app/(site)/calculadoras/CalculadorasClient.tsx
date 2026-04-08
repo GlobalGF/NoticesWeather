@@ -100,7 +100,7 @@ export function CalculadorasClient({ municipioNombre, horasSolAnuales, costeMedi
           </div>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight">Calculadoras Solares</h1>
+              <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight">{municipioNombre !== "España" ? `Calculadoras Solares en ${municipioNombre}` : "Calculadoras Solares"}</h1>
               <p className="mt-2 text-sm text-slate-400 font-light max-w-xl">
                 Herramientas profesionales diseñadas para proyectar el máximo rendimiento de tu instalación fotovoltaica.
               </p>
@@ -125,7 +125,7 @@ export function CalculadorasClient({ municipioNombre, horasSolAnuales, costeMedi
               {tab.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base md:text-xl font-black text-slate-900 tracking-tight mb-0.5 md:mb-1">{tab.titulo}</h2>
+              <h2 className="text-base md:text-xl font-black text-slate-900 tracking-tight mb-0.5 md:mb-1">{municipioNombre !== "España" ? `${tab.titulo} en ${municipioNombre}` : tab.titulo}</h2>
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed mb-2 md:mb-3">{tab.descripcion}</p>
               <ol className="flex flex-col gap-1.5">
                 {tab.pasos.map((paso, i) => (

@@ -8,6 +8,7 @@ import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { tryParseSlug } from "@/lib/utils/params";
+import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { generateDynamicText } from "@/lib/pseo/spintax";
@@ -68,7 +69,7 @@ function nd(v: number | null | undefined, suffix = "", dec = 0): string {
 /* ── Metadata ────────────────────────────────────────────────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const slug = tryParseSlug(params.municipio);
-    if (!slug || !hasSupabaseEnv()) return { title: "Baterías Solares" };
+    if (!slug || isBlockedSlug(slug) || !hasSupabaseEnv()) return { title: "Baterías Solares" };
 
     const supabase = await createSupabaseServerClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,7 +113,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 /* ── Page ────────────────────────────────────────────────────────── */
 export default async function BateriasMunicipioPage({ params }: Props) {
     const slug = tryParseSlug(params.municipio);
-    if (!slug) notFound();
+    if (!slug || isBlockedSlug(slug)) notFound();
     if (!hasSupabaseEnv()) return <div className="p-10 text-center text-slate-400">Supabase no configurado.</div>;
 
     const supabase = await createSupabaseServerClient();
@@ -209,8 +210,8 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                             </p>
                             <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight">
                                 Baterías Solares en {muniName}
-                                <span className="text-slate-400 font-normal hidden sm:inline"> · Independencia Energética</span>
                             </h1>
+                            <p className="text-slate-400 font-normal text-base sm:text-xl mt-1 hidden sm:block" aria-hidden="true">Independencia Energética</p>
                             <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-light">
                                 Consulte el impacto financiero de añadir módulos de almacenamiento a {muniName}. Eleve el autoconsumo por encima del 80%.
                             </p>
@@ -279,7 +280,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
                         {/* Baterías Catalog */}
                         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-100">
-                                <SectionHeader title="Equipos de Almacenamiento (Base de Datos)" subtitle="Modelos LFP modulares predominantes en el mercado nacional" />
+                                <SectionHeader title={`Equipos de Almacenamiento en ${muniName}`} subtitle="Modelos LFP modulares predominantes en el mercado nacional" />
                             </div>
 
                             <div className="overflow-x-auto">

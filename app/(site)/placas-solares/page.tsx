@@ -22,13 +22,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
       title: `Placas Solares en ${name}: Rendimiento, Precios y Subvenciones`,
-      description: `Encuentra tu municipio en ${name} y accede al estudio completo de irradiación solar, rentabilidad financiera y bonificaciones fiscales (IBI/ICIO). ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
+      description: `Paneles y placas solares en ${name}: irradiación, precio de instalación fotovoltaica, ahorro en factura y bonificaciones IBI/ICIO. ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
       pathname: `/placas-solares?provincia=${encodeURIComponent(provincia)}`,
     });
   }
   return buildMetadata({
-    title: "Placas Solares en España: Estudio de Rendimiento y Precios",
-    description: "Descubre el potencial solar de tu localidad. Buscador de rendimiento energético, precios de instalación y subvenciones para placas solares en España.",
+    title: "Placas Solares en España: Precio de Paneles, Instalación y Ahorro",
+    description: "Compara precios de instalación de placas solares fotovoltaicas en tu municipio. Paneles solares, rentabilidad energética, subvenciones y bonificaciones IBI en España.",
     pathname: "/placas-solares",
   });
 }
@@ -148,7 +148,7 @@ async function GenericPlacasSolaresPage() {
           </h1>
 
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            Encuentra tu municipio y accede al instante al estudio completo de irradiación, rentabilidad financiera, y bonificaciones fiscales (IBI/ICIO).
+            Encuentra tu municipio y accede al estudio completo de irradiación, precio de instalación fotovoltaica, rentabilidad de paneles solares y bonificaciones fiscales (IBI/ICIO).
           </p>
 
           <LocationSearchBar baseRoute="/placas-solares" />
@@ -180,7 +180,7 @@ async function GenericPlacasSolaresPage() {
             </span>
             <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ahorro Medio Anual</p>
             <p className="text-3xl font-black text-slate-800 tabular-nums">{stats.avgSavings}€</p>
-            <p className="text-xs font-bold text-emerald-600">por instalación tipo</p>
+            <p className="text-xs font-bold text-emerald-600">por instalación fotovoltaica</p>
           </div>
           <div className="flex flex-col items-center text-center px-2 pl-4 md:pl-8 mt-6 md:mt-0 shadow-none border-t border-slate-100 md:border-t-0 pt-6 md:pt-0">
             <span className="w-12 h-12 flex items-center justify-center bg-purple-100 text-purple-600 rounded-2xl mb-4 shadow-inner border border-purple-200/50">
@@ -195,9 +195,9 @@ async function GenericPlacasSolaresPage() {
 
       <div className="mx-auto max-w-5xl px-4 pb-24">
         <div className="mb-12 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Directorio de placas solares por municipio</h2>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Directorio de paneles y placas solares por municipio</h2>
           <p className="text-slate-500">
-            Si prefieres navegar manualmente, selecciona tu provincia a continuación para desplegar el mapa de municipios y acceder al portal energético local.
+            Selecciona tu provincia para consultar el mapa de municipios con datos de energía solar fotovoltaica, precio de instalación de paneles y potencial de ahorro.
           </p>
         </div>
 

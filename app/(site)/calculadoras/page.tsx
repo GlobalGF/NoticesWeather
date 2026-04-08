@@ -3,8 +3,8 @@ import { getMunicipioBySlug } from "@/lib/data/solar";
 import { CalculadorasClient } from "./CalculadorasClient";
 
 export const metadata: Metadata = {
-  title: "Simuladores Energéticos Profesionales",
-  description: "Suite de calculadoras solares avanzadas para optimizar el autoconsumo, dimensionar baterías y estimar la rentabilidad fotovoltaica.",
+  title: "Calculadoras Solares — Simulador de Paneles, Baterías y Ahorro",
+  description: "Herramientas profesionales para dimensionar tu instalación fotovoltaica: calcula paneles necesarios, capacidad de baterías, compensación de excedentes y financiación solar.",
 };
 
 type Props = {

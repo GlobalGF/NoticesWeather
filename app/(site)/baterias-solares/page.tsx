@@ -7,6 +7,7 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
 import { cachePolicy } from "@/lib/cache/policy";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -16,20 +17,21 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { provincia } = searchParams;
-  const baseMetadata: Metadata = {
-    title: "Baterías Solares: Precios, Rentabilidad y Ayudas por Municipio",
-    description: "Encuentra instaladores, calcula el ahorro nocturno y descubre las ayudas disponibles para instalar baterías solares en tu localidad.",
-  };
 
   if (provincia) {
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
-    return {
+    return buildMetadata({
       title: `Baterías Solares en ${name} | Rentabilidad y Subvenciones`,
       description: `Amortización y ahorro nocturno con baterías solares para los ${stats?.totalMunicipios ?? ''} municipios de la provincia de ${name}.`,
-    };
+      pathname: `/baterias-solares?provincia=${provincia}`,
+    });
   }
-  return baseMetadata;
+  return buildMetadata({
+    title: "Baterías Solares: Precios, Rentabilidad y Ayudas por Municipio",
+    description: "Encuentra instaladores, calcula el ahorro nocturno y descubre las ayudas disponibles para instalar baterías solares en tu localidad.",
+    pathname: "/baterias-solares",
+  });
 }
 
 export default async function BateriasSolaresRootPage({ searchParams }: Props) {
@@ -57,6 +59,8 @@ export default async function BateriasSolaresRootPage({ searchParams }: Props) {
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1280}
+              height={720}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />

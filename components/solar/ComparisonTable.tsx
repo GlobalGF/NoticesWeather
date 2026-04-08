@@ -17,6 +17,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({ supabaseData, weather
   <section className="my-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
     <h3 className="text-xl font-bold text-slate-900 mb-4">Comparativa Solar: Media Anual vs Hoy</h3>
     <table className="w-full text-left border-collapse">
+      <caption className="sr-only">Comparativa de datos solares: media anual frente a valores actuales</caption>
       <thead>
         <tr>
           <th className="border-b p-2">Métrica</th>

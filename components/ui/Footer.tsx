@@ -21,7 +21,7 @@ export function Footer() {
           </div>
           
           <div>
-            <h3 className="text-white font-semibold mb-3">Portal Energético</h3>
+            <p className="text-white font-semibold mb-3">Portal Energético</p>
             <ul className="space-y-2">
               <li><Link href="/placas-solares" className="hover:text-blue-400 transition-colors">Energía Solar por Municipio</Link></li>
               <li><Link href="/precio-luz" className="hover:text-blue-400 transition-colors">Precio de la Luz Hoy (PVPC)</Link></li>
@@ -32,7 +32,7 @@ export function Footer() {
           </div>
           
           <div>
-            <h3 className="text-white font-semibold mb-3">Legal y Privacidad</h3>
+            <p className="text-white font-semibold mb-3">Legal y Privacidad</p>
             <ul className="space-y-2">
               <li><Link href="/legal/aviso-legal" className="hover:text-amber-400 transition-colors">Aviso Legal</Link></li>
               <li><Link href="/legal/politica-privacidad" className="hover:text-amber-400 transition-colors">Política de Privacidad</Link></li>
