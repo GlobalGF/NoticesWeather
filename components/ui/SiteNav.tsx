@@ -12,16 +12,41 @@ const navLinks = [
   { href: "/calculadoras", label: "Calculadoras", sticky: true },
 ];
 
+// Modules where /module/[municipio] is a valid direct route for sticky nav
+const MUNICIPALITY_MODULES = new Set([
+  "/placas-solares",
+  "/baterias-solares",
+  "/bonificacion-ibi",
+  "/autoconsumo-compartido",
+]);
+
+// Known content sub-page slugs that are NOT municipalities
+const CONTENT_SUBPAGES = new Set([
+  "horas-baratas",
+  "geo",
+]);
+
 export function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname() ?? "";
 
   const segments = pathname.split("/").filter(Boolean);
-  const currentSlug = segments.length >= 2 ? segments[segments.length - 1] : null;
+  const parentModule = segments.length >= 1 ? `/${segments[0]}` : null;
+  const lastSegment = segments.length === 2 ? segments[1] : null;
+
+  // Only extract a municipality slug when on a known municipality module page
+  // and the slug isn't a content sub-page like "horas-baratas"
+  const municipioSlug =
+    lastSegment &&
+    parentModule &&
+    MUNICIPALITY_MODULES.has(parentModule) &&
+    !CONTENT_SUBPAGES.has(lastSegment)
+      ? lastSegment
+      : null;
 
   const getLinkHref = (link: { href: string; sticky: boolean }) => {
-    if (link.sticky && currentSlug) {
-      return `${link.href}/${currentSlug}`;
+    if (link.sticky && municipioSlug && MUNICIPALITY_MODULES.has(link.href)) {
+      return `${link.href}/${municipioSlug}`;
     }
     return link.href;
   };

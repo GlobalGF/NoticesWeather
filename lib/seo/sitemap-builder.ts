@@ -15,6 +15,7 @@ const STATIC_PAGES: Array<{ path: string; changefreq: "daily" | "weekly" | "mont
   { path: "/", changefreq: "daily", priority: 1.0 },
   { path: "/placas-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/precio-luz", changefreq: "daily", priority: 0.9 },
+  { path: "/precio-luz/horas-baratas", changefreq: "daily", priority: 0.8 },
   { path: "/baterias-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/subvenciones-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/bonificacion-ibi", changefreq: "weekly", priority: 0.8 },
@@ -85,8 +86,8 @@ async function getSitemapCounts(): Promise<SitemapCounts> {
 export async function getSitemapPageCount(): Promise<number> {
   const { municipiosCount, pseoSlugCount } = await getSitemapCounts();
 
-  // 3 URL types per municipality (placas-solares, precio-luz, baterias-solares)
-  const dynamicLocalUrls = municipiosCount * 3;
+  // 2 URL types per municipality (placas-solares, baterias-solares)
+  const dynamicLocalUrls = municipiosCount * 2;
   const guideUrls = GUIDE_SLUGS.length;
   const staticUrls = STATIC_PAGES.length;
   const totalUrls = dynamicLocalUrls + guideUrls + pseoSlugCount + staticUrls;
@@ -124,17 +125,16 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
   const sections = [
     { key: "static" as const, from: 0, to: STATIC_PAGES.length - 1 },
     { key: "municipio" as const, from: STATIC_PAGES.length, to: STATIC_PAGES.length + totalMunicipioUrlsPerType - 1 },
-    { key: "precio-luz" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 - 1 },
-    { key: "baterias" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 - 1 },
+    { key: "baterias" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 - 1 },
     {
       key: "guia" as const,
-      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3,
-      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length - 1
+      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2,
+      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length - 1
     },
     {
       key: "pseo_slug" as const,
-      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length,
-      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 + GUIDE_SLUGS.length + pseoSlugCount - 1
+      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length,
+      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length + pseoSlugCount - 1
     }
   ];
 
@@ -198,9 +198,7 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
       const path =
         section.key === "municipio"
           ? `/placas-solares/${slug}`
-          : section.key === "precio-luz"
-            ? `/precio-luz/${slug}`
-            : `/baterias-solares/${slug}`;
+          : `/baterias-solares/${slug}`;
 
       urls.push({
         loc: `${baseUrl}${path}`,

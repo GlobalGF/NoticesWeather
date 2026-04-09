@@ -4,6 +4,7 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils/slug";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 
@@ -16,11 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { provincia, comunidad } = params;
     const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     const ccaaName = comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-    return {
-        title: `Subvenciones Solares en ${provName} (${ccaaName}) 2026 | Ayudas por Municipio`,
-        description: `Consulta las subvenciones autonómicas y las bonificaciones de IBI e ICIO disponibles en cada municipio de ${provName}. Datos actualizados 2026.`,
-        alternates: { canonical: `/subvenciones-solares/${comunidad}/${provincia}` },
-    };
+    return buildMetadata({
+        title: `Ayudas placas solares en ${provName}`,
+        description: `Consulta las subvenciones autonómicas y las bonificaciones de IBI e ICIO disponibles en cada municipio de ${provName}. Datos actualizados ${new Date().getFullYear()}.`,
+        pathname: `/subvenciones-solares/${comunidad}/${provincia}`,
+        noIndex: true,
+    });
 }
 
 const CCAA_NAME_MAP: Record<string, string> = {

@@ -54,7 +54,7 @@ export async function GET(_req: NextRequest, context?: Params): Promise<Response
     }
 
     // Each published municipality gets 3 URLs (one per route type)
-    const ROUTE_TYPES = ["placas-solares", "precio-luz", "baterias-solares"];
+    const ROUTE_TYPES = ["placas-solares", "baterias-solares"];
 
     const urls = items.flatMap((item) => {
         const lastmod = item.published_at

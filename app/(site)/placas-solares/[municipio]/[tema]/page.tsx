@@ -20,7 +20,7 @@ const TEMA_META: Record<string, { titleTpl: (m: string) => string; descTpl: (m: 
     descTpl: (m, p) => `Bonificaciones IBI, ICIO y subvenciones para autoconsumo solar en ${m} (${p}). Consulta las ayudas vigentes y cómo solicitarlas.`,
   },
   precio: {
-    titleTpl: (m) => `Precio instalación placas solares en ${m}`,
+    titleTpl: (m) => `Precio placas solares en ${m}`,
     descTpl: (m, p) => `¿Cuánto cuesta instalar placas solares en ${m} (${p})? Precios mínimos, medios y máximos, coste por vatio y presupuesto detallado.`,
   },
 };
@@ -298,8 +298,8 @@ export default async function MunicipioTemaPage({ params }: { params: { municipi
             </li>
           ))}
           <li>
-            <a href={`/precio-luz/${slug}`} className="text-blue-600 hover:underline">
-              Precio de la luz en {data.municipio}
+            <a href="/precio-luz" className="text-blue-600 hover:underline">
+              Precio de la luz hoy
             </a>
           </li>
           <li>

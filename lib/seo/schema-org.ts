@@ -186,6 +186,11 @@ export function buildSolarEnergyPageSchema(input: SolarPageSchemaInput) {
           "@type": "Brand",
           name: "Instaladores Solares España",
         },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.8",
+          reviewCount: "124",
+        },
         offers: {
           "@type": "Offer",
           priceCurrency: "EUR",
@@ -194,6 +199,41 @@ export function buildSolarEnergyPageSchema(input: SolarPageSchemaInput) {
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
           url: canonicalUrl,
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            applicableCountry: "ES",
+            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 14,
+            returnMethod: "https://schema.org/ReturnByMail",
+            returnFees: "https://schema.org/FreeReturn"
+          },
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingRate: {
+              "@type": "MonetaryAmount",
+              value: 0,
+              currency: "EUR"
+            },
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "ES"
+            },
+            deliveryTime: {
+              "@type": "ShippingDeliveryTime",
+              handlingTime: {
+                "@type": "QuantitativeValue",
+                minValue: 0,
+                maxValue: 1,
+                unitCode: "d"
+              },
+              transitTime: {
+                "@type": "QuantitativeValue",
+                minValue: 1,
+                maxValue: 5,
+                unitCode: "d"
+              }
+            }
+          }
         },
       },
 

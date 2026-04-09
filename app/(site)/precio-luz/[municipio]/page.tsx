@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!d) {
         const fallbackName = slug ? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "tu localidad";
         return buildMetadata({ 
-            title: `Tarifa Luz Hoy en ${fallbackName} — Precio por Hora ${new Date().getFullYear()}`, 
+            title: `Precio luz hoy en ${fallbackName} hora a hora`, 
             description: `Tarifa de la luz hoy en ${fallbackName}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica de España.`,
             pathname: `/precio-luz/${slug}`
         });
@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const provClean = cleanLocationName(d.provincia);
 
     return buildMetadata({
-        title: `Tarifa Luz Hoy en ${muniClean} (${provClean}) — Precio por Hora ${new Date().getFullYear()}`,
+        title: `Precio luz hoy en ${muniClean} hora a hora`,
         description: `Tarifa de la luz hoy en ${muniClean}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica. Ahorro con autoconsumo solar en ${provClean}.`,
         pathname: `/precio-luz/${slug}`,
     });

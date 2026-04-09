@@ -20,15 +20,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Coeficientes de Reparto en la provincia de ${name}`,
+      title: `Reparto de energía en ${name}`,
       description: `Consulta los coeficientes horarios de reparto de energía para instalaciones de autoconsumo colectivo en los municipios de ${name}.`,
       pathname: `/coeficiente-autoconsumo?provincia=${provincia}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Coeficientes de Reparto para Autoconsumo Colectivo",
+    title: "Coeficientes de reparto energía solar",
     description: "Encuentra los coeficientes de reparto óptimos para instalaciones de autoconsumo colectivo y compartido en tu Comunidad Autónoma y Municipio.",
     pathname: "/coeficiente-autoconsumo",
+    noIndex: true,
   });
 }
 

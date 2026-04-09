@@ -33,19 +33,26 @@ export function SubsidiesSeoBlock({
 }: SubsidiesSeoBlockProps) {
   const hash = getStringHash(slug);
 
-  const ibiValue = bonificacionIbi != null ? Math.round(bonificacionIbi) : null;
+  const ibiValue = bonificacionIbi != null && bonificacionIbi > 0 ? Math.round(bonificacionIbi) : null;
   const nearby = nearbyItems.length > 0 ? nearbyItems[hash % nearbyItems.length] : null;
 
   // --- Variations for IBI Section ---
+  const ibiDisplay = ibiValue ?? 50;
   const ibiVariations = [
     <>
-      Las instalaciones en <strong>{municipio}</strong> pueden beneficiarse de importantes deducciones locales. La ordenanza fiscal vigente contempla una bonificación del <strong>{ibiValue ?? 50}%</strong> en el Impuesto sobre Bienes Inmuebles, permitiendo reducir significativamente el coste fijo de tu vivienda mientras recuperas la inversión solar.
+      Las instalaciones en <strong>{municipio}</strong> pueden beneficiarse de importantes deducciones locales. La ordenanza fiscal vigente contempla una bonificación del <strong>{ibiDisplay}%</strong> en el Impuesto sobre Bienes Inmuebles, permitiendo reducir significativamente el coste fijo de tu vivienda mientras recuperas la inversión solar.
     </>,
     <>
-      El ayuntamiento de <strong>{municipio}</strong> fomenta el autoconsumo mediante incentivos directos. Actualmente, los propietarios pueden solicitar hasta un <strong>{ibiValue ?? 50}%</strong> de descuento en el IBI. Este beneficio fiscal es clave para acortar el periodo de retorno de tus placas solares en {provincia}.
+      El ayuntamiento de <strong>{municipio}</strong> fomenta el autoconsumo mediante incentivos directos. Actualmente, los propietarios pueden solicitar hasta un <strong>{ibiDisplay}%</strong> de descuento en el IBI. Este beneficio fiscal es clave para acortar el periodo de retorno de tus placas solares en {provincia}.
     </>,
     <>
-      Si resides en <strong>{municipio}</strong>, tu transición a la energía limpia tiene premio fiscal. Las normativas municipales recogen una bonificación de hasta el <strong>{ibiValue ?? 50}%</strong> en el recibo del IBI para viviendas con paneles fotovoltaicos, una de las ayudas más robustas disponibles en la zona de {provincia}.
+      Si resides en <strong>{municipio}</strong>, tu transición a la energía limpia tiene premio fiscal. Las normativas municipales recogen una bonificación de hasta el <strong>{ibiDisplay}%</strong> en el recibo del IBI para viviendas con paneles fotovoltaicos, una de las ayudas más robustas disponibles en la zona de {provincia}.
+    </>,
+    <>
+      En <strong>{municipio}</strong>, instalar paneles solares da acceso a una reducción del <strong>{ibiDisplay}%</strong> en el IBI durante los primeros años. Esta ayuda municipal directa, combinada con las deducciones estatales, acelera la amortización de la instalación fotovoltaica.
+    </>,
+    <>
+      Los vecinos de <strong>{municipio}</strong> que apuesten por el autoconsumo fotovoltaico cuentan con una ventaja fiscal directa: hasta un <strong>{ibiDisplay}%</strong> de rebaja en el recibo del IBI, según la ordenanza fiscal del municipio en {provincia}.
     </>,
   ];
 
@@ -60,6 +67,12 @@ export function SubsidiesSeoBlock({
     <>
       No olvides incluir tu instalación solar de {municipio} en el próximo ejercicio fiscal. Las deducciones en el IRPF por eficiencia energética permiten desgravar una parte sustancial de la inversión, reduciendo el precio final de tus placas solares de forma inmediata.
     </>,
+    <>
+      La Agencia Tributaria permite deducir en el IRPF entre el <strong>20% y el 60%</strong> de lo invertido en placas solares en <strong>{municipio}</strong>. Para una instalación de 5 000 €, esto puede suponer una devolución de hasta 3 000 € en tu próxima declaración.
+    </>,
+    <>
+      Cada euro invertido en autoconsumo fotovoltaico en {municipio} tiene retorno fiscal: las deducciones estatales de hasta el <strong>60%</strong> por mejora de certificación energética se aplican directamente en la declaración de la Renta, acelerando la recuperación de la inversión.
+    </>,
   ];
 
   const selectedIbi = ibiVariations[hash % ibiVariations.length];
@@ -68,7 +81,7 @@ export function SubsidiesSeoBlock({
   return (
     <>
       {/* ── ALERTA DE IBI DESTACADA ── */}
-      {ibiValue && ibiValue > 0 && (
+      {ibiValue != null && ibiValue > 0 && (
         <div className="bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-500/20 overflow-hidden mb-6 mt-8 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20"></div>
@@ -98,7 +111,13 @@ export function SubsidiesSeoBlock({
       <section className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ${(!ibiValue || ibiValue === 0) ? "mt-8" : ""} transition-shadow hover:shadow-md`}>
         <div className="bg-slate-900 px-6 py-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <span aria-hidden="true">🏛️</span> Ayudas y subvenciones para placas solares en {municipio}
+            {[
+              `Ayudas y subvenciones para placas solares en ${municipio}`,
+              `Incentivos fiscales para autoconsumo solar en ${municipio}`,
+              `Bonificaciones y deducciones por instalar paneles en ${municipio}`,
+              `Subvenciones activas para energía fotovoltaica en ${municipio}`,
+              `Ayudas públicas al autoconsumo en ${municipio} (${provincia})`,
+            ][hash % 5]}
           </h2>
         </div>
         <div className="p-6 md:p-8">

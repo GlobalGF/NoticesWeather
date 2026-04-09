@@ -15,7 +15,31 @@ function isAdminRoute(pathname: string) {
 }
 
 export function middleware(request: NextRequest) {
-  if (!isAdminRoute(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl;
+
+  // 301 redirect: /precio-luz/[municipio] → /placas-solares/[municipio]
+  // Keep /precio-luz hub and known sub-pages (horas-baratas, etc.) intact.
+  // Also skip slugs that contain non-municipality keywords to avoid 301 → 404 chains.
+  const PRECIO_LUZ_SUBPAGES = new Set([
+    "horas-baratas",
+    "tarifas",
+    "mercado-regulado",
+    "discriminacion-horaria",
+    "pvpc",
+    "franjas-horarias",
+  ]);
+  const precioLuzMatch = pathname.match(/^\/precio-luz\/([^/]+)$/);
+  if (precioLuzMatch) {
+    const slug = precioLuzMatch[1];
+    if (!PRECIO_LUZ_SUBPAGES.has(slug)) {
+      return NextResponse.redirect(
+        new URL(`/placas-solares/${slug}`, request.url),
+        301
+      );
+    }
+  }
+
+  if (!isAdminRoute(pathname)) {
     return NextResponse.next();
   }
 

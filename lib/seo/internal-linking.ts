@@ -57,7 +57,7 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
   const baseUrls = [
     `/placas-solares/${context.municipioSlug}`,
     buildBatteryUrl(context.tarifa, context.consumo),
-    `/precio-luz/${context.municipioSlug}`,
+    `/precio-luz`,
     `/solucion-solar/placas-solares-${context.municipioSlug}`,
     subvencionesGeoPath ? `${subvencionesGeoPath}` : null,
   ];
@@ -74,8 +74,7 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
 
   const nearbyUrls = nearby.flatMap((m) => [
     `/placas-solares/${m.slug}`,
-    `/baterias-solares/${m.slug}`,
-    `/precio-luz/${m.slug}`
+    `/baterias-solares/${m.slug}`
   ]);
 
   return uniqueUrls([...baseUrls, ...nearbyUrls]);
@@ -84,7 +83,6 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
 export function buildMunicipalityLinks(slug: string) {
   return [
     `/placas-solares/${slug}`,
-    `/baterias-solares/${slug}`,
-    `/precio-luz/${slug}`
+    `/baterias-solares/${slug}`
   ];
 }

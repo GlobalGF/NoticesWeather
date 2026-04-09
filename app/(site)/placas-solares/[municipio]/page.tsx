@@ -33,6 +33,10 @@ import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
+import { LocalInstallationCases } from "@/components/ui/LocalInstallationCases";
+import { CityClimateSolarProfile } from "@/components/ui/CityClimateSolarProfile";
+import { InstallationProcessTimeline } from "@/components/ui/InstallationProcessTimeline";
+import { TrustMethodologyBlock } from "@/components/ui/TrustMethodologyBlock";
 
 export const revalidate = cachePolicy.page.solarCity;
 export const dynamicParams = true;
@@ -114,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const muniName = cleanLocationName(data.municipio || "tu localidad");
         const provName = cleanLocationName(data.provincia || "");
         
-        const title = `Placas solares en ${muniName} \u2013 Ahorro, ayudas y rentabilidad ${year}`;
+        const title = `Placas solares en ${muniName} (${year})`;
         const description = `Instala paneles solares en ${muniName}${provName && provName !== muniName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
 
         return buildMetadata({
@@ -130,7 +134,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           : "tu localidad";
 
         return buildMetadata({ 
-            title: `Placas solares en ${fallbackName} – Instalación y Rentabilidad ${year}`, 
+            title: `Placas solares en ${fallbackName} (${year})`, 
             description: `Consulta el ahorro y disponibilidad para instalación de placas solares en ${fallbackName}. Datos y presupuestos sin compromiso garantizados.`,
             pathname: `/placas-solares/${rawMunicipio}`
         });
@@ -256,6 +260,9 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                         <span className="text-slate-400 font-normal text-lg sm:text-xl"> · {cleanLocationName(municipio.provincia)}</span>
                                     )}
                                 </h1>
+                                <p className="text-sm text-slate-300 mt-1.5">
+                                    Ahorra hasta {fmtEur(ahorroAnual)}/año · {fmt(municipio.horas_sol)} horas de sol · Amortización en {payback ?? "6–8"} años
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -324,6 +331,48 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 nearbyItems={nearbyItems}
                             />
 
+                            {/* City-specific climate & solar profile — high differentiation */}
+                            <CityClimateSolarProfile
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                comunidadAutonoma={municipio.comunidad_autonoma ?? municipio.provincia ?? ""}
+                                irradiacionSolar={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                ahorroEstimado={ahorroAnual}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                precioLuz={precioLuz}
+                                habitantes={municipio.habitantes}
+                            />
+
+                            {/* Realistic installation case studies (3 property types) */}
+                            <LocalInstallationCases
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                comunidadAutonoma={municipio.comunidad_autonoma ?? municipio.provincia ?? ""}
+                                irradiacionSolar={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                ahorroEstimado={ahorroAnual}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                precioInstalacionMin={municipio.precio_instalacion_min_eur}
+                                precioInstalacionMedio={municipio.precio_instalacion_medio_eur}
+                                precioInstalacionMax={municipio.precio_instalacion_max_eur}
+                                eurPorWatio={municipio.eur_por_watio}
+                                precioLuz={precioLuz}
+                                habitantes={municipio.habitantes}
+                            />
+
+                            {/* Step-by-step installation guide with local permits */}
+                            <InstallationProcessTimeline
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                comunidadAutonoma={municipio.comunidad_autonoma ?? municipio.provincia ?? ""}
+                                irradiacionSolar={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                precioInstalacionMedio={municipio.precio_instalacion_medio_eur}
+                                habitantes={municipio.habitantes}
+                            />
+
                             {/* CTA Calculadoras Avanzadas */}
                             <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 rounded-2xl shadow-xl mt-8 p-8 md:p-10 border border-indigo-900">
                                 {/* Decorative elements */}
@@ -333,7 +382,9 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 <div className="relative z-10 lg:flex items-center justify-between gap-8">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-3">
-                                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/30 text-indigo-400 text-xs shadow-inner">⚡</span>
+                                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/30 text-indigo-400 text-xs shadow-inner">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                            </span>
                                             <p className="text-sm font-bold tracking-widest uppercase text-indigo-300">Simuladores Avanzados</p>
                                         </div>
                                         <h2 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight mb-4">
@@ -378,6 +429,19 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 municipio={municipio.municipio} 
                                 irradiacionAnual={municipio.irradiacion_solar}
                                 horasSol={municipio.horas_sol}
+                            />
+
+                            {/* E-E-A-T: Trust signals, methodology, data sources */}
+                            <TrustMethodologyBlock
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                comunidadAutonoma={municipio.comunidad_autonoma ?? municipio.provincia ?? ""}
+                                irradiacionSolar={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                ahorroEstimado={ahorroAnual}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                precioLuz={precioLuz}
+                                habitantes={municipio.habitantes}
                             />
 
                             {/* ── FAQ Accordion (SSR — visible to Googlebot) ── */}

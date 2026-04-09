@@ -59,32 +59,27 @@ export function CroUrgencyBanner({
   }
 
   // ── Message logic ────────────────────────────────────────────
-  let emoji: string;
   let headline: string;
   let body: string;
   let badgeText: string | null = null;
   let bgClass: string;
 
   if (!isDay) {
-    emoji = "🌙";
     headline = `Mañana, tus paneles en ${municipio} volverán a generar energía gratis`;
     body = hour >= 20
       ? "Solicita tu estudio gratuito esta noche y recíbelo mañana a primera hora."
       : "Al amanecer, la producción solar se reanuda automáticamente.";
     bgClass = "from-indigo-900 to-slate-900 text-white";
   } else if (ghi != null && ghi > 500) {
-    emoji = "☀️";
     headline = `Ahora mismo en ${municipio} se desperdician ${moneyPerHour.toFixed(2)}€/hora de energía solar`;
     body = `Con una irradiancia de ${Math.round(ghi)} W/m², una instalación de ${PANEL_SYSTEM_KW}kW produciría ${currentProductionKwh.toFixed(1)} kWh cada hora. Ese dinero sale de tu bolsillo.`;
     bgClass = "from-amber-500 to-orange-500 text-slate-900";
     if (data.uv > 8) badgeText = "UV extremo · máxima producción";
   } else if (ghi != null && ghi > 200) {
-    emoji = "⚡";
     headline = `Con esta irradiancia en ${municipio}, estarías generando ${currentProductionKwh.toFixed(1)} kWh/h gratis`;
     body = `Producción moderada (${Math.round(ghi)} W/m²) — los paneles siguen siendo rentables incluso sin sol directo.`;
     bgClass = "from-blue-500 to-sky-500 text-white";
   } else {
-    emoji = "🌤️";
     const pct = ghi != null ? Math.round((ghi / 1000) * 100) : 15;
     headline = `Incluso hoy, los paneles en ${municipio} producen un ${pct}% de su capacidad`;
     body = `Los paneles solares modernos generan energía incluso con cielos nublados. El ahorro se acumula día tras día.`;
@@ -128,7 +123,6 @@ export function CroUrgencyBanner({
 
         {/* Content */}
         <p className="text-lg sm:text-xl font-extrabold leading-tight pr-8">
-          <span className="mr-2" aria-hidden="true">{emoji}</span>
           {headline}
         </p>
         <p className="mt-2 text-sm opacity-90 leading-relaxed max-w-xl">

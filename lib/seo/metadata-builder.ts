@@ -4,6 +4,7 @@ type MetadataInput = {
   title: string;
   description: string;
   pathname: string;
+  noIndex?: boolean;
 };
 
 const SITE_NAME = "SolaryEco";
@@ -18,6 +19,7 @@ export function buildMetadata(input: MetadataInput): Metadata {
     title: input.title,
     description: input.description,
     alternates: { canonical },
+    robots: input.noIndex ? { index: false, follow: true } : undefined,
     openGraph: {
       title: input.title,
       description: input.description,

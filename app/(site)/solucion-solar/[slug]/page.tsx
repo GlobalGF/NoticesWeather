@@ -68,8 +68,7 @@ export default async function GenericSolarSlugPage({ params }: Props) {
       ]}
       links={[
         `/placas-solares/${slugify(data.municipio)}`,
-        `/baterias-solares/${slugify(data.municipio)}`,
-        `/precio-luz/${slugify(data.municipio)}`
+        `/baterias-solares/${slugify(data.municipio)}`
       ]}
     />
   );

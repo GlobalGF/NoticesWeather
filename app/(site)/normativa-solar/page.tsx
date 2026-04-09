@@ -19,15 +19,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Normativa Solar y Permisos en la Provincia de ${name}`,
+      title: `Normativa solar en ${name}`,
       description: `Requisitos, licencias de obra y normativas urbanísticas para la instalación de placas solares en los municipios de ${name}.`,
       pathname: `/normativa-solar?provincia=${provincia}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Normativa Solar y Permisos por Comunidad",
+    title: "Normativa solar y permisos",
     description: "Consulta la normativa vigente, permisos y regulaciones requeridas para instalar paneles solares en tu Comunidad Autónoma y Municipio.",
     pathname: "/normativa-solar",
+    noIndex: true,
   });
 }
 

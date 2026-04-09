@@ -22,15 +22,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Baterías Solares en ${name} | Rentabilidad y Subvenciones`,
+      title: `Baterías solares en ${name}`,
       description: `Amortización y ahorro nocturno con baterías solares para los ${stats?.totalMunicipios ?? ''} municipios de la provincia de ${name}.`,
       pathname: `/baterias-solares?provincia=${provincia}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Baterías Solares: Precios, Rentabilidad y Ayudas por Municipio",
+    title: "Baterías solares por municipio",
     description: "Encuentra instaladores, calcula el ahorro nocturno y descubre las ayudas disponibles para instalar baterías solares en tu localidad.",
     pathname: "/baterias-solares",
+    noIndex: true,
   });
 }
 

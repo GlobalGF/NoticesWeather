@@ -29,7 +29,7 @@ export function SiloNavigation({ currentSilo, municipioName, municipioSlug, prov
         {
             silo: "precio-luz",
             title: "Precio de la Luz y PVPC",
-            href: `/precio-luz/${municipioSlug}`,
+            href: `/precio-luz`,
             icon: "💶"
         },
     ];

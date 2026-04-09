@@ -4,11 +4,15 @@ import { useState } from "react";
 
 type SurplusCompensationCalculatorProps = {
   municipio: string;
+  irradiancia?: number; // kWh/m²/año — para estimar excedentes diarios
+  precioMedioLuz?: number; // €/kWh — precio medio local
 };
 
-export function SurplusCompensationCalculator({ municipio }: SurplusCompensationCalculatorProps) {
-  const [excedenteDiario, setExcedenteDiario] = useState<number>(8); // kWh
-  const [precioCompensacion, setPrecioCompensacion] = useState<number>(0.08); // €/kWh
+export function SurplusCompensationCalculator({ municipio, irradiancia = 1700, precioMedioLuz }: SurplusCompensationCalculatorProps) {
+  // Estimar excedente diario basado en irradiancia local (3kWp, 78% rendimiento, 40% excedentes)
+  const excedenteDiarioEstimado = Math.round((3 * irradiancia * 0.78 * 0.4) / 365);
+  const [excedenteDiario, setExcedenteDiario] = useState<number>(excedenteDiarioEstimado);
+  const [precioCompensacion, setPrecioCompensacion] = useState<number>(precioMedioLuz ? Math.round(precioMedioLuz * 0.45 * 100) / 100 : 0.08); // ~45% del precio minorista
 
   const ingresoDiario = excedenteDiario * precioCompensacion;
   const ingresoMensual = ingresoDiario * 30;
@@ -123,7 +127,7 @@ export function SurplusCompensationCalculator({ municipio }: SurplusCompensation
                     <div className="bg-gradient-to-br from-emerald-50 to-teal-50/30 p-4 rounded-2xl border border-emerald-100 shadow-sm flex-1 sm:text-right relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
                         <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-wider mb-2 relative z-10">Descuento Mensual</p>
-                        <p className="text-4xl md:text-5xl font-black text-emerald-600 tabular-nums drop-shadow-sm transition-all duration-500 tracking-tight relative z-10">{ingresoMensual.toLocaleString("es-ES", { style: "currency", currency: "EUR" })}</p>
+                        <p className="text-3xl sm:text-4xl md:text-5xl font-black text-emerald-600 tabular-nums drop-shadow-sm transition-all duration-500 tracking-tight relative z-10">{ingresoMensual.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-lg font-bold text-emerald-400">€</span></p>
                     </div>
                   </div>
                </div>

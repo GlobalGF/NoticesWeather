@@ -5,8 +5,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils/slug";
 
 export const metadata: Metadata = {
-  title: "Subvenciones Placas Solares 2026 | Ayudas por Comunidad Autónoma",
+  title: "Subvenciones placas solares",
   description: "Guía actualizada de subvenciones, deducciones IRPF, bonificaciones de IBI e ICIO para instalar placas solares en España. Busca las ayudas disponibles en tu municipio.",
+  robots: { index: false, follow: true },
 };
 
 const CCAA_SLUGS: Record<string, string> = {

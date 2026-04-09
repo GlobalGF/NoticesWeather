@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
   const urls: string[] = [];
   for (const slug of slugs) {
     urls.push(`/placas-solares/${slug}`);
-    urls.push(`/precio-luz/${slug}`);
     urls.push(`/baterias-solares/${slug}`);
   }
 

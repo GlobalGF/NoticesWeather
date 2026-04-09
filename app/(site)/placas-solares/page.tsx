@@ -21,15 +21,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Placas Solares en ${name}: Rendimiento, Precios y Subvenciones`,
+      title: `Placas solares en ${name}`,
       description: `Paneles y placas solares en ${name}: irradiación, precio de instalación fotovoltaica, ahorro en factura y bonificaciones IBI/ICIO. ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
       pathname: `/placas-solares?provincia=${encodeURIComponent(provincia)}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Placas Solares en España: Precio de Paneles, Instalación y Ahorro",
+    title: "Placas solares en España",
     description: "Compara precios de instalación de placas solares fotovoltaicas en tu municipio. Paneles solares, rentabilidad energética, subvenciones y bonificaciones IBI en España.",
     pathname: "/placas-solares",
+    noIndex: true,
   });
 }
 

@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const provName = (data as any)?.provincia ?? provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     return buildMetadata({
-        title: `Subvenciones Placas Solares en ${muniName} (${provName}) ${new Date().getFullYear()} | Ayudas e IBI`,
+        title: `Subvenciones placas solares en ${muniName}`,
         description: `Consulta las subvenciones del ${CCAA_NAME_MAP[comunidad] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
         pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}`,
     });

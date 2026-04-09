@@ -209,18 +209,31 @@ export function DynamicSeoBlock({
   // SSR / loading fallback — visible to crawlers that don't execute JS
   if (loading || error || !data) {
     const annualStr = irradiacionAnual ? `${irradiacionAnual.toLocaleString("es-ES")} kWh/m²` : "alta irradiación";
+    const hId = getStringHash(municipio);
+    const annualProd5kw = irradiacionAnual ? Math.round(irradiacionAnual * 5 * 0.80) : null;
+    const savingsYear = annualProd5kw ? (annualProd5kw * precioMedioLuz) : null;
+
+    const fallbackTitles = [
+      `Producción solar en tiempo real en ${municipio}`,
+      `Rendimiento fotovoltaico actual en ${municipio}`,
+      `Monitorización solar en vivo en ${municipio} (${provincia})`,
+      `Estado de generación fotovoltaica en ${municipio}`,
+      `Datos solares actualizados para ${municipio}`,
+    ];
+    const fallbackBodies = [
+      `${municipio} (${provincia}) registra ${annualStr} de irradiación solar anual, lo que supone un alto potencial fotovoltaico.${annualProd5kw ? ` Una instalación típica de 5 kW puede generar aproximadamente ${annualProd5kw.toLocaleString("es-ES")} kWh al año, traducido en un ahorro de ${savingsYear!.toFixed(0)} € anuales al precio actual de ${precioMedioLuz.toFixed(2)} €/kWh.` : ""} Los datos de producción en vivo se actualizan automáticamente con la información meteorológica.`,
+      `Con ${annualStr} de radiación solar acumulada al año, ${municipio} se sitúa ${irradiacionAnual && irradiacionAnual > 1700 ? "por encima de la media nacional" : "en un rango competitivo"} para el autoconsumo fotovoltaico.${annualProd5kw ? ` Esto permite a una instalación de 5 kWp producir hasta ${annualProd5kw.toLocaleString("es-ES")} kWh anuales, generando un ahorro directo estimado de ${savingsYear!.toFixed(0)} € en la factura eléctrica.` : ""} La producción hora a hora se carga con los datos meteorológicos en tiempo real.`,
+      `El recurso solar disponible en ${municipio} alcanza los ${annualStr} anuales, clasificando esta localidad de ${provincia} como zona ${irradiacionAnual && irradiacionAnual > 1800 ? "de alto rendimiento" : irradiacionAnual && irradiacionAnual > 1500 ? "de rendimiento favorable" : "viable"} para instalaciones fotovoltaicas.${annualProd5kw ? ` Un sistema doméstico de 5 kW podría generar ${annualProd5kw.toLocaleString("es-ES")} kWh/año y ahorrar aproximadamente ${savingsYear!.toFixed(0)} € al precio de mercado de ${precioMedioLuz.toFixed(2)} €/kWh.` : ""} Los datos en vivo se actualizan con la meteorología actual.`,
+      `La irradiación solar en ${municipio} (${provincia}) llega a ${annualStr} al año, lo que convierte cada metro cuadrado de cubierta orientada al sur en una fuente de energía renovable.${annualProd5kw ? ` Con 5 kWp instalados, la producción estimada ronda los ${annualProd5kw.toLocaleString("es-ES")} kWh anuales — unos ${savingsYear!.toFixed(0)} € de ahorro directo.` : ""} La monitorización en tiempo real se activa con los datos meteorológicos del momento.`,
+    ];
+
     return (
       <section className="mt-5 rounded-xl border border-slate-200 p-5">
         <h2 className="text-2xl font-semibold text-slate-900">
-          Producción solar en tiempo real en {municipio}
+          {pick(fallbackTitles, hId, 0)}
         </h2>
         <p className="mt-3 leading-relaxed text-slate-700">
-          {municipio} ({provincia}) registra {annualStr} de irradiación
-          solar anual, lo que supone un alto potencial fotovoltaico. Una
-          instalación típica de 5 kW genera un ahorro directo en la factura
-          eléctrica al precio actual de {precioMedioLuz.toFixed(2)} €/kWh.
-          Los datos de producción en vivo se cargan automáticamente con la
-          información meteorológica actual.
+          {pick(fallbackBodies, hId, 1)}
         </p>
         <p className="mt-2 text-xs text-slate-400">Cargando datos meteorológicos en tiempo real…</p>
       </section>

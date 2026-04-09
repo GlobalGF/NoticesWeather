@@ -10,7 +10,7 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   // Try exact match first
   let { data, error } = await supabase
     .from("municipios_energia")
-    .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
+    .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo, precio_medio_luz")
     .ilike("slug", slug.trim())
     .maybeSingle();
 
@@ -24,7 +24,7 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
       console.info(`[getMunicipioBySlug] Trying fuzzy for: ${searchPattern}`);
       const fuzzyResult = await supabase
         .from("municipios_energia")
-        .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo")
+        .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo, precio_medio_luz")
         .ilike("slug", searchPattern)
         .limit(10);
         

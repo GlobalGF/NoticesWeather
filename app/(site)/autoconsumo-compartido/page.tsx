@@ -19,15 +19,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Autoconsumo Compartido en la Provincia de ${name}`,
+      title: `Autoconsumo compartido en ${name}`,
       description: `Comunidades energéticas y proyectos de autoconsumo compartido en los municipios de ${name}. Únete y ahorra en tu factura.`,
       pathname: `/autoconsumo-compartido?provincia=${provincia}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Autoconsumo Compartido",
+    title: "Autoconsumo compartido por municipio",
     description: "Únete a un proyecto de autoconsumo compartido en tu municipio y ahorra en tu factura de luz.",
     pathname: "/autoconsumo-compartido",
+    noIndex: true,
   });
 }
 

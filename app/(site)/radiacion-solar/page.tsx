@@ -3,9 +3,10 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Radiación Solar por Comunidad Autónoma",
+  title: "Radiación solar en España",
   description: "Consulta el nivel de radiación solar y horas de sol equivalentes por Comunidad Autónoma en España.",
   pathname: "/radiacion-solar",
+  noIndex: true,
 });
 
 export default function RadiacionSolarRootPage() {

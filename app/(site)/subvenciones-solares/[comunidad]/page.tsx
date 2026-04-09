@@ -9,6 +9,7 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -114,16 +115,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
   const percentages = rows.map((r) => r.subvencion_porcentaje).filter((v): v is number => typeof v === "number");
   const maxPct = percentages.length ? Math.max(...percentages) : 40;
-  const title = `Subvenciones placas solares en ${ccaaName} 2026 | Ayudas y requisitos`;
+  const title = `Ayudas placas solares en ${ccaaName}`;
   const description = rows.length > 0
     ? `Programa vigente en ${ccaaName}: hasta ${maxPct}% de subvención. Guía completa para solicitar correctamente la ayuda fotovoltaica.`
     : `Ayudas y deducciones fiscales para instalar placas solares en ${ccaaName}. Requisitos, procedimiento y bonificaciones IBI e ICIO.`;
-  return {
+  return buildMetadata({
     title,
     description,
-    alternates: { canonical: `/subvenciones-solares/${parsed}` },
-    openGraph: { title, description, type: "article", locale: "es_ES", url: `/subvenciones-solares/${parsed}` },
-  };
+    pathname: `/subvenciones-solares/${parsed}`,
+    noIndex: true,
+  });
 }
 
 

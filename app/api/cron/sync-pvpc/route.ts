@@ -1,7 +1,13 @@
 /**
  * /api/cron/sync-pvpc — Vercel Cron
- * Sincroniza precios PVPC diarios desde la API de REE.
- * Se ejecuta automáticamente una vez al día a las 21:15 CET (los precios se publican a las ~20:30).
+ * Sincroniza precios PVPC desde la API de REE.
+ *
+ * Escribe en DOS tablas:
+ *   1. precios_electricidad_es — agregados diarios (media, min, max)
+ *   2. pvpc_horario            — 24 filas por día (hora a hora)
+ *
+ * Rango: ayer + hoy + mañana (REE publica mañana a las ~20:15 CET).
+ * Cron: 21:15 CET (vercel.json: "15 19 * * *")
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -25,19 +31,23 @@ export async function GET(req: NextRequest) {
     const REE_BASE = "https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real";
 
     try {
-        // Sincronizar ayer y hoy (por si se ejecuta después de las 20:30)
+        // Sincronizar ayer, hoy y mañana
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
         const dates = [
             yesterday.toISOString().split("T")[0],
             today.toISOString().split("T")[0],
+            tomorrow.toISOString().split("T")[0],
         ];
 
         const { createClient } = await import("@supabase/supabase-js");
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const results: Array<{ fecha: string; status: string; media?: number }> = [];
+        const results: Array<{ fecha: string; status: string; media?: number; horas?: number }> = [];
 
         for (const fecha of dates) {
             try {
@@ -56,7 +66,7 @@ export async function GET(req: NextRequest) {
                 const included = json?.included || [];
 
                 // Buscar indicador PVPC
-                let values: Array<{ value: number }> = [];
+                let values: Array<{ value: number; datetime: string }> = [];
                 for (const ind of included) {
                     const title = (ind?.attributes?.title || "").toLowerCase();
                     const id = String(ind?.id || "");
@@ -83,7 +93,8 @@ export async function GET(req: NextRequest) {
                 const prices = values.map((v) => v.value / 1000);
                 const media = Number((prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(5));
 
-                const { error } = await supabase
+                // ── 1. Upsert agregado diario en precios_electricidad_es ──
+                const { error: dailyErr } = await supabase
                     .from("precios_electricidad_es")
                     .upsert({
                         fecha,
@@ -95,10 +106,34 @@ export async function GET(req: NextRequest) {
                         indicador_id: "1001",
                     }, { onConflict: "fecha,tarifa_codigo" });
 
-                if (error) {
-                    results.push({ fecha, status: `SUPABASE_ERR: ${error.message}` });
+                if (dailyErr) {
+                    results.push({ fecha, status: `DAILY_ERR: ${dailyErr.message}` });
+                    continue;
+                }
+
+                // ── 2. Upsert filas horarias en pvpc_horario ──
+                // Calcular percentil y es_barata
+                const sorted = [...prices].sort((a, b) => a - b);
+                const hourlyRows = prices.map((precio, hora) => {
+                    const rank = sorted.indexOf(precio);
+                    const percentil = Math.round((rank / (sorted.length - 1 || 1)) * 100);
+                    return {
+                        fecha,
+                        hora,
+                        precio_kwh: Number(precio.toFixed(6)),
+                        es_barata: percentil <= 25,         // bottom 25% of the day
+                        percentil,
+                    };
+                });
+
+                const { error: hourlyErr } = await supabase
+                    .from("pvpc_horario")
+                    .upsert(hourlyRows, { onConflict: "fecha,hora" });
+
+                if (hourlyErr) {
+                    results.push({ fecha, status: `HOURLY_ERR: ${hourlyErr.message}`, media });
                 } else {
-                    results.push({ fecha, status: "OK", media });
+                    results.push({ fecha, status: "OK", media, horas: hourlyRows.length });
                 }
             } catch (e: any) {
                 results.push({ fecha, status: `ERROR: ${e.message}` });

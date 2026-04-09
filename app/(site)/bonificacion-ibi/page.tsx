@@ -19,15 +19,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Bonificación del IBI por Placas Solares en ${name}`,
+      title: `Bonificación IBI en ${name}`,
       description: `Consulta el descuento aplicable en el IBI (Impuesto sobre Bienes Inmuebles) por instalar placas solares en la provincia de ${name}.`,
       pathname: `/bonificacion-ibi?provincia=${provincia}`,
+      noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Bonificación del IBI por Placas Solares",
+    title: "Bonificación IBI por municipio",
     description: "Consulta los descuentos y bonificaciones en el IBI (Impuesto sobre Bienes Inmuebles) por la instalación de placas solares en tu municipio.",
     pathname: "/bonificacion-ibi",
+    noIndex: true,
   });
 }
 
