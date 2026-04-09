@@ -58,6 +58,24 @@ export async function getMunicipioBySlug(slug: string): Promise<any | null> {
   return data;
 }
 
+export async function getSeoSnapshotBySlug(slug: string): Promise<any | null> {
+  if (!slug || typeof slug !== "string") return null;
+  const supabase = await createSupabaseServerClient();
+  
+  const { data, error } = await supabase
+    .from("seo_municipio_snapshot")
+    .select("*")
+    .ilike("slug", slug.trim())
+    .maybeSingle();
+
+  if (error) {
+    console.error(`[getSeoSnapshotBySlug] Supabase Error:`, error);
+    return null;
+  }
+  
+  return data;
+}
+
 export async function getWeatherForLocation(municipioName: string, provinciaName: string) {
   try {
     if (!municipioName) {

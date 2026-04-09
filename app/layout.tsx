@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { AdSenseDeferred } from "@/components/ui/AdSenseDeferred";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -33,15 +34,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <head>
-        <meta name="google-adsense-account" content="ca-pub-9143435761704783" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9143435761704783"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className={manrope.className}>
+        <AdSenseDeferred />
         {children}
       </body>
     </html>

@@ -24,6 +24,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createHash } from "crypto";
 import { Resend } from "resend";
+import { sendTelegramMessage } from "@/lib/utils/telegram";
 
 /* ── Config ──────────────────────────────────────────────── */
 const MAX_BODY_BYTES = 4_096;
@@ -108,9 +109,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         .gte("created_at", windowStart)
         .maybeSingle();
 
-    if (existing) {
+    if (existing && process.env.NODE_ENV === "production") {
+        console.info(`[api/leads] Duplicate lead detected for phone ${telefono}. Skipping notification in production.`);
         // Silently accept but don't double-insert (good UX, prevents spam)
         return NextResponse.json({ ok: true, deduplicated: true });
+    } else if (existing) {
+        console.info(`[api/leads] Duplicate phone ${telefono} detected, but allowing for testing in development.`);
     }
 
     /* -- Read UTM params from Referer or forward from client -- */
@@ -156,27 +160,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         );
     }
 
-    /* -- Fire n8n webhook (non-blocking) -- */
-    const webhookUrl = process.env.N8N_LEAD_WEBHOOK_URL;
-    if (webhookUrl) {
-        fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                id: inserted.id,
-                nombre: nombre.trim(),
-                telefono,
-                tipo_vivienda: tipo,
-                consumo_kwh: consumo,
-                municipio,
-                provincia,
-                referer,
-            }),
-        }).catch((err) => {
-            // Non-critical: log but don't fail the request
-            console.warn("[api/leads] n8n webhook failed:", err?.message);
-        });
-    }
+    /* -- 1. Send Telegram Alert (Native, no n8n) -- */
+    const telegramText = `
+🔆 <b>Nuevo Lead Solar</b>
+<b>Nombre:</b> ${nombre.trim()}
+<b>Teléfono:</b> ${telefono}
+<b>Municipio:</b> ${municipio} (${provincia})
+<b>Tipo:</b> ${tipo ?? "—"}
+<b>Consumo:</b> ${consumo ? consumo + " kWh/año" : "—"}
+${tejado ? `<b>Tejado:</b> ${tejado}` : ""}
+${bateria ? `<b>Batería:</b> ${bateria}` : ""}
+${email ? `<b>Email:</b> ${email}` : ""}
+
+<i>Fuente: ${referer || "directo"}</i>
+    `.trim();
+
+    sendTelegramMessage(telegramText)
+        .then(res => {
+            if (res.success) console.log(`[api/leads] Telegram alert sent for lead ${inserted.id}`);
+            else console.warn(`[api/leads] Telegram alert failed:`, res.error);
+        })
+        .catch(err => console.error(`[api/leads] Telegram fatal error:`, err));
 
     /* -- Send email notification (non-blocking) -- */
     const resendKey = process.env.RESEND_API_KEY;
@@ -208,6 +212,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 `Fuente: ${referer || "directo"}`,
                 `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,
             ].filter(Boolean).join("\n"),
+        }).then(res => {
+            console.log(`[api/leads] Resend email attempt for lead ${inserted.id}:`, res);
         }).catch((err) => {
             console.warn("[api/leads] Email notification failed:", err?.message ?? err);
         });

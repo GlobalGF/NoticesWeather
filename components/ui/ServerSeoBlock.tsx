@@ -25,6 +25,8 @@ type ServerSeoBlockProps = {
     ghi?: number | null;
     short_rad?: number | null;
   } | null;
+  snapshot?: any | null;
+  habitantes?: number | null;
 };
 
 /* ── Helpers ────────────────────────────────────────────────────── */
@@ -78,6 +80,8 @@ export function ServerSeoBlock({
   bonificacionIbi,
   precioMedioLuz = 0.22,
   weather,
+  snapshot,
+  habitantes,
 }: ServerSeoBlockProps) {
 
   const time = getTimeSlot();
@@ -122,27 +126,36 @@ export function ServerSeoBlock({
   // ── Opening paragraphs ──
   const openingsWeather: Record<string, string[]> = {
     sunny: [
-      `${municipio}, situado en la provincia de ${provincia}, disfruta hoy de cielos despejados que maximizan el rendimiento de las instalaciones fotovoltaicas.${ghiStr ? ` La irradiancia actual alcanza los ${ghiStr}, lo que permite a los paneles solares operar cerca de su capacidad máxima.` : ''}`,
-      `Las condiciones meteorológicas en ${municipio} son óptimas para la generación de energía solar.${ghiStr ? ` Con una irradiancia de ${ghiStr}, cada panel monocristalino instalado en la zona produce electricidad limpia a un ritmo excelente.` : ''}`,
-      `El ecosistema fotovoltaico en ${municipio} alcanza hoy niveles ideales gracias a la ausencia de nubosidad significativa.${ghiStr ? ` Un índice de radiación directa de ${ghiStr} garantiza la máxima rentabilidad para el autoconsumidor durante esta franja.` : ''}`,
-      `Hoy presenciamos un escenario climático perfecto en la provincia de ${provincia} para el sector solar. En particular, ${municipio} recibe una cantidad de radiación directa sustancial${ghiStr ? ` (${ghiStr})` : ''}, traduciéndose en una carga de baterías acelerada.`,
+      `${municipio} cuenta con un potencial fotovoltaico privilegiado gracias a su ubicación en ${provincia}. Hoy disfruta de cielos despejados que maximizan el rendimiento de las placas.${ghiStr ? ` La irradiancia actual alcanza los ${ghiStr}.` : ""}`,
+      `La radiación solar en ${municipio} garantiza una rentabilidad alta para cualquier instalación de autoconsumo hoy.${ghiStr ? ` Registramos ${ghiStr} de potencia por metro cuadrado.` : ""}`,
+      `El aprovechamiento de la luz solar en ${municipio} es clave hoy para reducir la factura eléctrica.${ghiStr ? ` Los sensores marcan ${ghiStr} de radiación directa.` : ""}`,
+      `Escenario ideal en ${municipio} para sistemas solares: cielos limpios y una captación energética excepcional hoy.${ghiStr ? ` (${ghiStr} actuales).` : ""}`,
+      `Condiciones óptimas: las placas solares en ${municipio} operan hoy a pleno rendimiento bajo un sol radiante en la provincia de ${provincia}.`,
+      `Eficiencia máxima en ${municipio}: la ausencia de nubes permite que los paneles fotovoltaicos alcancen su pico de generación matutina.`,
     ],
     cloudy: [
-      `A pesar de la cobertura nubosa parcial sobre ${municipio}, los paneles fotovoltaicos modernos siguen produciendo energía.${ghiStr ? ` La radiación difusa registra ${ghiStr}, suficiente para mantener una generación moderada.` : ''} Los paneles de silicio monocristalino de última generación son capaces de captar hasta un 80% de su potencial incluso con cielos nublados.`,
-      `El cielo parcialmente cubierto en ${provincia} no detiene la producción solar en ${municipio}.${ghiStr ? ` Los sensores registran ${ghiStr} de irradiancia, lo que permite seguir generando electricidad de forma rentable.` : ''}`,
-      `La bruma o nubosidad sobre ${municipio} disminuye la radiación directa, pero activa la captación indirecta de las placas.${ghiStr ? ` Los ${ghiStr} medidos ahora mismo demuestran que las instalaciones siguen reduciendo la factura de la luz independientemente de las nubes.` : ''}`,
-      `Aunque la meteorología en ${municipio} limite el impacto directo del sol, la tecnología fotovoltaica responde eficazmente aprovechando la radiación difusa ambiente, abasteciendo los consumos pasivos del hogar.`,
+      `A pesar de la cobertura nubosa parcial sobre ${municipio}, los paneles fotovoltaicos modernos siguen produciendo energía.${ghiStr ? ` La radiación difusa registra ${ghiStr}.` : ""}`,
+      `El cielo parcialmente cubierto en ${provincia} no detiene la producción solar en ${municipio}.${ghiStr ? ` Los sensores registran ${ghiStr} de irradiancia.` : ""}`,
+      `La bruma sobre ${municipio} disminuye la radiación directa, pero activa la captación indirecta de las placas.${ghiStr ? ` Los ${ghiStr} medidos demuestran que sigues ahorrando.` : ""}`,
+      `Aunque la meteorología en ${municipio} limite el sol directo, la tecnología actual aprovecha cada rayo de luz ambiente para abastecer el hogar.`,
+      `Día de nubes y claros en ${municipio}: el sistema solar alterna picos de producción con generación estable de radiación difusa.`,
+      `Rendimiento moderado en ${municipio}: la capa de nubes tamiza la luz, pero los módulos monocristalinos mantienen un flujo de ahorro constante.`,
     ],
     rainy: [
-      `Incluso en jornadas de lluvia como la actual en ${municipio}, los sistemas fotovoltaicos captan la radiación difusa del cielo.${ghiStr ? ` Se registran ${ghiStr} de irradiancia, lo que mantiene una producción residual que contribuye al balance anual.` : ''} Además, la lluvia limpia de forma natural los paneles solares, mejorando su rendimiento en los días siguientes.`,
-      `Las precipitaciones sobre ${municipio} reducen temporalmente la producción solar, pero las células fotovoltaicas de alta eficiencia siguen operativas.${ghiStr ? ` La irradiancia se sitúa en ${ghiStr}, permitiendo cubrir el consumo base del hogar.` : ''}`,
-      `Un frente lluvioso atraviesa la provincia de ${provincia}, disminuyendo el aporte solar inmediato en ${municipio}. Sin embargo, este lavado natural elimina el polvo acumulado en los revestimientos antirreflectantes, garantizando un pico de eficiencia cuando escampe.`,
+      `Incluso con lluvia en ${municipio}, los sistemas fotovoltaicos captan la radiación difusa.${ghiStr ? ` Se registran ${ghiStr} de irradiancia.` : ""} Además, el agua limpia los paneles mejorando su eficiencia futura.`,
+      `Las precipitaciones en ${municipio} reducen temporalmente la producción, pero las células de alta eficiencia siguen operativas a un nivel residual.`,
+      `Frente lluvioso activo en ${provincia}. En ${municipio}, el ahorro solar continúa gracias a la luz indirecta que atraviesa la nubosidad.`,
+      `Día de lluvia y limpieza natural para tus placas en ${municipio}: se aprovecha la radiación ambiente mientras se elimina el polvo acumulado.`,
+      `Generación bajo la lluvia en ${municipio}: el impacto de las gotas no detiene la fotosíntesis eléctrica de tus módulos fotovoltaicos.`,
+      `Producción de bajo nivel en ${municipio} por mal tiempo, ideal para cubrir consumos pasivos y mantener el balance de la batería.`,
     ],
     night: [
-      `Con la caída del sol sobre ${municipio} (${provincia}), la producción fotovoltaica se detiene temporalmente. Es el momento en el que los sistemas de almacenamiento con baterías o las tarifas con compensación de excedentes demuestran su valor, aprovechando la energía acumulada durante las horas de sol.`,
-      `Durante la noche en ${municipio}, los inversores de las instalaciones solares entran en reposo. No obstante, el balance energético del día queda registrado y cada kilovatio-hora generado ha restado de la factura eléctrica del hogar.`,
-      `El ciclo de generación llega a su fase de inactividad nocturna en ${municipio}. Los hogares cambian su patrón, pasando a consumir de la red comercial o de las baterías acumuladas tras aprovechar los picos de irradiación diurnos.`,
-      `La radiación solar es nula en este momento en ${municipio}, pero el impacto económico del autoconsumo continúa activo: los kWh vertidos a la red durante el día se compensarán como excedentes a final de mes frente al consumo actual.`,
+      `Con la caída del sol sobre ${municipio}, la producción se detiene. Es el momento de usar la energía acumulada en baterías o la compensación de excedentes.`,
+      `Noche en ${municipio}: los inversores entran en reposo tras una jornada de ahorro solar efectiva en la provincia de ${provincia}.`,
+      `Inactividad nocturna en ${municipio}. El balance del día queda registrado: cada kWh generado ha restado coste a tu próxima factura.`,
+      `Sin radiación en ${municipio} ahora mismo, pero el impacto económico del autoconsumo continúa activo mediante el vertido de excedentes diurnos.`,
+      `Pausa solar en ${municipio}: la instalación se prepara para el amanecer mientras el hogar consume la energía limpia almacenada.`,
+      `Final de la jornada fotovoltaica en ${municipio}: es el momento de analizar el autoconsumo diario y optimizar los hábitos para mañana.`,
     ],
   };
 
@@ -173,22 +186,33 @@ export function ServerSeoBlock({
     );
   }
 
+  // ── Urban Context paragraphs (Demographic logic) ──
+  const habCount = habitantes || 0;
+  const urbanContext = habCount > 50000 
+    ? `Dada la alta densidad de ${municipio}, el autoconsumo se está expandiendo rápidamente en bloques de pisos y comunidades de vecinos mediante modalidades compartidas, además de en azoteas de edificios comerciales.`
+    : habCount < 5000 
+      ? `En entornos rurales como ${municipio}, las viviendas unifamiliares, las naves agrícolas y los tejados despejados ofrecen condiciones inmejorables para instalar grandes campos solares sin problemas de sombreado.`
+      : `El crecimiento de zonas residenciales en ${municipio} favorece la instalación de sistemas solares tanto en viviendas pareadas como en pequeñas naves industriales que buscan autonomía energética.`;
+
   // ── Closing paragraph ──
   const closings = [
-    `En definitiva, ${municipio} reúne unas condiciones excepcionales para el autoconsumo solar: elevada irradiación, incentivos fiscales locales y un precio de la electricidad que hace cada vez más rentable la inversión en energía fotovoltaica. Solicitar un estudio personalizado es el primer paso para dimensionar correctamente la instalación y maximizar el retorno de la inversión.`,
-    `Si estás valorando la instalación de placas solares en ${municipio}, los datos objetivos respaldan la decisión: la combinación de ${annualStr ?? 'alta irradiación'} y las ayudas disponibles permite amortizar la inversión en un plazo medio de 5 a 8 años, generando electricidad gratuita durante los 20-25 años restantes de vida útil de los paneles.`,
-    `La transición al autoconsumo en ${municipio} no es solo una apuesta medioambiental: es una decisión financiera respaldada por datos. Cada euro invertido en paneles solares genera un retorno compuesto gracias al ahorro en la factura, las bonificaciones fiscales y la revalorización del inmueble.`,
-    `Frente a la escalada constante de la red comercial, independizarse energéticamente a través del autoconsumo fotovoltaico en ${municipio} representa el mecanismo deflacionario más seguro para los propietarios hoy en día.`,
-    `Las métricas a largo plazo de PVGIS confirman a ${municipio} como una de las zonas europeas con mayor viabilidad para el sector verde. Instalar 4 o 5 kWp en tu cubierta hoy blindará el presupuesto de tu hogar y agilizará la recuperación económica (ROI) mucho antes de que expiren las garantías de fabricación estándar.`,
-    `De este análisis se concluye que el autoconsumo en ${municipio} (${provincia}) transcurre por un momento clave. Es vital analizar qué comercializadora está pagando mejor los excedentes en tu localidad para acelerar el periodo de recuperación al máximo.`,
+    `En definitiva, ${municipio} reúne unas condiciones excepcionales para el autoconsumo solar: elevada irradiación, incentivos fiscales locales y un precio de la electricidad que hace cada vez más rentable la inversión.`,
+    `Si estás valorando instalar placas solares en ${municipio}, los datos objetivos de la provincia de ${provincia} respaldan la decisión: amortizarás tu inversión en tiempo récord ayudando al medio ambiente.`,
+    `La transición energética en ${municipio} no es solo una apuesta ecológica: es una decisión financiera inteligente para blindarse ante las subidas del precio de la luz.`,
+    `Frente a la escalada constante de la red comercial, independizarse energéticamente a través del autoconsumo fotovoltaico en ${municipio} es la mejor defensa económica hoy.`,
+    `Las métricas de PVGIS confirman a ${municipio} como una zona de viabilidad máxima. Instalar paneles en tu cubierta hoy acelerará tu independencia energética este mismo año.`,
+    `De este estudio se concluye que el potencial de ahorro en ${municipio} es extraordinario. Cada m² de tejado infrautilizado es una oportunidad de ahorro perdida frente al sol de ${provincia}.`,
   ];
 
   // ── Assemble ──
-  const title = pick(titles[time], hashId, 0);
-  const opening = pick(time === "night" ? openingsWeather.night : openingsWeather[weatherBucket], hashId, 1);
+  let aiIntro = snapshot?.intro_unica;
+  let aiH2 = snapshot?.h2_variante?.[hashId % (snapshot.h2_variante?.length || 1)];
+
+  const title = aiH2 || pick(titles[time], hashId, 0);
+  const opening = aiIntro || pick(time === "night" ? openingsWeather.night : openingsWeather[weatherBucket], hashId, 1);
   const closing = pick(closings, hashId, 2);
 
-  const bodyParagraphs = [opening, ...dataParagraphs, closing];
+  const bodyParagraphs = [opening, urbanContext, ...dataParagraphs, closing];
 
   return (
     <section

@@ -13,30 +13,23 @@ import { SolarWeatherWidget } from "@/components/ui/SolarWeatherWidget";
 import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
-import { SubsidiesSeoBlock } from "@/components/ui/SubsidiesSeoBlock";
-import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
+import { getMunicipioBySlug, getSeoSnapshotBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
+import dynamic from "next/dynamic";
 
-import { BatteryNeedsCalculator } from "@/components/ui/BatteryNeedsCalculator";
-import { SurplusCompensationCalculator } from "@/components/ui/SurplusCompensationCalculator";
-import { PanelCountCalculator } from "@/components/ui/PanelCountCalculator";
-import { SolarFinancingCalculator } from "@/components/ui/SolarFinancingCalculator";
-
-import { NearbyMunicipalityCards } from "@/components/ui/NearbyMunicipalityCards";
-import GeoDirectory from "@/components/ui/GeoDirectory";
-import { SiloNavigation } from "@/components/ui/SiloNavigation";
-import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
-import Fallback from "@/components/solar/Fallback";
-import { getMunicipioBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
+/* ── Lazy Loaded Components (below the fold) ── */
+const NearbyMunicipalityCards = dynamic(() => import("@/components/ui/NearbyMunicipalityCards").then(mod => mod.NearbyMunicipalityCards));
+const GeoDirectory = dynamic(() => import("@/components/ui/GeoDirectory"));
+const FaqAccordion = dynamic(() => import("@/components/ui/FaqAccordion").then(mod => mod.FaqAccordion));
+const TrustMethodologyBlock = dynamic(() => import("@/components/ui/TrustMethodologyBlock").then(mod => mod.TrustMethodologyBlock));
+const InstallationProcessTimeline = dynamic(() => import("@/components/ui/InstallationProcessTimeline").then(mod => mod.InstallationProcessTimeline));
+const LocalInstallationCases = dynamic(() => import("@/components/ui/LocalInstallationCases").then(mod => mod.LocalInstallationCases));
+const CityClimateSolarProfile = dynamic(() => import("@/components/ui/CityClimateSolarProfile").then(mod => mod.CityClimateSolarProfile));
+const SubsidiesSeoBlock = dynamic(() => import("@/components/ui/SubsidiesSeoBlock").then(mod => mod.SubsidiesSeoBlock));
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
-import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
-import { LocalInstallationCases } from "@/components/ui/LocalInstallationCases";
-import { CityClimateSolarProfile } from "@/components/ui/CityClimateSolarProfile";
-import { InstallationProcessTimeline } from "@/components/ui/InstallationProcessTimeline";
-import { TrustMethodologyBlock } from "@/components/ui/TrustMethodologyBlock";
 
 export const revalidate = cachePolicy.page.solarCity;
 export const dynamicParams = true;
@@ -156,7 +149,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         if (isBlockedSlug(slug)) notFound();
         
         console.info(`[PlacasSolaresMunicipioPage] 2. FETCHING DB for slug: ${slug}`);
-        const municipio = await getMunicipioBySlug(slug);
+        const [municipio, seoSnapshot] = await Promise.all([
+            getMunicipioBySlug(slug),
+            getSeoSnapshotBySlug(slug)
+        ]);
 
         if (!municipio) {
             console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB`);
@@ -310,6 +306,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 bonificacionIbi={municipio.bonificacion_ibi}
                                 precioMedioLuz={precioLuz}
                                 weather={weather}
+                                snapshot={seoSnapshot}
+                                habitantes={municipio.habitantes}
                             />
 
                             {/* Client-side dynamic block (additional content, updates with live weather) */}

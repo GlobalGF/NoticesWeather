@@ -118,6 +118,7 @@ function buildCases(
   eurWp: number,
   precioLuz: number,
   bonIbi: number | null,
+  habitantes: number | null,
 ): {
   profile: CaseProfile;
   coste: number;
@@ -127,16 +128,34 @@ function buildCases(
   co2Evitado: number;
   bonIbiAhorro: number | null;
 }[] {
+  const isSmallTown = (habitantes ?? 0) < 5000;
+
   const profiles: CaseProfile[] = [
     {
-      type: "Apartamento con azotea comunitaria",
-      icon: "🏢",
+      type: isSmallTown ? "Vivienda unifamiliar pequeña" : "Apartamento con azotea comunitaria",
+      icon: isSmallTown ? "🏡" : "🏢",
       kWp: 2.5,
       panels: 6,
       consumoMensual: 200,
       roofArea: 12,
       description: pick(
-        [
+        isSmallTown ? [
+          [
+            `Casa de campo o vivienda unifamiliar en ${municipio} con buena exposición solar.`,
+            `Instalación básica de ${fmt(2.5, 1)} kWp ideal para cubrir consumos de iluminación y electrodomésticos eficientes.`,
+            `En entornos rurales, la falta de sombras permite que estos 6 paneles rindan al máximo desde el amanecer.`,
+          ],
+          [
+            `Vivienda compacta en el casco antiguo de ${municipio} con tejado despejado.`,
+            `Sistema de ${fmt(2.5, 1)} kWp diseñado para reducir la dependencia de la red eléctrica en un municipio con alta radiación.`,
+            `La estructura coplanar se adapta perfectamente a la estética local sin impacto visual significativo.`,
+          ],
+          [
+            `Pequeña construcción o segunda residencia en ${municipio} que busca autonomía energética.`,
+            `6 paneles de última generación que aprovechan las ${fmt(horas)} horas de sol de la zona para amortizar la inversión en menos de 6 años.`,
+            `Ideal para propietarios que quieren empezar en el autoconsumo con una inversión contenida.`,
+          ],
+        ] : [
           [
             `Vivienda tipo piso en ${municipio} con acceso a cubierta comunitaria.`,
             `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura coplanar, aprovechando la zona con menor sombra del edificio.`,
@@ -274,7 +293,7 @@ export function LocalInstallationCases({
   const zona = getClimateZone(irrad, horas);
   const housing = housingProfiles[zona];
 
-  const cases = buildCases(h, muniClean, zona, irrad, horas, eurWp, precioLuz, bonIbi);
+  const cases = buildCases(h, muniClean, zona, irrad, horas, eurWp, precioLuz, bonIbi, habitantes ? Number(habitantes) : null);
 
   const yearNow = new Date().getFullYear();
   const ahorroAnual = Math.round(horas / 365 * 5 * 0.80 * 365 * precioLuz * 0.65);

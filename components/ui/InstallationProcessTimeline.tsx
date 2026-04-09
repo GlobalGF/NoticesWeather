@@ -53,11 +53,18 @@ type Step = {
   tip: string | null;
 };
 
-function buildSteps(municipio: string, provincia: string, comunidad: string, h: number, bonIbi: number | null, precioMedio: number | null, hab: number | null): Step[] {
-  const isUrban = (hab ?? 0) >= 20000;
+function buildSteps(municipio: string, provincia: string, comunidad: string, h: number, bonIbi: number | null, precioMedio: number | null, hab: number | null): { steps: Step[]; urbanContext: string } {
+  const habCount = hab ?? 0;
+  const isUrban = habCount >= 20000; // Legacy threshold for durations
   const hasIbi = bonIbi && bonIbi > 0;
 
-  return [
+  const urbanContext = habCount > 50000 
+    ? `Dada la alta densidad de población en ${municipio}, las instalaciones suelen realizarse en bloques de pisos y comunidades de vecinos que buscan el autoconsumo colectivo.`
+    : habCount < 5000 
+      ? `En ${municipio}, predominan las viviendas unifamiliares, naves agrícolas y tejados despejados, lo que simplifica enormemente el montaje de paneles solares.`
+      : `El tejido residencial de ${municipio} es ideal para el autoconsumo, combinando viviendas pareadas con pequeñas zonas industriales de alta radiación.`;
+
+  const steps: Step[] = [
     {
       number: 1,
       title: "Estudio técnico de la vivienda",
@@ -141,6 +148,7 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
       tip: null,
     },
   ];
+  return { steps, urbanContext };
 }
 
 // Fix the template literal reference
@@ -169,10 +177,10 @@ export function InstallationProcessTimeline({
   const bonIbi = bonificacionIbi ? Number(bonificacionIbi) : null;
   const precioMedio = precioInstalacionMedio ? Number(precioInstalacionMedio) : null;
 
-  let steps = buildSteps(muniClean, provClean, comClean, h, bonIbi, precioMedio, habitantes ? Number(habitantes) : null);
+  const { steps: rawSteps, urbanContext } = buildSteps(muniClean, provClean, comClean, h, bonIbi, precioMedio, habitantes ? Number(habitantes) : null);
 
   // Fix step 6 detail with actual sun hours
-  steps = steps.map((s, i) => i === 5 ? { ...s, detail: fixStep6Detail(s.detail, horasSol) } : s);
+  const steps = rawSteps.map((s, i) => i === 5 ? { ...s, detail: fixStep6Detail(s.detail, horasSol) } : s);
 
   const totalDays = "30–60 días";
   const yearNow = new Date().getFullYear();
@@ -198,7 +206,7 @@ export function InstallationProcessTimeline({
           {pick(timelineTitles, h, 3)}
         </h2>
         <p className="mt-1.5 text-sm text-slate-500">
-          Desde el estudio inicial hasta la primera factura con ahorro. Plazo total estimado: <strong>{totalDays}</strong>.
+          {urbanContext} Plazo total estimado: <strong>{totalDays}</strong>.
           {comClean && <> Normativa aplicable en {comClean}.</>}
         </p>
       </div>

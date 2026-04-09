@@ -160,7 +160,7 @@ export function SubsidiesSeoBlock({
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
             </a>
             <p className="block text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-md py-2 px-4 shadow-sm inline-block">
-              Consulta siempre al ayuntamiento de {provincia} para confirmar la vigencia anual de estas ayudas.
+              Consulta siempre al ayuntamiento de {municipio} para confirmar la vigencia anual de estas ayudas.
             </p>
             {nearby && (
               <p className="block text-[10px] text-slate-400">

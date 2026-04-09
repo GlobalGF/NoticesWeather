@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { notifyGoogleOfUrlBatch } from "@/lib/seo/google-indexing";
 
-export const maxDuration = 60; // Max duration for Hobby cron jobs
+export const maxDuration = 300; // Increased for indexing network calls
 
 export async function GET(req: NextRequest) {
     console.log("Starting Drip-Feed SEO Publish Cron Job");
@@ -56,12 +56,26 @@ export async function GET(req: NextRequest) {
             throw updateError;
         }
 
-        console.log(`Successfully published ${itemIds.length} pages via Drip-Feed Cron.`);
+        // 5. Notify Google Indexing API (Drip indexing)
+        const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://solaryeco.es";
+        const urlsToIndex = pendingData.map(item => {
+            const cleanSlug = item.slug.startsWith("/") ? item.slug.slice(1) : item.slug;
+            return `${SITE_URL}/placas-solares/${cleanSlug}`;
+        });
+
+        console.log(`[Drip] Notifying Google of ${urlsToIndex.length} new URLs...`);
+        
+        // We do this asynchronously but wait for it to finish within the route's duration
+        const indexingResults = await notifyGoogleOfUrlBatch(urlsToIndex);
+        const indexedCount = indexingResults.filter(r => r.success).length;
+
+        console.log(`Successfully published ${itemIds.length} pages and notified Google for ${indexedCount}/${urlsToIndex.length}.`);
         
         return NextResponse.json({
             success: true,
-            message: `Published ${itemIds.length} pages.`,
-            publishedIds: itemIds
+            message: `Published ${itemIds.length} pages. Indexed ${indexedCount}.`,
+            publishedIds: itemIds,
+            indexedCount
         });
 
     } catch (error: any) {
