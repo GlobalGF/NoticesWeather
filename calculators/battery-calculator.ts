@@ -12,6 +12,8 @@ export type BatteryCalculatorOutput = {
   requiredCapacityKwh: number;
   estimatedAnnualSavingsEur: number;
   energyIndependencePct: number;
+  estimatedCostEur: number;
+  paybackYears: number;
 };
 
 const PRICE_BY_TARIFF: Record<TariffType, number> = {
@@ -30,16 +32,6 @@ export function calculateBatteryRecommendation(input: BatteryCalculatorInput): B
   const monthlyConsumption = Math.max(0, input.monthlyConsumptionKwh);
   const installationPower = Math.max(0, input.installationPowerKw);
   const sunHours = Math.max(0, input.sunHoursPerDay);
-
-  // Engineering model:
-  // 1) C_d = C_m / 30
-  // 2) E_pv_d = P_inst * H_sol * PR
-  // 3) C_night = C_d * alpha_tarifa
-  // 4) Surplus_d = max(0, E_pv_d - C_day)
-  // 5) E_storage_needed = max(0, C_night - Surplus_d)
-  // 6) N_bat = ceil(E_storage_needed / E_bat_usable)
-  // 7) Independence = (E_direct + E_shift) / C_d
-  // 8) Savings_year = (E_direct + E_shift) * 365 * price_tarifa
 
   const dailyConsumption = monthlyConsumption / 30;
   const performanceRatio = 0.78;
@@ -67,10 +59,15 @@ export function calculateBatteryRecommendation(input: BatteryCalculatorInput): B
   const energyIndependencePct =
     dailyConsumption === 0 ? 0 : Math.min(99, ((directSolarUsed + batteryShift) / dailyConsumption) * 100);
 
+  const estimatedCostEur = Math.round(recommendedBatteries * 5 * 550); // Módulos de 5kWh a 550€/kWh
+  const paybackYears = estimatedAnnualSavingsEur > 0 ? estimatedCostEur / estimatedAnnualSavingsEur : 0;
+
   return {
     recommendedBatteries,
     requiredCapacityKwh,
     estimatedAnnualSavingsEur: Math.round(estimatedAnnualSavingsEur),
-    energyIndependencePct: Number(energyIndependencePct.toFixed(1))
+    energyIndependencePct: Number(energyIndependencePct.toFixed(1)),
+    estimatedCostEur,
+    paybackYears: Number(paybackYears.toFixed(1)),
   };
-}
+}

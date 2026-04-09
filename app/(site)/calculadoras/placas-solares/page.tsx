@@ -131,30 +131,32 @@ export default function CalculadoraPlacasSolaresPage() {
         </section>
 
         {/* Beneficios - Confianza */}
-        <section className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
-          <h2 className="text-2xl md:text-3xl font-black mb-8 relative z-10">¿Por qué confiar en nuestra plataforma?</h2>
-          <div className="grid md:grid-cols-3 gap-8 relative z-10">
-            <div>
-              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <section className="bg-slate-900 rounded-[2rem] p-8 md:p-14 text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+          <div className="relative z-10">
+            <h2 className="text-3xl font-black mb-10 tracking-tight">¿Por qué confiar en nuestra plataforma?</h2>
+            <div className="grid md:grid-cols-3 gap-10">
+              <div className="group">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-blue-500/30 transition-colors border border-blue-500/30">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Garantía total</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">Instalaciones con garantías de hasta 25 años en paneles y 10 años en mano de obra.</p>
               </div>
-              <h3 className="text-lg font-bold mb-2">Garantía total</h3>
-              <p className="text-sm text-slate-400">Instalaciones con garantías de hasta 25 años en paneles y 10 años en mano de obra.</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <div className="group">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-amber-500/30 transition-colors border border-amber-500/30">
+                  <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Máxima eficiencia</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">Utilizamos componentes de primera línea para maximizar el rendimiento de tu tejado.</p>
               </div>
-              <h3 className="text-lg font-bold mb-2">Máxima eficiencia</h3>
-              <p className="text-sm text-slate-400">Utilizamos componentes de primera línea para maximizar el rendimiento de tu tejado.</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+              <div className="group">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-emerald-500/30 transition-colors border border-emerald-500/30">
+                  <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Estética Premium</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">Paneles Full Black que se integran perfectamente en la estética de tu hogar.</p>
               </div>
-              <h3 className="text-lg font-bold mb-2">Estética Premium</h3>
-              <p className="text-sm text-slate-400">Paneles Full Black que se integran perfectamente en la estética de tu hogar.</p>
             </div>
           </div>
         </section>
@@ -183,44 +185,6 @@ export default function CalculadoraPlacasSolaresPage() {
           </div>
         </section>
 
-        {/* Testimonials / Social Proof */}
-        <section>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">La energía de quienes ya ahorran</h2>
-            <div className="hidden sm:flex items-center gap-1 text-sm font-bold text-slate-500">
-              <span className="text-amber-400">★★★★★</span>
-              <span>4.9/5 en Google</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Marta Martínez",
-                text: "Excelente en todo, atención comercial y técnica inmejorable. Muy contenta con mis paneles solares.",
-                tag: "Instalación residencial"
-              },
-              {
-                name: "Francisco Javier",
-                text: "Profesionales excepcionales. Instalación rápida en 6 horas y una atención impecable a mis dudas.",
-                tag: "Autoconsumo eficiente"
-              },
-              {
-                name: "Paco López",
-                text: "Informados en cada momento del avance de la instalación. Un trabajo hecho con mucho cuidado.",
-                tag: "Máxima satisfacción"
-              }
-            ].map((rev, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-1 text-amber-400 text-xs mb-3">★★★★★</div>
-                <p className="text-sm text-slate-600 italic mb-4">"{rev.text}"</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-900">{rev.name}</span>
-                  <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">{rev.tag}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* FAQ */}
         <section>
@@ -256,13 +220,6 @@ export default function CalculadoraPlacasSolaresPage() {
                 <div className="px-5 pb-5 text-sm text-slate-600 leading-relaxed">{faq.a}</div>
               </details>
             ))}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
-              <h3 className="text-lg font-bold text-blue-900 mb-2">¿Tienes más dudas?</h3>
-              <p className="text-sm text-blue-700 mb-4">Resolvemos todas tus dudas sin compromiso. Nuestro equipo de expertos está aquí para ayudarte.</p>
-              <Link href="/contacto" className="inline-flex items-center gap-2 bg-blue-600 text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors">
-                ¡Contacta con nosotros!
-              </Link>
-            </div>
           </div>
         </section>
 

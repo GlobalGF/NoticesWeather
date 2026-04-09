@@ -140,10 +140,29 @@ export function BatteryNeedsCalculator({ municipio, annualSunHours }: Props) {
                   </div>
                </div>
 
+               <div className="bg-white border text-center border-slate-200 rounded-3xl p-6 flex flex-col justify-center relative overflow-hidden group hover:border-slate-300 transition-colors shadow-sm">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Inversión Estimada</p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <p className="text-4xl lg:text-5xl font-black text-slate-800 tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight">{result.estimatedCostEur.toLocaleString("es-ES")}</p>
+                    <span className="text-sm font-bold text-slate-400">€</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-2 italic font-medium">Instalación básica incl.</p>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 flex-1">
                <div className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white rounded-3xl p-6 flex flex-col justify-center text-center shadow-sm relative overflow-hidden group hover:border-slate-600 transition-colors">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">Independencia Red Eléctrica</p>
-                  <p className="text-4xl lg:text-5xl font-black tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight relative z-10 text-white drop-shadow-sm">{result.energyIndependencePct}%</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">Amortización Estimada</p>
+                  <div className="flex items-baseline justify-center gap-1 relative z-10">
+                    <p className="text-4xl lg:text-5xl font-black tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight text-white drop-shadow-sm">{result.paybackYears}</p>
+                    <span className="text-sm font-bold text-slate-300">años</span>
+                  </div>
+               </div>
+
+               <div className="bg-white border-2 border-fuchsia-100 rounded-3xl p-6 flex flex-col justify-center text-center shadow-sm relative overflow-hidden group hover:border-fuchsia-200 transition-colors">
+                  <p className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-widest mb-2 relative z-10">Independencia Red</p>
+                  <p className="text-4xl lg:text-5xl font-black tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight relative z-10 text-slate-900">{result.energyIndependencePct}%</p>
                </div>
             </div>
 
@@ -157,6 +176,11 @@ export function BatteryNeedsCalculator({ municipio, annualSunHours }: Props) {
             </div>
           </div>
         </div>
+      </div>
+      <div className="bg-slate-50 px-4 md:px-8 py-3 border-t border-slate-100 flex items-center justify-between">
+        <p className="text-[10px] text-slate-400 font-medium italic">
+          * Los cálculos son estimaciones basadas en perfiles promedio. La inversión real requiere un estudio técnico in-situ de un instalador certificado.
+        </p>
       </div>
     </div>
   );

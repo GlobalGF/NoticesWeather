@@ -428,49 +428,53 @@ export function CalculadoraSolarCompleta({
             /* ── Collapsed: Summary + CTA button ── */
             <div className="text-center relative z-10">
               <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mb-2">
-                ¿Quieres hacer esto realidad?
+                Asegure su tranquilidad energética hoy mismo
               </h3>
-              <p className="text-sm text-slate-600 max-w-lg mx-auto mb-4 leading-relaxed">
-                Con tu perfil ya calculado ({result.kwp} kWp, {result.paneles} paneles,
-                ahorro de {result.ahorroTotalAnual.toLocaleString("es-ES")} €/año),
-                solo faltan tus datos de contacto para recibir un presupuesto real sin compromiso.
+              <p className="text-sm text-slate-600 max-w-lg mx-auto mb-6 leading-relaxed">
+                Su configuración de <strong>{result.kwp} kWp</strong> y <strong>{result.paneles} paneles</strong> es ideal para cubrir su consumo. 
+                Proteja a su familia de las subidas eléctricas y comience a ahorrar <strong>{result.ahorroTotalAnual.toLocaleString("es-ES")} €</strong> cada año.
               </p>
 
               {/* Pre-filled summary chips */}
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                <span className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 rounded-full px-3 py-1.5 text-xs font-bold text-emerald-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
+                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
                   {VIVIENDA_CONFIG[tipoVivienda].label}
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 rounded-full px-3 py-1.5 text-xs font-bold text-emerald-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
                   {consumoKwh} kWh/mes
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 rounded-full px-3 py-1.5 text-xs font-bold text-emerald-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
                   {result.kwp} kWp · {result.paneles} paneles
                 </span>
                 {conBaterias && (
-                  <span className="inline-flex items-center gap-1.5 bg-white border border-fuchsia-200 rounded-full px-3 py-1.5 text-xs font-bold text-fuchsia-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Con baterías
-                  </span>
-                )}
-                {municipio && (
-                  <span className="inline-flex items-center gap-1.5 bg-white border border-blue-200 rounded-full px-3 py-1.5 text-xs font-bold text-blue-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    {municipio}
+                  <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-fuchsia-500"><polyline points="20 6 9 17 4 12"/></svg>
+                    Autonomía Total
                   </span>
                 )}
               </div>
 
-              <button
-                onClick={() => setShowForm(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-8 py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5"
-              >
-                Solicitar presupuesto gratis
-              </button>
-              <p className="text-[11px] text-slate-400 mt-3">Sin compromiso · Respuesta en menos de 24h</p>
+              <div className="flex flex-col items-center gap-4">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-10 py-4 rounded-2xl transition-all shadow-xl shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95"
+                >
+                  Solicitar presupuesto gratuito
+                </button>
+                
+                <div className="flex flex-col gap-1 text-center">
+                  <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center justify-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    Alta demanda: Instalaciones disponibles para el próximo trimestre
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    Garantía técnica de 25 años · Sin compromiso de compra · Instaladores certificados
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             /* ── Expanded: Contact form ── */

@@ -169,6 +169,13 @@ export function PrecioLuzWidget({ initialPrecio }: { initialPrecio?: number }) {
                         <p className="mt-1 text-xs text-slate-400">
                             Aplica a la luz que compras directamente de la compañía
                         </p>
+                        <div className="mt-3 inline-flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-1.5 border border-amber-100">
+                            <span className="text-sm">☀️</span>
+                            <p className="text-[10px] text-amber-800 font-semibold leading-tight">
+                                Con paneles solares, <br />
+                                <span className="text-amber-600">este coste sería de 0.00 €</span>
+                            </p>
+                        </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
                         <span className={`rounded border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold ${nivel.cls}`}>

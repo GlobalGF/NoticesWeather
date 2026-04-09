@@ -164,17 +164,17 @@ async function GenericPrecioLuzPage() {
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-3">
             Precio de la Luz Hoy<br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">por Horas y Tramos</span>
+            <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">Mercado Regulado PVPC</span>
           </h1>
+          <p className="text-xl md:text-3xl text-amber-200 font-black mb-6 drop-shadow-sm">¿Harto de mirar el reloj para ahorrar unos céntimos?</p>
 
           <p className="text-lg md:text-2xl text-amber-200 font-semibold mb-6 capitalize">{fechaHoy}</p>
 
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            Gráfico 24 h en vivo del precio PVPC, horas más baratas para poner la lavadora,
-            predicción de mañana y tendencia semanal. Fuente oficial: Red Eléctrica de España.
+            Consulta el precio oficial de REE, pero recuerda: la mejor forma de dejar de pagar luz es generarla tú mismo.
           </p>
 
-          <LocationSearchBar baseRoute="/placas-solares" placeholder="Tu municipio: calcula cuánto ahorrarías con placas..." />
+          <LocationSearchBar baseRoute="/placas-solares" placeholder="Tu municipio: descubre cuánto dejarías de pagar..." />
         </div>
       </div>
 
@@ -212,6 +212,55 @@ async function GenericPrecioLuzPage() {
             <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Tendencia</p>
             <p className={`text-2xl sm:text-3xl font-black tabular-nums ${tendenciaColor}`}>{tendenciaLabel.split(" ")[0]}</p>
             <p className={`text-[10px] font-bold hidden sm:block ${tendenciaColor}`}>vs ayer ({fmt(pvpc.mediaAyer)}€)</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── El Dilema del Ahorro (Intent Shift) ── */}
+      <div className="mx-auto max-w-5xl px-4 relative z-30 mb-12">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 md:p-10 shadow-2xl border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl opacity-20" />
+          
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight">
+                Optimice su <br />
+                <span className="text-amber-400 font-black tracking-tight underline underline-offset-8 decoration-white/10">ahorro energético</span>
+              </h2>
+              <div className="space-y-4">
+                <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 opacity-60">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-sm">Gestión de Consumo (Red)</h3>
+                    <p className="text-slate-400 text-xs mt-1 leading-relaxed text-pretty">Ajuste de hábitos según los tramos horarios del mercado regulado para reducir costes marginales.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 p-5 rounded-2xl bg-amber-400/[0.07] border border-amber-400/20 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+                  <div className="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(251,191,36,0.3)] text-slate-900 border border-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-amber-400 font-bold text-sm uppercase tracking-widest">Autoconsumo Solar</h3>
+                    <p className="text-slate-100 text-sm font-medium mt-1 leading-relaxed text-pretty">Independencia energética total durante las horas de sol, cubriendo hasta el 80% de su gasto anual sin cambios en su rutina.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 text-center relative z-10">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.3em]">Análisis de Viabilidad</p>
+                  <p className="text-white text-lg font-bold">Inicie su transición energética</p>
+                </div>
+                <div className="bg-white/95 p-1 rounded-2xl shadow-2xl">
+                  <LocationSearchBar baseRoute="/placas-solares" placeholder="Ingrese su municipio..." />
+                </div>
+                <p className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-widest leading-relaxed">Estudio gratuito basado en irradiación local y <br className="hidden sm:block" /> datos de Red Eléctrica (REE)</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -580,15 +629,37 @@ async function GenericPrecioLuzPage() {
         </section>
 
         {/* ── Solar CTA ── */}
-        <section className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-4">
-            ¿Cansado de depender del precio de la luz?
-          </h2>
-          <p className="text-indigo-200 max-w-2xl mx-auto mb-8">
-            Con placas solares generas tu propia electricidad a coste fijo durante 25+ años.
-            Calcula gratis cuánto ahorrarías en tu municipio con datos reales de irradiación solar y tarifa PVPC.
-          </p>
-          <LocationSearchBar baseRoute="/placas-solares" placeholder="Tu municipio: calcula tu ahorro solar..." />
+        <section className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-8 md:p-14 text-center text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">
+              Tome el control total de su energía
+            </h2>
+            <p className="text-indigo-100 max-w-2xl mx-auto mb-10 text-base md:text-lg leading-relaxed font-light">
+              La independencia energética es la tranquilidad de saber que su factura no volverá a subir. 
+              Proteja su economía familiar generando su propia energía limpia con sistemas de alta eficiencia garantizados por 25 años.
+            </p>
+            
+            <div className="max-w-xl mx-auto bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 mb-8 hover:bg-white/15 transition-all">
+              <LocationSearchBar baseRoute="/placas-solares" placeholder="Ingrese su municipio para un estudio formal..." />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10 opacity-90">
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-indigo-200">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Garantía técnica 25 años
+              </div>
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-indigo-200">
+                <svg className="w-4 h-4 text-amber-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Alta demanda en su zona
+              </div>
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-indigo-200">
+                <svg className="w-4 h-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Estudio sin compromiso
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ── Geo Directory ── */}
