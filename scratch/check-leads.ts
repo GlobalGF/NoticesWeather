@@ -1,4 +1,4 @@
-import { createSupabaseAdminClient } from "./lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 async function checkLeads() {
   const supabase = createSupabaseAdminClient();

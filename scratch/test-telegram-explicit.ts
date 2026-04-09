@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { sendTelegramMessage } from "./lib/utils/telegram";
+import { sendTelegramMessage } from "@/lib/utils/telegram";
 
 async function testExplicit() {
   console.log("Checking ENV variables...");

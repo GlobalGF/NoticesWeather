@@ -14,6 +14,10 @@ import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { getMunicipioBySlug, getSeoSnapshotBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
+import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
+import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
+import { SiloNavigation } from "@/components/ui/SiloNavigation";
+import Fallback from "@/components/solar/Fallback";
 import dynamic from "next/dynamic";
 
 /* ── Lazy Loaded Components (below the fold) ── */

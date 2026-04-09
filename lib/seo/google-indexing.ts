@@ -1,4 +1,4 @@
-import { google } from "google-auth-library";
+import { JWT } from "google-auth-library";
 
 /**
  * Google Indexing API Helper
@@ -22,13 +22,11 @@ export async function notifyGoogleOfUrl(url: string, action: IndexingAction = "U
     const saKey = JSON.parse(saKeyString);
     
     // Scopes needed: https://www.googleapis.com/auth/indexing
-    const jwtClient = new google.auth.JWT(
-      saKey.client_email,
-      undefined,
-      saKey.private_key,
-      ["https://www.googleapis.com/auth/indexing"],
-      undefined
-    );
+    const jwtClient = new JWT({
+      email: saKey.client_email,
+      key: saKey.private_key,
+      scopes: ["https://www.googleapis.com/auth/indexing"],
+    });
 
     const tokens = await jwtClient.authorize();
     

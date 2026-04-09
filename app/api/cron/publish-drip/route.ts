@@ -1,3 +1,4 @@
+import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { notifyGoogleOfUrlBatch } from "@/lib/seo/google-indexing";
 
