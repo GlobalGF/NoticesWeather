@@ -2,11 +2,12 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { BatteryNeedsCalculator } from "@/components/ui/BatteryNeedsCalculator";
+import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Calculadora de Baterías Solares — Capacidad, Ahorro y Autonomía",
+  title: "Instala Baterías Solares — Calcula tu Capacidad y Autonomía",
   description:
-    "Calcula la capacidad de batería que necesitas para maximizar el autoconsumo solar. Simulador con recomendación de módulos, ahorro anual y porcentaje de independencia energética.",
+    "Calcula la capacidad de batería que necesitas para maximizar el autoconsumo solar. Genera tu propia energía 100% verde con independencia energética total.",
   pathname: "/calculadoras/baterias",
 });
 
@@ -34,15 +35,21 @@ export default function CalculadoraBateriasPage() {
             <p className="text-fuchsia-300 font-bold tracking-widest uppercase text-[10px]">Dimensionador técnico</p>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-            Calculadora de{" "}
+            Instala Baterías y{" "}
             <span className="bg-gradient-to-r from-fuchsia-300 to-pink-400 bg-clip-text text-transparent">
-              Baterías Solares
+              Logra tu Independencia
             </span>
           </h1>
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Descubre cuántas baterías necesitas para almacenar los excedentes de tus paneles solares
-            y maximizar tu independencia energética.
+          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed mb-8">
+            Maximiza tu ahorro almacenando los excedentes de tus paneles solares. Calcula cuántas baterías necesitas e impulsa tu independencia energética.
           </p>
+
+          <div className="max-w-xl mx-auto">
+            <LocationSearchBar 
+              baseRoute="/calculadoras/baterias" 
+              placeholder="Busca tu ciudad para un estudio de baterías..."
+            />
+          </div>
         </div>
       </div>
 
@@ -76,21 +83,53 @@ export default function CalculadoraBateriasPage() {
                 Excedente = producción diaria − consumo diurno
               </div>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-slate-800 mb-2">Tecnologías recomendadas</h3>
-              <p className="text-sm text-slate-600">
-                <strong>LFP (LiFePO4)</strong> es la más recomendable: +6.000 ciclos, segura y estable.
-                Las baterías NMC ofrecen más densidad energética pero menor vida útil (~3.000 ciclos).
-                El módulo estándar residencial es de 5 kWh.
-              </p>
+          </div>
+        </section>
+
+        {/* Proceso */}
+        <section>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-8">Un proceso sencillo para tu autonomía</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { step: "01", title: "Dimensionado", desc: "Calculamos los módulos exactos según tus consumos nocturnos." },
+              { step: "02", title: "Viabilidad Técnica", desc: "Revisamos tu inversor actual para asegurar la compatibilidad." },
+              { step: "03", title: "Instalación", desc: "Montaje rápido y configuración del sistema de gestión." },
+              { step: "04", title: "Ahorro al 100%", desc: "Comienza a disfrutar de tu energía solar las 24 horas." }
+            ].map((s, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-fuchsia-300 transition-colors">
+                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-fuchsia-50 transition-colors">{s.step}</span>
+                <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Beneficios - Confianza */}
+        <section className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl" />
+          <h2 className="text-2xl md:text-3xl font-black mb-8 relative z-10">¿Por qué sumar baterías a tu tejado?</h2>
+          <div className="grid md:grid-cols-3 gap-8 relative z-10">
+            <div>
+              <div className="w-12 h-12 bg-fuchsia-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Independencia Total</h3>
+              <p className="text-sm text-slate-400">Reduce tu dependencia de la red eléctrica hasta un 90% y olvídate de las subidas de precio.</p>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-slate-800 mb-2">Independencia energética</h3>
-              <p className="text-sm text-slate-600">
-                Con batería, la independencia energética pasa del 50-60% al 70-90%. Esto significa
-                comprar un 70-90% menos de electricidad de la red, reduciendo drásticamente la factura
-                y protegiéndote de subidas del precio de la luz.
-              </p>
+            <div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Garantía LFP</h3>
+              <p className="text-sm text-slate-400">Baterías de Litio Ferro-Fosfato con más de 10 años de garantía y alta seguridad.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Máximo Ahorro</h3>
+              <p className="text-sm text-slate-400">Deja de regalar tus excedentes y utilízalos cuando la luz es más cara.</p>
             </div>
           </div>
         </section>
@@ -125,6 +164,13 @@ export default function CalculadoraBateriasPage() {
                 <div className="px-5 pb-5 text-sm text-slate-600 leading-relaxed">{faq.a}</div>
               </details>
             ))}
+            <div className="bg-fuchsia-50 border border-fuchsia-100 rounded-xl p-6 text-center">
+              <h3 className="text-lg font-bold text-fuchsia-900 mb-2">¿Quieres maximizar tu autonomía?</h3>
+              <p className="text-sm text-fuchsia-700 mb-4">Te ayudamos a elegir el sistema de almacenamiento que mejor se adapta a tu consumo.</p>
+              <Link href="/contacto" className="inline-flex items-center gap-2 bg-fuchsia-600 text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-fuchsia-700 transition-colors">
+                Hablar con un experto
+              </Link>
+            </div>
           </div>
         </section>
 

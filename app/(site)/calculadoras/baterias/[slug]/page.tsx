@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Calculadora de Baterías Solares" };
 
   return buildMetadata({
-    title: `Calculadora de baterías solares en ${data.municipio}`,
-    description: `Dimensiona tu batería solar en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol, ahorro estimado ${data.ahorro_estimado ?? 800}€/año. Recomendación de módulos y autonomía energética.`,
+    title: `Instalación de Baterías Solares en ${data.municipio} — Ahorro y Autonomía`,
+    description: `Dimensiona tu batería solar en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol al año. Maximiza tu ahorro y autonomía energética con una batería a medida.`,
     pathname: `/calculadoras/baterias/${slug}`,
   });
 }
@@ -62,15 +62,63 @@ export default async function BateriasMunicipioPage({ params }: Props) {
               {municipio}
             </span>
           </h1>
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Dimensionador con {horasSol} horas de sol anuales en {municipio}, {data.provincia}.
-          </p>
+          <h2 className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+            Logra tu independencia energética en {municipio}. Dimensionador con {horasSol} horas de sol anuales.
+          </h2>
         </div>
       </div>
 
       <div className="mx-auto max-w-5xl px-4 space-y-12 -mt-6 relative z-20 pb-24">
         <section>
           <BatteryNeedsCalculator municipio={municipio} annualSunHours={horasSol} />
+        </section>
+
+        {/* Proceso */}
+        <section>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-8">Tu autonomía en {municipio}: un proceso sencillo</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { step: "01", title: "Estudio Local", desc: `Analizamos tu consumo y excedentes en ${municipio}.` },
+              { step: "02", title: "Configuración", desc: "Elegimos la capacidad (5kWh, 10kWh...) que necesitas." },
+              { step: "03", title: "Instalación", desc: "Equipos certificados en tu zona para un montaje seguro." },
+              { step: "04", title: "Puesta en Marcha", desc: "Empieza a ahorrar el 100% de tu producción solar." }
+            ].map((s, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-fuchsia-300 transition-colors">
+                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-fuchsia-50 transition-colors">{s.step}</span>
+                <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Beneficios */}
+        <section className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl" />
+          <h2 className="text-2xl md:text-3xl font-black mb-8 relative z-10">¿Por qué sumar baterías en {municipio}?</h2>
+          <div className="grid md:grid-cols-3 gap-8 relative z-10">
+            <div>
+              <div className="w-12 h-12 bg-fuchsia-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Independencia energética</h3>
+              <p className="text-sm text-slate-400">Pasa del 50% al 90% de independencia en {municipio} utilizando tu propia energía nocturna.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Seguridad y Resiliencia</h3>
+              <p className="text-sm text-slate-400">Protección frente a cortes de luz y variaciones de precio en el mercado eléctrico.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Eficiencia Máxima</h3>
+              <p className="text-sm text-slate-400">Sistemas inteligentes que optimizan la carga y descarga para ahorrar cada céntimo.</p>
+            </div>
+          </div>
         </section>
 
         <section>

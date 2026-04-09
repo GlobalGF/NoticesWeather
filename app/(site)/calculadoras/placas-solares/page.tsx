@@ -2,11 +2,12 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { CalculadoraSolarCompleta } from "@/components/ui/CalculadoraSolarCompleta";
+import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Calculadora de Placas Solares — Paneles, Ahorro y Amortización",
+  title: "Instala Placas Solares — Calcula tu Ahorro y Amortización",
   description:
-    "Calcula cuántos paneles solares necesitas, el ahorro anual, el coste de instalación y los años de amortización. Simulador con datos reales de irradiación y PVPC.",
+    "Calcula cuántos paneles solares necesitas, el ahorro anual y los años de amortización. Genera tu propia energía 100% verde con nuestro proceso sencillo.",
   pathname: "/calculadoras/placas-solares",
 });
 
@@ -34,15 +35,21 @@ export default function CalculadoraPlacasSolaresPage() {
             <p className="text-amber-300 font-bold tracking-widest uppercase text-[10px]">Simulador profesional</p>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-            Calculadora de{" "}
+            Instala Placas Solares y{" "}
             <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">
-              Placas Solares
+              Genera tu propia Energía
             </span>
           </h1>
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Introduce tu consumo y descubre cuántos paneles necesitas, cuánto ahorras y en cuántos años
-            recuperas la inversión. Datos reales de irradiación en España.
+          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed mb-8">
+            Genera tu propia energía 100% verde desde tu tejado. Calcula cuántos paneles necesitas, cuánto ahorras y en cuántos años recuperas la inversión.
           </p>
+
+          <div className="max-w-xl mx-auto">
+            <LocationSearchBar 
+              baseRoute="/calculadoras/placas-solares" 
+              placeholder="Busca tu ciudad para un estudio local..."
+            />
+          </div>
         </div>
       </div>
 
@@ -57,7 +64,7 @@ export default function CalculadoraPlacasSolaresPage() {
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">¿Cómo funciona la calculadora de paneles solares?</h2>
           <p>
             Nuestro simulador utiliza las fórmulas estándar del sector fotovoltaico para dimensionar
-            tu instalación solar de forma personalizada:
+            tu instalación solar de forma personalizada. Realizamos un estudio gratuito de viabilidad basado en:
           </p>
           <div className="grid md:grid-cols-2 gap-6 not-prose mt-6">
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
@@ -103,6 +110,55 @@ export default function CalculadoraPlacasSolaresPage() {
           </div>
         </section>
 
+        {/* Un proceso sencillo */}
+        <section>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-8">Un proceso sencillo para tu instalación solar</h2>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[
+              { step: "01", title: "Estudio gratuito", desc: "Simulamos tu ahorro con datos reales de irradiación." },
+              { step: "02", title: "Viabilidad", desc: "Un experto revisa tu tejado y optimiza el diseño." },
+              { step: "03", title: "Trámites", desc: "Gestionamos toda la documentación administrativa." },
+              { step: "04", title: "Instalación", desc: "Manos a la obra: instaladores certificados en 24-48h." },
+              { step: "05", title: "Puesta en marcha", desc: "Empieza a generar tu propia energía verde." }
+            ].map((s, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-blue-300 transition-colors">
+                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-blue-50 transition-colors">{s.step}</span>
+                <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Beneficios - Confianza */}
+        <section className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+          <h2 className="text-2xl md:text-3xl font-black mb-8 relative z-10">¿Por qué confiar en nuestra plataforma?</h2>
+          <div className="grid md:grid-cols-3 gap-8 relative z-10">
+            <div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Garantía total</h3>
+              <p className="text-sm text-slate-400">Instalaciones con garantías de hasta 25 años en paneles y 10 años en mano de obra.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Máxima eficiencia</h3>
+              <p className="text-sm text-slate-400">Utilizamos componentes de primera línea para maximizar el rendimiento de tu tejado.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Estética Premium</h3>
+              <p className="text-sm text-slate-400">Paneles Full Black que se integran perfectamente en la estética de tu hogar.</p>
+            </div>
+          </div>
+        </section>
+
         {/* SEO: Data & Assumptions */}
         <section>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-6">Datos y supuestos del cálculo</h2>
@@ -124,6 +180,45 @@ export default function CalculadoraPlacasSolaresPage() {
                 <tr><td className="py-2.5 pr-4 text-slate-600">Vida útil paneles</td><td className="py-2.5 pr-4 font-medium">25 años</td><td className="py-2.5 text-slate-400">Garantía fabricante</td></tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Testimonials / Social Proof */}
+        <section>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">La energía de quienes ya ahorran</h2>
+            <div className="hidden sm:flex items-center gap-1 text-sm font-bold text-slate-500">
+              <span className="text-amber-400">★★★★★</span>
+              <span>4.9/5 en Google</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Marta Martínez",
+                text: "Excelente en todo, atención comercial y técnica inmejorable. Muy contenta con mis paneles solares.",
+                tag: "Instalación residencial"
+              },
+              {
+                name: "Francisco Javier",
+                text: "Profesionales excepcionales. Instalación rápida en 6 horas y una atención impecable a mis dudas.",
+                tag: "Autoconsumo eficiente"
+              },
+              {
+                name: "Paco López",
+                text: "Informados en cada momento del avance de la instalación. Un trabajo hecho con mucho cuidado.",
+                tag: "Máxima satisfacción"
+              }
+            ].map((rev, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-1 text-amber-400 text-xs mb-3">★★★★★</div>
+                <p className="text-sm text-slate-600 italic mb-4">"{rev.text}"</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-slate-900">{rev.name}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">{rev.tag}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -161,6 +256,13 @@ export default function CalculadoraPlacasSolaresPage() {
                 <div className="px-5 pb-5 text-sm text-slate-600 leading-relaxed">{faq.a}</div>
               </details>
             ))}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
+              <h3 className="text-lg font-bold text-blue-900 mb-2">¿Tienes más dudas?</h3>
+              <p className="text-sm text-blue-700 mb-4">Resolvemos todas tus dudas sin compromiso. Nuestro equipo de expertos está aquí para ayudarte.</p>
+              <Link href="/contacto" className="inline-flex items-center gap-2 bg-blue-600 text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors">
+                ¡Contacta con nosotros!
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Calculadora de Placas Solares" };
 
   return buildMetadata({
-    title: `Calculadora de placas solares en ${data.municipio}`,
-    description: `Calcula cuántos paneles solares necesitas en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol al año, ahorro estimado de ${data.ahorro_estimado ?? 800}€/año. Simulador con datos locales.`,
+    title: `Instalación de Placas Solares en ${data.municipio} — Ahorro y Amortización`,
+    description: `Calcula cuántos paneles solares necesitas en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol al año. Genera tu propia energía 100% verde y ahorra hasta ${data.ahorro_estimado ?? 800}€/año.`,
     pathname: `/calculadoras/placas-solares/${slug}`,
   });
 }
@@ -67,9 +67,9 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
               {municipio}
             </span>
           </h1>
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Simulador con irradiación real de {municipio}, {provincia}: {irradiancia} kWh/m²/año.
-          </p>
+          <h2 className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+            Genera tu propia energía 100% verde desde tu tejado en {municipio}. Simulador con irradiación real: {irradiancia} kWh/m²/año.
+          </h2>
         </div>
       </div>
 
@@ -123,6 +123,55 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
             provincia={provincia}
             slug={slug}
           />
+        </section>
+
+        {/* Un proceso sencillo */}
+        <section>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-8">Tu instalación en {municipio}: un proceso sencillo</h2>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[
+              { step: "01", title: "Estudio gratuito", desc: `Simulamos tu ahorro en ${municipio} con datos de PVGIS.` },
+              { step: "02", title: "Viabilidad", desc: "Un experto revisa tu tejado y optimiza el diseño." },
+              { step: "03", title: "Trámites", desc: "Gestionamos subvenciones y licencias en tu ayuntamiento." },
+              { step: "04", title: "Instalación", desc: "Equipos locales certificados instalan en tiempo récord." },
+              { step: "05", title: "Producción", desc: "¡Listo! Empieza a ahorrar desde el primer día." }
+            ].map((s, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-blue-300 transition-colors">
+                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-blue-50 transition-colors">{s.step}</span>
+                <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Beneficios */}
+        <section className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+          <h2 className="text-2xl md:text-3xl font-black mb-8 relative z-10">¿Por qué ponerte placas con nosotros?</h2>
+          <div className="grid md:grid-cols-3 gap-8 relative z-10">
+            <div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Garantía total</h3>
+              <p className="text-sm text-slate-400">Garantía de potencia de 25 años y 10 años en la instalación física en {municipio}.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Máxima eficiencia</h3>
+              <p className="text-sm text-slate-400">Paneles de última generación (Tie 1) para aprovechar cada rayo de sol.</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+              </div>
+              <h3 className="text-lg font-bold mb-2">Estética Premium</h3>
+              <p className="text-sm text-slate-400">Diseños integrados que respetan la normativa estética de {municipio}.</p>
+            </div>
+          </div>
         </section>
 
         {/* Other calculators for this municipality */}

@@ -137,7 +137,7 @@ const checklistVariations = [
 export function AntiCommercialWarning({ municipio, irradiacionAnual, horasSol }: AntiCommercialWarningProps) {
   const muniClean = cleanName(municipio);
   const h = hash(municipio);
-  const perfil = getPerfil(horasSol, irradiacionAnual);
+  const perfil = getPerfil(horasSol ?? null, irradiacionAnual ?? null);
   const cfg = perfilConfig[perfil];
 
   const title = pick(cfg.title(muniClean), h, 0);
