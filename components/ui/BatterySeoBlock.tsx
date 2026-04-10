@@ -1,4 +1,5 @@
 import React from "react";
+import { parseMarkdown } from "@/lib/utils/text";
 
 type BatterySeoBlockProps = {
   municipio: string;
@@ -82,10 +83,10 @@ export function BatterySeoBlock({
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-6">
             <p className="text-slate-600 leading-relaxed font-medium text-base md:text-lg">
-              {intro}
+              {parseMarkdown(intro)}
             </p>
             <p className="text-slate-600 leading-relaxed text-sm border-l-4 border-blue-500 pl-4 py-1 italic">
-              {urbanContext}
+              {parseMarkdown(urbanContext)}
             </p>
           </div>
           <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100 flex flex-col justify-center relative overflow-hidden">
@@ -96,7 +97,7 @@ export function BatterySeoBlock({
                Atención Técnica en {municipio}:
             </p>
             <p className="text-base text-blue-800 font-medium leading-relaxed italic relative z-10">
-              "{expertAdvice}"
+              "{parseMarkdown(expertAdvice)}"
             </p>
           </div>
         </div>
@@ -108,7 +109,7 @@ export function BatterySeoBlock({
           <div className="flex-1">
             <h3 className="text-xl font-black mb-4 text-white tracking-tight">Análisis del Proyecto: {irrad} kWh/m²</h3>
             <p className="text-slate-400 text-sm md:text-base leading-relaxed font-medium">
-              {dataText} {closing}
+              {parseMarkdown(dataText)} {parseMarkdown(closing)}
             </p>
           </div>
           <div className="shrink-0 bg-white/5 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 text-center min-w-[200px]">

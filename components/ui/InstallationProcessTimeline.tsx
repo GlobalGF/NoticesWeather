@@ -205,7 +205,7 @@ export function InstallationProcessTimeline({
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 shadow-inner">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
-          <p className="text-[11px] font-black tracking-[0.2em] uppercase text-indigo-600">Proceso Verificado ${yearNow}</p>
+          <p className="text-[11px] font-black tracking-[0.2em] uppercase text-indigo-600">Proceso Verificado {yearNow}</p>
         </div>
         <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight mb-4">
           {title}

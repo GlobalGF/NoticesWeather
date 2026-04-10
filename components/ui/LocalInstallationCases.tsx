@@ -11,6 +11,8 @@
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
+import { parseMarkdown } from "@/lib/utils/text";
+
 type Props = {
   municipio: string;
   provincia: string;
@@ -158,19 +160,19 @@ function buildCases(
           ],
         ] : [
           [
-            `Vivienda tipo piso en ${municipio} donde nuestro <strong>equipo</strong> ha proyectado un uso eficiente de la <strong>energía solar</strong>.`,
-            `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura de alta <strong>calidad</strong>, ideal para reducir la <strong>cuenta de la luz</strong>.`,
-            `Este <strong>proyecto fotovoltaico</strong> permite a cada <strong>cliente</strong> urbano sumarse al ahorro colectivo con total garantía de la <strong>empresa</strong>.`,
+            `Vivienda tipo piso en ${municipio} donde nuestro **equipo** ha proyectado un uso eficiente de la **energía solar**.`,
+            `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura de alta **calidad**, ideal para reducir la **cuenta de la luz**.`,
+            `Este **proyecto fotovoltaico** permite a cada **cliente** urbano sumarse al ahorro colectivo con total garantía de la **empresa**.`,
           ],
           [
-            `Apartamento residencial en ${municipio} con un <strong>sistema solar</strong> optimizado para la <strong>economía</strong> familiar.`,
-            `Cada <strong>panel</strong> de ${fmt(2.5, 1)} kWp está dimensionado para cubrir el gasto base del hogar, mejorando la gestión de la <strong>luz</strong> diaria.`,
-            `La <strong>atención</strong> técnica personalizada asegura que el <strong>sistema fotovoltaico</strong> rinda al máximo en entornos compartidos.`,
+            `Apartamento residencial en ${municipio} con un **sistema solar** optimizado para la **economía** familiar.`,
+            `Cada **panel** de ${fmt(2.5, 1)} kWp está dimensionado para cubrir el gasto base del hogar, mejorando la gestión de la **luz** diaria.`,
+            `La **atención** técnica personalizada asegura que el **sistema fotovoltaico** rinda al máximo en entornos compartidos.`,
           ],
           [
-            `Piso en zona céntrica de ${municipio} con 6 módulos de alta <strong>eficiencia</strong>.`,
-            `Con este <strong>equipo</strong> de ${fmt(2.5, 1)} kWp, el ahorro en la <strong>cuenta de la luz</strong> se sitúa entre un 40% y un 60% de forma veraz.`,
-            `Representa la solución de <strong>energía</strong> más demandada por quienes buscan <strong>calidad</strong> técnica sin grandes obras.`,
+            `Piso en zona céntrica de ${municipio} con 6 módulos de alta **eficiencia**.`,
+            `Con este **equipo** de ${fmt(2.5, 1)} kWp, el ahorro en la **cuenta de la luz** se sitúa entre un 40% y un 60% de forma veraz.`,
+            `Representa la solución de **energía** más demandada por quienes buscan **calidad** técnica sin grandes obras.`,
           ],
         ],
         h,
@@ -187,19 +189,19 @@ function buildCases(
       description: pick(
         [
           [
-            `Casa adosada en ${municipio} con un <strong>proyecto solar</strong> diseñado para maximizar la <strong>economía</strong> del hogar.`,
-            `Instalación de ${fmt(5, 0)} kWp con 12 módulos de alta <strong>calidad</strong>, orientados para captar la mejor <strong>luz</strong> del día.`,
-            `El <strong>equipo</strong> de ingeniería asegura que este <strong>sistema fotovoltaico</strong> cubra los consumos más pesados de la vivienda.`,
+            `Casa adosada en ${municipio} con un **proyecto solar** diseñado para maximizar la **economía** del hogar.`,
+            `Instalación de ${fmt(5, 0)} kWp con 12 módulos de alta **calidad**, orientados para captar la mejor **luz** del día.`,
+            `El **equipo** de ingeniería asegura que este **sistema fotovoltaico** cubra los consumos más pesados de la vivienda.`,
           ],
           [
-            `Vivienda adosada con un <strong>panel solar</strong> avanzado en ${municipio}.`,
-            `Nuestra <strong>empresa</strong> recomienda este sistema de ${fmt(5, 0)} kWp para reducir la <strong>cuenta de la luz</strong> de forma drástica y honesta.`,
-            `Con la <strong>atención</strong> técnica adecuada, los 12 paneles ofrecen un rendimiento excelente bajo el sol de ${provincia}.`,
+            `Vivienda adosada con un **panel solar** avanzado en ${municipio}.`,
+            `Nuestra **empresa** recomienda este sistema de ${fmt(5, 0)} kWp para reducir la **cuenta de la luz** de forma drástica y honesta.`,
+            `Con la **atención** técnica adecuada, los 12 paneles ofrecen un rendimiento excelente bajo el sol de ${provincia}.`,
           ],
           [
-            `Pareado en ${municipio} que apuesta por la <strong>energía fotovoltaica</strong> para blindar su <strong>economía</strong> energética.`,
-            `Se instalan 12 módulos de alta <strong>eficiencia</strong>, logrando un <strong>proyecto</strong> de autoconsumo equilibrado y duradero.`,
-            `La <strong>calidad</strong> del montaje en la provincia garantiza que el sistema rinda según las ${fmt(horas)} horas de sol anuales.`,
+            `Pareado en ${municipio} que apuesta por la **energía fotovoltaica** para blindar su **economía** energética.`,
+            `Se instalan 12 módulos de alta **eficiencia**, logrando un **proyecto** de autoconsumo equilibrado y duradero.`,
+            `La **calidad** del montaje en la provincia garantiza que el sistema rinda según las ${fmt(horas)} horas de sol anuales.`,
           ],
         ],
         h,
@@ -374,7 +376,7 @@ export function LocalInstallationCases({
             {/* Description paragraphs */}
             <div className="mb-5 space-y-2">
               {c.profile.description.map((p, j) => (
-                <p key={j} className="text-sm text-slate-600 leading-relaxed">{p}</p>
+                <p key={j} className="text-sm text-slate-600 leading-relaxed">{parseMarkdown(p)}</p>
               ))}
             </div>
 

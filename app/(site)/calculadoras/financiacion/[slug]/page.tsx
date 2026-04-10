@@ -8,6 +8,7 @@ import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { parseMarkdown } from "@/lib/utils/text";
 import { SolarFinancingCalculator } from "@/components/ui/SolarFinancingCalculator";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
 import { 
@@ -109,7 +110,7 @@ export default async function FinanciacionMunicipioPage({ params }: Props) {
               Financia tu Energía en <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-teal-400 bg-clip-text text-transparent italic">{municipio}</span>
             </h1>
             <p className="text-base md:text-xl text-slate-400 font-medium leading-relaxed max-w-2xl">
-              Simulamos tu **proyecto fotovoltaico** en {municipio} para que la cuota se pague sola con el ahorro en tu **cuenta de la luz**.
+              {parseMarkdown(`Simulamos tu **proyecto fotovoltaico** en ${municipio} para que la cuota se pague sola con el ahorro en tu **cuenta de la luz**.`)}
             </p>
           </div>
         </div>
@@ -149,23 +150,23 @@ export default async function FinanciacionMunicipioPage({ params }: Props) {
         {/* Honest SEO Content Block (Inline for Finance) */}
         <section className="bg-white rounded-[2.5rem] border border-slate-200 p-8 md:p-12 shadow-xl shadow-slate-200/50">
            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-8">
-              ¿Por qué financiar tu **economía** energética en {municipio}?
+              {parseMarkdown(`¿Por qué financiar tu **economía** energética en ${municipio}?`)}
            </h2>
            <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-6">
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    Apostar por un **proyecto fotovoltaico** en **{municipio}** mediante financiación es la forma más inteligente de mejorar tu **economía** doméstica. Al pagar una cuota mensual inferior al ahorro en tu **cuenta de la luz**, el sistema se autofinancia desde el primer día.
+                    {parseMarkdown(`Apostar por un **proyecto fotovoltaico** en **${municipio}** mediante financiación es la forma más inteligente de mejorar tu **economía** doméstica. Al pagar una cuota mensual inferior al ahorro en tu **cuenta de la luz**, el sistema se autofinancia desde el primer día.`)}
                  </p>
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    Nuestra **empresa** colabora con entidades que ofrecen **atención** preferente a la **energía solar**. Con un **equipo** de asesores financieros, adaptamos el préstamo a cada **cliente** de **{data.provincia}** buscando el punto óptimo de amortización.
+                    {parseMarkdown(`Nuestra **empresa** colabora con entidades que ofrecen **atención** preferente a la **energía solar**. Con un **equipo** de asesores financieros, adaptamos el préstamo a cada **cliente** de **${data.provincia}** buscando el punto óptimo de amortización.`)}
                  </p>
               </div>
               <div className="space-y-6">
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    La **calidad** de cada **panel** instalado influye directamente en la rentabilidad. Un **sistema** de alto rendimiento en **{municipio}** asegura que el flujo de **energía** sea constante, cubriendo sobradamente los intereses bancarios y generando beneficios netos a corto plazo.
+                    {parseMarkdown(`La **calidad** de cada **panel** instalado influye directamente en la rentabilidad. Un **sistema** de alto rendimiento en **${municipio}** asegura que el flujo de **energía** sea constante, cubriendo sobradamente los intereses bancarios y generando beneficios netos a corto plazo.`)}
                  </p>
                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 italic text-sm text-slate-500 leading-relaxed">
-                    "En **{municipio}**, el 70% de las nuevas instalaciones optan por modelos de financiación flexibles. Es una decisión de **economía** circular: usas el dinero que antes pagabas a la eléctrica para ser dueño de tu propia **luz**."
+                    "{parseMarkdown(`En **${municipio}**, el 70% de las nuevas instalaciones optan por modelos de financiación flexibles. Es una decisión de **economía** circular: usas el dinero que antes pagabas a la eléctrica para ser dueño de tu propia **luz**.`)}"
                  </div>
               </div>
            </div>

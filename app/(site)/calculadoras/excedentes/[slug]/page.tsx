@@ -8,6 +8,7 @@ import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { parseMarkdown } from "@/lib/utils/text";
 import { SurplusCompensationCalculator } from "@/components/ui/SurplusCompensationCalculator";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
 import { 
@@ -109,7 +110,7 @@ export default async function ExcedentesMunicipioPage({ params }: Props) {
               Vende tu Sol en <span className="bg-gradient-to-r from-teal-200 via-teal-400 to-cyan-400 bg-clip-text text-transparent italic">{municipio}</span>
             </h1>
             <p className="text-base md:text-xl text-slate-400 font-medium leading-relaxed max-w-2xl">
-              Calculamos el valor de la **energía generada** que no consumes para reducir tu **cuenta de la luz** mediante la **compensación OMIE**.
+              {parseMarkdown(`Calculamos el valor de la **energía generada** que no consumes para reducir tu **cuenta de la luz** mediante la **compensación OMIE**.`)}
             </p>
           </div>
         </div>
@@ -143,23 +144,23 @@ export default async function ExcedentesMunicipioPage({ params }: Props) {
         {/* Honest SEO Content Block (Inline for Surplus) */}
         <section className="bg-white rounded-[2.5rem] border border-slate-200 p-8 md:p-12 shadow-xl shadow-slate-200/50">
            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-8">
-              La **economía** del vertido a red en {municipio}
+              {parseMarkdown(`La **economía** del vertido a red en ${municipio}`)}
            </h2>
            <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-6">
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    Convertir tu tejado en una fuente de ingresos en **{municipio}** es posible gracias a la **compensación de excedentes**. Cada vatio de **energía solar** que no utilizas se vierte a la red, y tu **empresa** comercializadora te lo descuenta directamente en la **cuenta de la luz**.
+                    {parseMarkdown(`Convertir tu tejado en una fuente de ingresos en **${municipio}** es posible gracias a la **compensación de excedentes**. Cada vatio de **energía solar** que no utilizas se vierte a la red, y tu **empresa** comercializadora te lo descuenta directamente en la **cuenta de la luz**.`)}
                  </p>
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    Nuestro **equipo** técnico evalúa el **proyecto** basándose en el precio diario del mercado **OMIE**. Para un **cliente** en **{data.provincia}**, esto puede suponer una reducción adicional de hasta el 40% en la factura neta, mejorando la rentabilidad de cada **panel**.
+                    {parseMarkdown(`Nuestro **equipo** técnico evalúa el **proyecto** basándose en el precio diario del mercado **OMIE**. Para un **cliente** en **${data.provincia}**, esto puede suponer una reducción adicional de hasta el 40% en la factura neta, mejorando la rentabilidad de cada **panel**.`)}
                  </p>
               </div>
               <div className="space-y-6">
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                    La **calidad** del inversor es determinante: solo los **sistemas** inteligentes gestionan el vertido de forma eficiente para maximizar el retorno. En **{municipio}**, con una **energía generada** superior a la media nacional, la gestión de excedentes es el pilar de un ahorro veraz.
+                    {parseMarkdown(`La **calidad** del inversor es determinante: solo los **sistemas** inteligentes gestionan el vertido de forma eficiente para maximizar el retorno. En **${municipio}**, con una **energía generada** superior a la media nacional, la gestión de excedentes es el pilar de un ahorro veraz.`)}
                  </p>
                  <div className="bg-teal-50 p-6 rounded-2xl border border-teal-100 italic text-sm text-teal-800 leading-relaxed">
-                    "Instalar en **{municipio}** sin activar la compensación es perder dinero. Con la radiación de **{data.provincia}**, el **sistema fotovoltaico** produce mucho más de lo que una familia consume en horas valle. Esa **luz** sobrante es tu mayor activo financiero."
+                    "{parseMarkdown(`Instalar en **${municipio}** sin activar la compensación es perder dinero. Con la radiación de **${data.provincia}**, el **sistema fotovoltaico** produce mucho más de lo que una familia consume en horas valle. Esa **luz** sobrante es tu mayor activo financiero.`)}"
                  </div>
               </div>
            </div>
