@@ -1,13 +1,4 @@
-/**
- * ServerSeoBlock — Server component that generates unique, SEO-optimized text
- * for each municipality page. Rendered server-side so Googlebot can index it.
- *
- * This is the SSR replacement for the client-side DynamicSeoBlock.
- * It uses the weather data fetched server-side (already available in the page)
- * combined with municipality solar data to produce unique paragraphs.
- */
-
-/* ── Types ──────────────────────────────────────────────────────── */
+import { parseMarkdown } from "@/lib/utils/text";
 
 type ServerSeoBlockProps = {
   municipio: string;
@@ -28,8 +19,6 @@ type ServerSeoBlockProps = {
   snapshot?: any | null;
   habitantes?: number | null;
 };
-
-/* ── Helpers ────────────────────────────────────────────────────── */
 
 function getTimeSlot(): "morning" | "afternoon" | "night" {
   const h = new Date().getHours();
@@ -69,8 +58,6 @@ function pick<T>(arr: T[], hash: number, offset: number): T {
   return arr[(hash + offset) % arr.length];
 }
 
-/* ── Component ──────────────────────────────────────────────────── */
-
 export function ServerSeoBlock({
   municipio,
   provincia,
@@ -87,157 +74,129 @@ export function ServerSeoBlock({
   const time = getTimeSlot();
   const ghi = weather?.ghi ?? weather?.short_rad ?? null;
   const weatherBucket = weather ? getWeatherBucket(weather.condition) : "sunny";
-  const temp = weather?.temp_c ?? 22;
-  const uv = weather?.uv ?? 5;
-
-  const annualStr = irradiacionAnual ? `${fmt(irradiacionAnual)} kWh/m²` : null;
-  const horasSolStr = horasSol ? `${fmt(horasSol)}` : null;
   const ghiStr = ghi ? `${Math.round(ghi)} W/m²` : null;
-
-  const production5kw = ghi ? (ghi / 1000 * 5 * 0.80) : 0;
-
   const hashId = getStringHash(`${municipio}-${time}-${weatherBucket}`);
 
-  // ── Title variations (time-based) ──
   const titles = {
     morning: [
-      `Energía solar esta mañana en ${municipio}: análisis de rendimiento`,
-      `Producción fotovoltaica matutina en ${municipio} (${provincia})`,
-      `Potencial de generación solar al inicio del día en ${municipio}`,
-      `Cómo rinden las placas solares esta mañana en ${municipio}`,
-      `Predicción de ahorro diurno para instalaciones solares en ${municipio}`,
+      `Potencial de energía solar esta mañana en ${municipio}`,
+      `Rendimiento de cada panel fotovoltaico hoy en ${municipio}`,
+      `Estado del proyecto solar residencial en ${municipio}`,
+      `Generación de luz solar matutina en ${municipio} (Análisis)`,
+      `Cómo rinde un sistema fotovoltaico esta mañana en ${municipio}`,
     ],
     afternoon: [
-      `Rendimiento solar vespertino en ${municipio}: datos actualizados`,
-      `Generación fotovoltaica esta tarde en ${municipio} (${provincia})`,
-      `Estado de producción solar por la tarde en ${municipio}`,
-      `Evolución del autoconsumo eléctrico hoy en ${municipio}`,
-      `Cálculo en vivo de excedentes solares para ${municipio} esta tarde`,
+      `Balance de energía fotovoltaica esta tarde en ${municipio}`,
+      `Producción de cada panel solar hoy en ${municipio}`,
+      `Rendimiento del sistema fotovoltaico en ${municipio} (${provincia})`,
+      `Estado de la generación de luz solar en ${municipio}`,
+      `Análisis técnico: energía solar y ahorro hoy en ${municipio}`,
     ],
     night: [
-      `Balance solar del día en ${municipio}: resumen y proyección`,
-      `Análisis nocturno de producción fotovoltaica en ${municipio}`,
-      `Resumen de la jornada solar en ${municipio} (${provincia})`,
-      `Estudio de amortización y rentabilidad solar en ${municipio}`,
-      `Datos energéticos definitivos para instalaciones de autoconsumo en ${municipio}`,
+      `Resumen de energía solar del día en ${municipio}`,
+      `Balance de ahorro y luz fotovoltaica diaria en ${municipio}`,
+      `Resultados del sistema solar instalado en ${municipio}`,
+      `Estudio de economía solar en la vivienda en ${municipio}`,
+      `Datos finales: energía fotovoltaica hoy en ${municipio}`,
     ],
   };
 
-  // ── Opening paragraphs ──
   const openingsWeather: Record<string, string[]> = {
     sunny: [
-      `${municipio} cuenta con un potencial fotovoltaico privilegiado gracias a su ubicación en ${provincia}. Hoy disfruta de cielos despejados que maximizan el rendimiento de las placas.${ghiStr ? ` La irradiancia actual alcanza los ${ghiStr}.` : ""}`,
-      `La radiación solar en ${municipio} garantiza una rentabilidad alta para cualquier instalación de autoconsumo hoy.${ghiStr ? ` Registramos ${ghiStr} de potencia por metro cuadrado.` : ""}`,
-      `El aprovechamiento de la luz solar en ${municipio} es clave hoy para reducir la factura eléctrica.${ghiStr ? ` Los sensores marcan ${ghiStr} de radiación directa.` : ""}`,
-      `Escenario ideal en ${municipio} para sistemas solares: cielos limpios y una captación energética excepcional hoy.${ghiStr ? ` (${ghiStr} actuales).` : ""}`,
-      `Condiciones óptimas: las placas solares en ${municipio} operan hoy a pleno rendimiento bajo un sol radiante en la provincia de ${provincia}.`,
-      `Eficiencia máxima en ${municipio}: la ausencia de nubes permite que los paneles fotovoltaicos alcancen su pico de generación matutina.`,
+      `Bajo el cielo despejado de ${municipio}, el rendimiento de cada **panel solar** es óptimo hoy. Nuestra **empresa** analiza la irradiancia actual (${ghiStr ?? "alta"}) para proyectar el ahorro real de cada **cliente**.`,
+      `La calidad de la **luz solar** en la provincia de ${provincia} garantiza que cualquier **sistema fotovoltaico** en ${municipio} opere a pleno rendimiento. El equipo técnico confirma niveles de ${ghiStr ?? "máxima eficiencia"}.`,
+      `Un buen **proyecto solar** en ${municipio} aprovecha cada rayo de luz hoy. La **energía fotovoltaica** inyectada reduce directamente tu gasto eléctrico.`,
+      `Escenario ideal: la producción de **energía solar** en ${municipio} hoy es excelente, lo que mejora la **economía** de la vivienda desde el primer minuto.`,
     ],
     cloudy: [
-      `A pesar de la cobertura nubosa parcial sobre ${municipio}, los paneles fotovoltaicos modernos siguen produciendo energía.${ghiStr ? ` La radiación difusa registra ${ghiStr}.` : ""}`,
-      `El cielo parcialmente cubierto en ${provincia} no detiene la producción solar en ${municipio}.${ghiStr ? ` Los sensores registran ${ghiStr} de irradiancia.` : ""}`,
-      `La bruma sobre ${municipio} disminuye la radiación directa, pero activa la captación indirecta de las placas.${ghiStr ? ` Los ${ghiStr} medidos demuestran que sigues ahorrando.` : ""}`,
-      `Aunque la meteorología en ${municipio} limite el sol directo, la tecnología actual aprovecha cada rayo de luz ambiente para abastecer el hogar.`,
-      `Día de nubes y claros en ${municipio}: el sistema solar alterna picos de producción con generación estable de radiación difusa.`,
-      `Rendimiento moderado en ${municipio}: la capa de nubes tamiza la luz, pero los módulos monocristalinos mantienen un flujo de ahorro constante.`,
+      `A pesar de las nubes en ${municipio}, el **sistema fotovoltaico** sigue captando energía. La **calidad** de los paneles monocristalinos permite generar luz incluso con radiación difusa (${ghiStr ?? "estable"}).`,
+      `El cielo cubierto en ${provincia} no detiene tu **ahorro solar**. El **equipo** de ingeniería en ${municipio} monitoriza cómo cada **panel** sigue aportando a tu **cuenta de la luz**.`,
+      `Incluso sin sol directo en ${municipio}, la **atención** técnica se centra en el rendimiento basal de la **energía fotovoltaica** ambiental.`,
+      `Día nublado, pero el flujo de **energía solar** en ${municipio} no cesa; tu **empresa** instaladora asegura un funcionamiento continuo del **sistema**.`,
     ],
     rainy: [
-      `Incluso con lluvia en ${municipio}, los sistemas fotovoltaicos captan la radiación difusa.${ghiStr ? ` Se registran ${ghiStr} de irradiancia.` : ""} Además, el agua limpia los paneles mejorando su eficiencia futura.`,
-      `Las precipitaciones en ${municipio} reducen temporalmente la producción, pero las células de alta eficiencia siguen operativas a un nivel residual.`,
-      `Frente lluvioso activo en ${provincia}. En ${municipio}, el ahorro solar continúa gracias a la luz indirecta que atraviesa la nubosidad.`,
-      `Día de lluvia y limpieza natural para tus placas en ${municipio}: se aprovecha la radiación ambiente mientras se elimina el polvo acumulado.`,
-      `Generación bajo la lluvia en ${municipio}: el impacto de las gotas no detiene la fotosíntesis eléctrica de tus módulos fotovoltaicos.`,
-      `Producción de bajo nivel en ${municipio} por mal tiempo, ideal para cubrir consumos pasivos y mantener el balance de la batería.`,
+      `La lluvia en ${municipio} limpia cada **panel solar** de forma natural, mejorando su **eficiencia** futura mientras siguen captando luz ambiental (${ghiStr ?? "mínima"}).`,
+      `En días de lluvia, la **energía fotovoltaica** en ${municipio} se reduce, pero el **cliente** sigue ahorrando gracias a la sensibilidad de los **sistemas** actuales.`,
+      `Frente lluvioso en ${provincia}: tu **proyecto solar** en ${municipio} sigue operativo, restando cada vatio posible a tu **cuenta de la luz**.`,
     ],
     night: [
-      `Con la caída del sol sobre ${municipio}, la producción se detiene. Es el momento de usar la energía acumulada en baterías o la compensación de excedentes.`,
-      `Noche en ${municipio}: los inversores entran en reposo tras una jornada de ahorro solar efectiva en la provincia de ${provincia}.`,
-      `Inactividad nocturna en ${municipio}. El balance del día queda registrado: cada kWh generado ha restado coste a tu próxima factura.`,
-      `Sin radiación en ${municipio} ahora mismo, pero el impacto económico del autoconsumo continúa activo mediante el vertido de excedentes diurnos.`,
-      `Pausa solar en ${municipio}: la instalación se prepara para el amanecer mientras el hogar consume la energía limpia almacenada.`,
-      `Final de la jornada fotovoltaica en ${municipio}: es el momento de analizar el autoconsumo diario y optimizar los hábitos para mañana.`,
+      `Con la caída de la noche en ${municipio}, termina el ciclo de generación de la **energía solar**, acumulando el ahorro conseguido para tu **economía** doméstica.`,
+      `Pausa solar nocturna en ${municipio}: el **sistema fotovoltaico** descansa habiendo reducido tu dependencia de la red eléctrica en la provincia de ${provincia}.`,
     ],
   };
 
-  // ── Data paragraphs (using real municipality data) ──
   const dataParagraphs: string[] = [];
-
   if (irradiacionAnual && horasSol) {
     dataParagraphs.push(
-      `${municipio} recibe una irradiación solar media de ${annualStr} al año, con aproximadamente ${horasSolStr} horas de sol anuales. Estos valores, validados por el sistema PVGIS de la Comisión Europea, sitúan a ${municipio} por encima de la media europea y confirman el alto potencial para instalaciones de autoconsumo fotovoltaico en la zona.`
+      `El **proyecto solar** de cualquier vivienda en ${municipio} se apoya en una irradiación anual de ${fmt(irradiacionAnual)} kWh/m². Con ${fmt(horasSol)} horas de sol, la **empresa** instaladora puede garantizar una **energía fotovoltaica** estable durante todo el año.`
     );
   }
 
   if (ahorroEstimado && ahorroEstimado > 100) {
     dataParagraphs.push(
-      `El ahorro estimado medio para una vivienda con placas solares en ${municipio} alcanza los ${fmt(ahorroEstimado)} € anuales, considerando un sistema fotovoltaico estándar de 4-5 kWp y el precio actual de la electricidad en el mercado regulado (PVPC) de ${precioMedioLuz.toFixed(2)} €/kWh. Este cálculo tiene en cuenta un ratio de autoconsumo del 65%, valor habitual en viviendas unifamiliares con patrones de consumo diurno.`
+      `Mejorar la **economía** familiar en ${municipio} es posible reduciendo la **cuenta de la luz** hasta en ${fmt(ahorroEstimado)} € anuales. Este ahorro se basa en la instalación de **paneles** de alta **calidad** adaptados al consumo real del **cliente**.`
     );
   }
 
   if (bonificacionIbi != null && bonificacionIbi > 0) {
     dataParagraphs.push(
-      `El Ayuntamiento de ${municipio} ofrece una bonificación del ${Math.round(bonificacionIbi)}% en el Impuesto sobre Bienes Inmuebles (IBI) para viviendas que instalen sistemas de autoconsumo fotovoltaico. Esta bonificación, recogida en la ordenanza fiscal municipal, se aplica durante varios ejercicios consecutivos y puede suponer un ahorro adicional significativo sobre el coste total de la inversión.`
+      `Además, la **atención** a las ordenanzas municipales de ${municipio} revela una bonificación del ${Math.round(bonificacionIbi)}% en el IBI, un incentivo clave para cualquier **sistema fotovoltaico** en la zona.`
     );
   }
 
-  if (production5kw > 0 && time !== "night") {
-    dataParagraphs.push(
-      `En este momento, una instalación tipo de 5 kWp en ${municipio} estaría produciendo aproximadamente ${production5kw.toFixed(1)} kWh por hora, lo que equivale a un ahorro instantáneo de ${(production5kw * precioMedioLuz).toFixed(2)} € en la factura eléctrica. Este dato se calcula en tiempo real a partir de la irradiancia solar actual y la temperatura ambiente, aplicando un coeficiente de pérdidas del 20% y la corrección térmica estándar de -0,4%/°C por encima de 25°C.`
-    );
-  }
-
-  // ── Urban Context paragraphs (Demographic logic) ──
-  const habCount = habitantes || 0;
-  const urbanContext = habCount > 50000 
-    ? `Dada la alta densidad de ${municipio}, el autoconsumo se está expandiendo rápidamente en bloques de pisos y comunidades de vecinos mediante modalidades compartidas, además de en azoteas de edificios comerciales.`
-    : habCount < 5000 
-      ? `En entornos rurales como ${municipio}, las viviendas unifamiliares, las naves agrícolas y los tejados despejados ofrecen condiciones inmejorables para instalar grandes campos solares sin problemas de sombreado.`
-      : `El crecimiento de zonas residenciales en ${municipio} favorece la instalación de sistemas solares tanto en viviendas pareadas como en pequeñas naves industriales que buscan autonomía energética.`;
-
-  // ── Closing paragraph ──
   const closings = [
-    `En definitiva, ${municipio} reúne unas condiciones excepcionales para el autoconsumo solar: elevada irradiación, incentivos fiscales locales y un precio de la electricidad que hace cada vez más rentable la inversión.`,
-    `Si estás valorando instalar placas solares en ${municipio}, los datos objetivos de la provincia de ${provincia} respaldan la decisión: amortizarás tu inversión en tiempo récord ayudando al medio ambiente.`,
-    `La transición energética en ${municipio} no es solo una apuesta ecológica: es una decisión financiera inteligente para blindarse ante las subidas del precio de la luz.`,
-    `Frente a la escalada constante de la red comercial, independizarse energéticamente a través del autoconsumo fotovoltaico en ${municipio} es la mejor defensa económica hoy.`,
-    `Las métricas de PVGIS confirman a ${municipio} como una zona de viabilidad máxima. Instalar paneles en tu cubierta hoy acelerará tu independencia energética este mismo año.`,
-    `De este estudio se concluye que el potencial de ahorro en ${municipio} es extraordinario. Cada m² de tejado infrautilizado es una oportunidad de ahorro perdida frente al sol de ${provincia}.`,
+    `En conclusión, apostar por la **energía solar** en ${municipio} es una decisión segura para tu **economía** gracias a la robustez de los **sistemas fotovoltaicos** actuales.`,
+    `Si buscas una **atención** técnica veraz en ${municipio}, los datos de irradiancia solar en ${provincia} confirman la viabilidad de tu **proyecto** de autoconsumo.`,
+    `Cuidar la **calidad** de cada **panel** y del montaje asegura que tu inversión en ${municipio} se amortice rápidamente, bajando tu factura de la **luz** para siempre.`,
   ];
 
-  // ── Assemble ──
-  let aiIntro = snapshot?.intro_unica;
-  let aiH2 = snapshot?.h2_variante?.[hashId % (snapshot.h2_variante?.length || 1)];
-
-  const title = aiH2 || pick(titles[time], hashId, 0);
-  const opening = aiIntro || pick(time === "night" ? openingsWeather.night : openingsWeather[weatherBucket], hashId, 1);
+  const title = pick(titles[time], hashId, 0);
+  const opening = pick(time === "night" ? openingsWeather.night : openingsWeather[weatherBucket], hashId, 1);
   const closing = pick(closings, hashId, 2);
-
-  const bodyParagraphs = [opening, urbanContext, ...dataParagraphs, closing];
+  const bodyParagraphs = [opening, ...dataParagraphs, closing];
 
   return (
-    <section
-      className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-      aria-label={`Análisis solar detallado de ${municipio}`}
-    >
-      <div className="p-6 md:p-8">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight mb-5">
+    <section className="bg-gradient-to-br from-white to-slate-50/50 rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 font-manrope mt-10 overflow-hidden relative">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none" />
+      
+      <div className="p-8 md:p-12 lg:p-14">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-inner">
+             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-blue-600">Ficha Técnica SSR</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronización Regional</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-[1.1] tracking-tight mb-8">
           {title}
         </h2>
-        <div className="space-y-4">
+
+        <div className="space-y-6">
           {bodyParagraphs.map((p, i) => (
-            <p key={i} className="text-sm sm:text-base leading-relaxed text-slate-700">
-              {p}
-            </p>
+            <div key={i} className="text-lg md:text-xl leading-[1.7] text-slate-600 font-medium max-w-4xl">
+              {parseMarkdown(p)}
+            </div>
           ))}
         </div>
       </div>
-      <div className="px-6 md:px-8 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] text-slate-400">
-          Fuentes: PVGIS (Comisión Europea) · ESIOS/REE · Ordenanzas municipales · WeatherAPI
-        </p>
-        <p className="text-[10px] text-slate-400">
-          Última actualización: {new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
-        </p>
+
+      <div className="px-8 md:px-12 py-6 bg-slate-50/80 border-t border-slate-200/60 backdrop-blur-sm flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Metadatos 2026</span>
+          <span className="h-4 w-px bg-slate-200" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            Fuentes: PVGIS/OMIE · Ingeniería SolaryEco
+          </p>
+        </div>
+        <div className="px-4 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm text-[10px] font-black text-slate-500 uppercase tracking-widest">
+          {new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+        </div>
       </div>
     </section>
   );

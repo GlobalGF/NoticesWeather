@@ -40,38 +40,38 @@ export function SubsidiesSeoBlock({
   const ibiDisplay = ibiValue ?? 50;
   const ibiVariations = [
     <>
-      Las instalaciones en <strong>{municipio}</strong> pueden beneficiarse de importantes deducciones locales. La ordenanza fiscal vigente contempla una bonificación del <strong>{ibiDisplay}%</strong> en el Impuesto sobre Bienes Inmuebles, permitiendo reducir significativamente el coste fijo de tu vivienda mientras recuperas la inversión solar.
+      Las instalaciones en <strong>{municipio}</strong> pueden mejorar drásticamente la <strong>economía</strong> doméstica. La ordenanza fiscal vigente contempla una bonificación del <strong>{ibiDisplay}%</strong> en el IBI, permitiendo reducir la <strong>cuenta de la luz</strong> indirectamente al amortizar más rápido tu <strong>proyecto fotovoltaico</strong>.
     </>,
     <>
-      El ayuntamiento de <strong>{municipio}</strong> fomenta el autoconsumo mediante incentivos directos. Actualmente, los propietarios pueden solicitar hasta un <strong>{ibiDisplay}%</strong> de descuento en el IBI. Este beneficio fiscal es clave para acortar el periodo de retorno de tus placas solares en {provincia}.
+      Cualquier <strong>empresa</strong> instaladora en <strong>{municipio}</strong> destacará este incentivo: un <strong>{ibiDisplay}%</strong> de descuento en el IBI. Esta ayuda es clave para la viabilidad de tu <strong>sistema solar</strong> en {provincia}, ofreciendo una <strong>atención</strong> fiscal directa al <strong>cliente</strong>.
     </>,
     <>
-      Si resides en <strong>{municipio}</strong>, tu transición a la energía limpia tiene premio fiscal. Las normativas municipales recogen una bonificación de hasta el <strong>{ibiDisplay}%</strong> en el recibo del IBI para viviendas con paneles fotovoltaicos, una de las ayudas más robustas disponibles en la zona de {provincia}.
+      Si buscas <strong>calidad</strong> y ahorro en <strong>{municipio}</strong>, la bonificación de hasta el <strong>{ibiDisplay}%</strong> en el IBI para viviendas con <strong>paneles fotovoltaicos</strong> es fundamental. Es una de las <strong>ayudas de luz</strong> más robustas de {provincia} para potenciar la <strong>energía solar</strong> local.
     </>,
     <>
-      En <strong>{municipio}</strong>, instalar paneles solares da acceso a una reducción del <strong>{ibiDisplay}%</strong> en el IBI durante los primeros años. Esta ayuda municipal directa, combinada con las deducciones estatales, acelera la amortización de la instalación fotovoltaica.
+      En <strong>{municipio}</strong>, cada <strong>panel</strong> instalado da acceso a una reducción del <strong>{ibiDisplay}%</strong> en el recibo del IBI. Esta ventaja, sumada a la <strong>energía</strong> generada, acelera el retorno de tu <strong>sistema fotovoltaico</strong> sin comprometer tu <strong>economía</strong>.
     </>,
     <>
-      Los vecinos de <strong>{municipio}</strong> que apuesten por el autoconsumo fotovoltaico cuentan con una ventaja fiscal directa: hasta un <strong>{ibiDisplay}%</strong> de rebaja en el recibo del IBI, según la ordenanza fiscal del municipio en {provincia}.
+      Los vecinos de <strong>{municipio}</strong> cuentan con un <strong>equipo</strong> de incentivos sólido: hasta un <strong>{ibiDisplay}%</strong> de rebaja en el IBI por apostar por la <strong>luz solar</strong>, según la normativa actual de {provincia}.
     </>,
   ];
 
   // --- Variations for IRPF Section ---
   const irpfVariations = [
     <>
-      A nivel estatal, puedes deducir entre el <strong>20% y el 60%</strong> del coste de la instalación en tu próxima declaración de la Renta. Esta deducción por mejora de eficiencia energética es totalmente compatible con las ayudas locales de {municipio}, maximizando tu ahorro fiscal anual.
+      A nivel estatal, puedes deducir el coste de tu <strong>sistema</strong> en la Renta. Esta mejora de <strong>calidad</strong> energética es compatible con las ayudas de <strong>{municipio}</strong>, optimizando la <strong>economía</strong> de tu <strong>proyecto solar</strong> anual.
     </>,
     <>
-      La inversión en paneles solares en <strong>{municipio}</strong> desgrava. Gracias a los incentivos estatales por rehabilitación energética, es posible recuperar hasta un <strong>40%</strong> de la factura de instalación a través del IRPF, un impulso directo para los hogares que apuestan por la sostenibilidad.
+      La inversión en cada <strong>panel</strong> en <strong>{municipio}</strong> desgrava. Gracias a los incentivos por <strong>energía fotovoltaica</strong>, es posible recuperar gran parte de la factura, un alivio para la <strong>cuenta de la luz</strong> de los hogares.
     </>,
     <>
-      No olvides incluir tu instalación solar de {municipio} en el próximo ejercicio fiscal. Las deducciones en el IRPF por eficiencia energética permiten desgravar una parte sustancial de la inversión, reduciendo el precio final de tus placas solares de forma inmediata.
+      Tu <strong>empresa</strong> instaladora debe informarte: las deducciones en el IRPF por <strong>energía solar</strong> en {municipio} permiten desgravar la inversión, reduciendo el precio de tus <strong>placas</strong> de forma honesta y directa.
     </>,
     <>
-      La Agencia Tributaria permite deducir en el IRPF entre el <strong>20% y el 60%</strong> de lo invertido en placas solares en <strong>{municipio}</strong>. Para una instalación de 5 000 €, esto puede suponer una devolución de hasta 3 000 € en tu próxima declaración.
+      La Agencia Tributaria bonifica el <strong>sistema fotovoltaico</strong> en <strong>{municipio}</strong>. Para una <strong>instalación</strong> típica, esto supone un retorno que mejora la <strong>atención</strong> financiera de tu vivienda.
     </>,
     <>
-      Cada euro invertido en autoconsumo fotovoltaico en {municipio} tiene retorno fiscal: las deducciones estatales de hasta el <strong>60%</strong> por mejora de certificación energética se aplican directamente en la declaración de la Renta, acelerando la recuperación de la inversión.
+      Cada euro en <strong>luz solar</strong> en {municipio} tiene retorno fiscal: las deducciones por <strong>sistemas</strong> de autoconsumo se aplican directamente, acelerando la recuperación de la inversión sin sorpresas.
     </>,
   ];
 
@@ -79,104 +79,118 @@ export function SubsidiesSeoBlock({
   const selectedIrpf = irpfVariations[(hash + 1) % irpfVariations.length];
 
   return (
-    <>
+    <div className="font-manrope">
       {/* ── ALERTA DE IBI DESTACADA ── */}
       {ibiValue != null && ibiValue > 0 && (
-        <div className="bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-500/20 overflow-hidden mb-6 mt-8 relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20"></div>
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-[2.5rem] shadow-2xl shadow-emerald-500/30 overflow-hidden mb-10 mt-10 relative group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-110"></div>
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10"></div>
           
-          <div className="relative z-10 px-6 py-5 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white text-emerald-600 rounded-full flex items-center justify-center text-2xl shrink-0 shadow-inner">
-                🎉
+          <div className="relative z-10 px-8 py-8 md:px-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-md text-white rounded-3xl flex items-center justify-center text-4xl shrink-0 shadow-xl border border-white/30 rotate-3 group-hover:rotate-0 transition-transform">
+                💶
               </div>
               <div>
-                <p className="text-emerald-100 font-bold uppercase tracking-widest text-[10px] mb-1">
-                  Subvención Local Confirmada
+                <p className="text-emerald-100 font-black uppercase tracking-[0.2em] text-[11px] mb-2 opacity-80">
+                  Ayuda Local Garantizada
                 </p>
-                <h3 className="text-white text-xl md:text-2xl font-black leading-tight">
-                  ¡El Ayuntamiento te descuenta un <span className="text-yellow-300">{ibiValue}% del IBI</span>!
+                <h3 className="text-white text-2xl md:text-4xl font-black leading-tight tracking-tight">
+                  Ibi al <span className="text-yellow-300">-{ibiValue}%</span> en {municipio}
                 </h3>
+                <p className="text-emerald-50/70 text-sm mt-1 font-medium italic">
+                  *Cifra verificada según la ordenanza fiscal vigente
+                </p>
               </div>
             </div>
-            <a href="#lead-form" className="shrink-0 bg-white text-emerald-700 font-bold px-5 py-2.5 rounded-xl text-sm shadow hover:scale-105 active:scale-95 transition-all">
-              Aprovechar Reembolso
+            <a href="#lead-form" className="shrink-0 bg-white text-emerald-800 font-black px-8 py-4 rounded-2xl text-base shadow-xl hover:shadow-2xl hover:-translate-y-1 active:scale-95 transition-all">
+              Consultar Plazos
             </a>
           </div>
         </div>
       )}
 
       {/* ── BLOQUE DE SUBVENCIONES GENERAL ── */}
-      <section className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ${(!ibiValue || ibiValue === 0) ? "mt-8" : ""} transition-shadow hover:shadow-md`}>
-        <div className="bg-slate-900 px-6 py-5 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      <section className={`bg-gradient-to-br from-white to-slate-50/50 rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 overflow-hidden ${(!ibiValue || ibiValue === 0) ? "mt-10" : ""} relative`}>
+        <div className="px-8 py-8 md:px-10 md:py-10 border-b border-slate-100">
+           <div className="flex items-center gap-2 mb-4">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            <p className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">
+              Guía de Incentivos 2026
+            </p>
+          </div>
+          <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight">
             {[
-              `Ayudas y subvenciones para placas solares en ${municipio}`,
-              `Incentivos fiscales para autoconsumo solar en ${municipio}`,
-              `Bonificaciones y deducciones por instalar paneles en ${municipio}`,
-              `Subvenciones activas para energía fotovoltaica en ${municipio}`,
-              `Ayudas públicas al autoconsumo en ${municipio} (${provincia})`,
+              `Ayudas y subvenciones en ${municipio}`,
+              `Incentivos fiscales para ${municipio}`,
+              `Bonificaciones por paneles en ${municipio}`,
+              `Subvenciones activas en ${municipio}`,
+              `Ayudas públicas en ${municipio} (${provincia})`,
             ][hash % 5]}
           </h2>
         </div>
-        <div className="p-6 md:p-8">
-          <div className="grid sm:grid-cols-2 gap-6">
+
+        <div className="p-8 md:p-10">
+          <div className="grid sm:grid-cols-2 gap-8">
             {/* IBI Box */}
-            <div className="bg-emerald-50/80 rounded-xl p-5 border border-emerald-100 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-              <div className="flex items-center gap-2 mb-3 relative z-10">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shadow-inner">
+            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-emerald-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
+              <div className="flex items-center gap-4 mb-6 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-xl shadow-inner">
                   %
                 </div>
-                <h3 className="font-bold text-emerald-900 tracking-tight">Bonificación del IBI</h3>
+                <h3 className="font-black text-slate-900 text-xl tracking-tight">Recibo del IBI</h3>
               </div>
-              <p className="text-emerald-700/90 text-sm leading-relaxed relative z-10">
+              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium lowercase-first">
                 {selectedIbi}
-              </p>
+              </div>
             </div>
 
             {/* IRPF Box */}
-            <div className="bg-blue-50/80 rounded-xl p-5 border border-blue-100 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-              <div className="flex items-center gap-2 mb-3 relative z-10">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shadow-inner">
+            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-blue-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
+              <div className="flex items-center gap-4 mb-6 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xl shadow-inner">
                   📄
                 </div>
-                <h3 className="font-bold text-blue-900 tracking-tight">Deducción en IRPF</h3>
+                <h3 className="font-black text-slate-900 text-xl tracking-tight">Deducción IRPF</h3>
               </div>
-              <p className="text-blue-700/90 text-sm leading-relaxed relative z-10">
+              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium lowercase-first">
                 {selectedIrpf}
-              </p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-5 text-center space-y-4">
+          <div className="mt-10 text-center space-y-6">
             <a
               href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${slug}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-base font-black text-white shadow-xl hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
             >
-              Ver todas las subvenciones oficiales en {municipio}
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              Informe oficial de {municipio}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
             </a>
-            <p className="block text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-md py-2 px-4 shadow-sm inline-block">
-              Consulta siempre al ayuntamiento de {municipio} para confirmar la vigencia anual de estas ayudas.
-            </p>
+            
+            <div className="max-w-xl mx-auto">
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 shadow-sm">
+                Nota: Consulta vigencia anual en el Ayuntamiento de {municipio}.
+              </p>
+            </div>
+
             {nearby && (
-              <p className="block text-[10px] text-slate-400">
-                Al igual que ocurre en localidades próximas como{" "}
+              <p className="text-xs text-slate-400 font-medium italic">
+                Al igual que localidades próximas como{" "}
                 <a
                   href={`/placas-solares/${nearby.slug}`}
-                  className="text-blue-500 hover:underline font-medium"
+                  className="text-blue-500 hover:text-blue-600 font-bold underline underline-offset-4 decoration-blue-200"
                 >
                   {nearby.municipio}
                 </a>
-                , la normativa regional en {provincia} favorece la adopción masiva del autoconsumo.
+                , la normativa en {provincia} favorece la adopción masiva del autoconsumo hoy.
               </p>
             )}
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

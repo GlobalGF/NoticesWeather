@@ -3,7 +3,9 @@
  * Design: formal energy portal (Bloomberg/ESIOS style)
  */
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
+import Fallback from "@/components/solar/Fallback";
 import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
@@ -13,6 +15,7 @@ import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { generateDynamicText } from "@/lib/pseo/spintax";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 
 export const revalidate = 604800; // 1 semana
 export const dynamicParams = true;
@@ -113,27 +116,59 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 
 /* ── Page ────────────────────────────────────────────────────────── */
 export default async function BateriasMunicipioPage({ params }: Props) {
-    const slug = tryParseSlug(params.municipio);
-    if (!slug || isBlockedSlug(slug)) notFound();
-    if (!hasSupabaseEnv()) return <div className="p-10 text-center text-slate-400">Supabase no configurado.</div>;
+    const rawMunicipio = params.municipio;
+    try {
+        if (!rawMunicipio) notFound();
 
-    const supabase = await createSupabaseServerClient();
+        const decoded = decodeURIComponent(rawMunicipio).toLowerCase();
+        const slug = tryParseSlug(decoded) || decoded;
 
-    const [{ data: munRaw }, { data: bateriasRaw }] = await Promise.all([
-        supabase.from("municipios_energia")
-            .select("slug,municipio,provincia,comunidad_autonoma,habitantes,horas_sol,irradiacion_solar,ahorro_estimado,bonificacion_ibi,subvencion_autoconsumo,precio_medio_luz,precio_instalacion_min_eur,precio_instalacion_medio_eur,precio_instalacion_max_eur,eur_por_watio")
-            .eq("slug", slug).single(),
-        supabase.from("baterias_solares")
+        if (isBlockedSlug(slug)) notFound();
+        if (!hasSupabaseEnv()) return <div className="p-10 text-center text-slate-400">Supabase no configurado.</div>;
+
+        const supabase = await createSupabaseServerClient();
+
+        // Robust Fetch: Try to find any slug starting with our search term
+        const { data: muniRows, error: muniError } = await supabase
+            .from("municipios_energia")
+            .select("*")
+            .filter("slug", "ilike", `${slug}%`)
+            .limit(20);
+
+        if (muniError || !muniRows || muniRows.length === 0) {
+            console.warn(`[BateriasMunicipioPage] NOT FOUND in DB for: ${slug}`);
+            notFound();
+        }
+
+        // Find the canonical match
+        const match = (muniRows as any[]).find((m: any) => {
+            const mProvSlug = slugify(m.provincia);
+            return cleanMunicipalitySlug(m.slug, mProvSlug) === rawMunicipio;
+        }) || (muniRows as any[]).find((m: any) => m.slug === rawMunicipio);
+
+        const municipio: any = match || (muniRows as any[]).find((m: any) => m.slug === slug);
+
+        if (!municipio) {
+            console.warn(`[BateriasMunicipioPage] NO CLEANED MATCH in candidates`);
+            notFound();
+        }
+
+        const dbProvSlug = slugify(municipio.provincia);
+        const dbMuniSlug = cleanMunicipalitySlug(municipio.slug, dbProvSlug);
+
+        // Canonical Redirect
+        if (rawMunicipio !== dbMuniSlug) {
+            redirect(`/baterias-solares/${dbMuniSlug}`);
+        }
+
+        const { data: bateriasRaw } = await supabase.from("baterias_solares")
             .select("fabricante, modelo, capacidad_kwh, potencia_descarga_kw, ciclos, profundidad_descarga_pct, garantia_anos, tecnologia, eficiencia_roundtrip_pct, ficha_tecnica_url")
             .eq("activo", true)
             .order("capacidad_kwh", { ascending: true })
-            .limit(6),
-    ]);
+            .limit(6);
 
-    if (!munRaw) notFound();
-
-    const m = munRaw as unknown as MunicipioRow;
-    const baterias = (bateriasRaw ?? []) as BateriaRow[];
+        const m = municipio as MunicipioRow;
+        const baterias = (bateriasRaw ?? []) as BateriaRow[];
 
     // Cálculos estimados genéricos para baterías en este municipio
     const ahorroSolarBase = m.ahorro_estimado ?? 600;
@@ -440,4 +475,9 @@ export default async function BateriasMunicipioPage({ params }: Props) {
 
         </main>
     );
+    } catch (error) {
+        if (isRedirectError(error)) throw error;
+        console.error(`[BateriasMunicipioPage] Fatal crash for ${rawMunicipio}:`, error);
+        return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
+    }
 }

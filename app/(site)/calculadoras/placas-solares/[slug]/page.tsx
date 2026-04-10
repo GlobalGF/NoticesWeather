@@ -1,11 +1,27 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
+import Fallback from "@/components/solar/Fallback";
 import { getMunicipioBySlug } from "@/lib/data/solar";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CalculadoraSolarCompleta } from "@/components/ui/CalculadoraSolarCompleta";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
+import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
+import { 
+  Sun, 
+  MapPin, 
+  ArrowRight, 
+  ShieldCheck, 
+  Zap,
+  TrendingUp,
+  Euro,
+  ClipboardCheck,
+  Rocket
+} from "lucide-react";
 
 export const dynamicParams = true;
 export const revalidate = 86400;
@@ -19,17 +35,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Calculadora de Placas Solares" };
 
   return buildMetadata({
-    title: `Instalación de Placas Solares en ${data.municipio} — Ahorro y Amortización`,
-    description: `Calcula cuántos paneles solares necesitas en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol al año. Genera tu propia energía 100% verde y ahorra hasta ${data.ahorro_estimado ?? 800}€/año.`,
+    title: `Calculadora de Placas Solares en ${data.municipio} — Autoconsumo y Ahorro`,
+    description: `Estudio técnico fotovoltaico en ${data.municipio}: ${data.horas_sol ?? 2500}h de sol al año. Calcula tu ahorro con datos de PVGIS y bonificaciones IBI locales.`,
     pathname: `/calculadoras/placas-solares/${slug}`,
   });
 }
 
 export default async function PlacasSolaresMunicipioPage({ params }: Props) {
   const { slug } = params;
-  if (isBlockedSlug(slug)) notFound();
-  const data = await getMunicipioBySlug(slug);
-  if (!data) notFound();
+  try {
+    if (isBlockedSlug(slug)) notFound();
+
+  const supabase = await createSupabaseServerClient();
+  const { data: muniRows, error: muniError } = await supabase
+    .from("municipios_energia")
+    .select("*")
+    .filter("slug", "ilike", `${slug}%`)
+    .limit(20);
+    
+  if (muniError || !muniRows || muniRows.length === 0) {
+    console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB for: ${slug}`);
+    notFound();
+  }
+  
+  // Find the canonical match
+  const match = (muniRows as any[]).find((m: any) => {
+    const mProvSlug = slugify(m.provincia);
+    return cleanMunicipalitySlug(m.slug, mProvSlug) === slug;
+  }) || (muniRows as any[]).find((m: any) => m.slug === slug);
+
+  if (!match) notFound();
+
+  const dbProvSlug = slugify(match.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(match.slug, dbProvSlug);
+
+  // Canonical Redirect
+  if (slug !== dbMuniSlug) {
+      redirect(`/calculadoras/placas-solares/${dbMuniSlug}`);
+  }
+
+  const data = match;
 
   const municipio = data.municipio;
   const provincia = data.provincia;
@@ -40,139 +85,141 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
   const bonificacionIbi = data.bonificacion_ibi ? Number(data.bonificacion_ibi) : 0;
 
   return (
-    <main className="bg-slate-50 min-h-screen font-sans">
-      <div className="bg-slate-900 pb-14 pt-6 overflow-hidden relative">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[120px] -translate-y-1/2 -translate-x-1/3" />
+    <main className="bg-slate-50 min-h-screen font-sans selection:bg-amber-100 pb-24">
+      {/* ── CLEAN HERO SECTION ─────────────────────────────────────────── */}
+      <section className="bg-white pt-12 pb-20 border-b border-slate-100">
+        <div className="mx-auto max-w-7xl px-6">
+          <nav aria-label="Breadcrumb" className="mb-8">
+            <ol className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <li><Link href="/" className="hover:text-amber-600 transition-colors">Portal</Link></li>
+              <li>/</li>
+              <li><Link href="/calculadoras" className="hover:text-amber-600 transition-colors">Calculadoras</Link></li>
+              <li>/</li>
+              <li className="text-slate-900 font-bold">{municipio}</li>
+            </ol>
+          </nav>
 
-        <nav aria-label="Breadcrumb" className="mx-auto max-w-5xl px-4 relative z-30 mb-8">
-          <ol className="flex items-center gap-1.5 text-sm text-slate-400">
-            <li><Link href="/" className="hover:text-white transition-colors">Inicio</Link></li>
-            <li className="select-none">/</li>
-            <li><Link href="/calculadoras" className="hover:text-white transition-colors">Calculadoras</Link></li>
-            <li className="select-none">/</li>
-            <li><Link href="/calculadoras/placas-solares" className="hover:text-white transition-colors">Placas solares</Link></li>
-            <li className="select-none">/</li>
-            <li className="text-white font-medium">{municipio}</li>
-          </ol>
-        </nav>
-
-        <div className="mx-auto max-w-5xl px-4 relative z-30 text-center">
-          <div className="inline-flex items-center gap-3 mb-5 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-            <p className="text-amber-300 font-bold tracking-widest uppercase text-[10px]">Datos locales de {municipio}</p>
+          <div className="max-w-3xl">
+            <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">
+              Calculadora de Placas Solares en <span className="text-amber-500">{municipio}</span>
+            </h1>
+            <p className="text-lg text-slate-500 font-medium leading-relaxed">
+              Basado en {irradiancia} kWh/m² de irradiación solar y las bonificaciones fiscales vigentes en {provincia}.
+            </p>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-            Placas Solares en{" "}
-            <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">
-              {municipio}
-            </span>
-          </h1>
-          <h2 className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Genera tu propia energía 100% verde desde tu tejado en {municipio}. Simulador con irradiación real: {irradiancia} kWh/m²/año.
-          </h2>
+        </div>
+      </section>
+
+      {/* ── CALCULATOR FOCUS SECTION ───────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-6 -mt-10">
+        <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl shadow-slate-200/60 p-1 overflow-hidden">
+          <div className="bg-slate-50 border-b border-slate-100 px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Estudio Técnico en Vivo</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-4 text-[10px] font-bold text-slate-400">
+               <span>PROVINCIA: {provincia.toUpperCase()}</span>
+               <span>IRRADIACIÓN: {irradiancia}</span>
+            </div>
+          </div>
+          <div className="p-6 md:p-10">
+            <CalculadoraSolarCompleta
+              irradiancia={irradiancia}
+              precioMedioLuz={precioMedioLuz}
+              precioInstalacion={precioInstalacion}
+              subvencionPct={subvencionPct}
+              bonificacionIbi={bonificacionIbi}
+              municipio={municipio}
+              provincia={provincia}
+              slug={dbMuniSlug}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 space-y-12 -mt-6 relative z-20 pb-24">
-        {/* Local data KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Irradiación</p>
-            <p className="text-xl font-black text-blue-600">{irradiancia} <span className="text-xs font-bold text-blue-400">kWh/m²</span></p>
-          </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Horas de sol</p>
-            <p className="text-xl font-black text-amber-600">{data.horas_sol ?? 2500} <span className="text-xs font-bold text-amber-400">h/año</span></p>
-          </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Precio medio</p>
-            <p className="text-xl font-black text-slate-700">{precioMedioLuz.toFixed(3)} <span className="text-xs font-bold text-slate-400">€/kWh</span></p>
-          </div>
-          {precioInstalacion && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Precio instalación</p>
-              <p className="text-xl font-black text-slate-700">{precioInstalacion.toLocaleString("es-ES")} <span className="text-xs font-bold text-slate-400">€</span></p>
-            </div>
-          )}
-          {subvencionPct > 0 && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold mb-1">Subvención</p>
-              <p className="text-xl font-black text-emerald-600">{subvencionPct} <span className="text-xs font-bold text-emerald-400">%</span></p>
-            </div>
-          )}
-          {bonificacionIbi > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-blue-600 font-bold mb-1">Bonificación IBI</p>
-              <p className="text-xl font-black text-blue-600">{bonificacionIbi} <span className="text-xs font-bold text-blue-400">€/año</span></p>
-            </div>
-          )}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Ahorro estimado</p>
-            <p className="text-xl font-black text-emerald-600">{data.ahorro_estimado ?? 800} <span className="text-xs font-bold text-emerald-400">€/año</span></p>
-          </div>
+      {/* ── ADDITIONAL INFO & SEO ───────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-6 mt-16 space-y-16">
+        
+        {/* Local data KPIs - Premium Glassmorphism */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+           {[
+             { label: "Irradiación", val: `${irradiancia}`, unit: "kWh/m²", icon: Zap, color: "text-blue-600", bg: "bg-blue-50" },
+             { label: "Horas de Sol", val: `${data.horas_sol ?? 2500}`, unit: "h/año", icon: Sun, color: "text-amber-600", bg: "bg-amber-50" },
+             { label: "Ahorro Estimado", val: `${data.ahorro_estimado ?? 800}`, unit: "€/año", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
+             { label: "Precio Luz", val: `${precioMedioLuz.toFixed(3)}`, unit: "€/kWh", icon: Euro, color: "text-slate-600", bg: "bg-slate-50" }
+           ].map((kpi, i) => (
+             <div key={i} className="bg-white/80 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div className={`absolute top-0 right-0 w-16 h-16 ${kpi.bg} -mr-8 -mt-8 rounded-full blur-xl group-hover:scale-150 transition-transform`} />
+                <kpi.icon className={`w-5 h-5 ${kpi.color} mb-4 relative z-10`} />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 relative z-10">{kpi.label}</p>
+                <p className="text-2xl font-black text-slate-900 relative z-10">{kpi.val} <span className="text-[10px] text-slate-400">{kpi.unit}</span></p>
+             </div>
+           ))}
         </div>
 
-        <section className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-8">
-          <CalculadoraSolarCompleta
-            irradiancia={irradiancia}
-            precioMedioLuz={precioMedioLuz}
-            precioInstalacion={precioInstalacion}
-            subvencionPct={subvencionPct}
-            bonificacionIbi={bonificacionIbi}
-            municipio={municipio}
-            provincia={provincia}
-            slug={slug}
-          />
-        </section>
 
-        {/* Un proceso sencillo */}
+        {/* Honest SEO Content Block */}
+        <ServerSeoBlock
+          municipio={municipio}
+          provincia={provincia}
+          irradiacionAnual={irradiancia}
+          horasSol={data.horas_sol}
+          ahorroEstimado={data.ahorro_estimado}
+          bonificacionIbi={bonificacionIbi}
+          precioMedioLuz={precioMedioLuz}
+          habitantes={data.habitantes}
+        />
+
+        {/* Process Steps - Premium Card */}
         <section>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-8">Tu instalación en {municipio}: un proceso sencillo</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="flex items-center gap-4 mb-8">
+             <div className="h-px bg-slate-200 flex-1" />
+             <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Ingeniería Paso a Paso</h2>
+             <div className="h-px bg-slate-200 flex-1" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {[
-              { step: "01", title: "Estudio gratuito", desc: `Simulamos tu ahorro en ${municipio} con datos de PVGIS.` },
-              { step: "02", title: "Viabilidad", desc: "Un experto revisa tu tejado y optimiza el diseño." },
-              { step: "03", title: "Trámites", desc: "Gestionamos subvenciones y licencias en tu ayuntamiento." },
-              { step: "04", title: "Instalación", desc: "Equipos locales certificados instalan en tiempo récord." },
-              { step: "05", title: "Producción", desc: "¡Listo! Empieza a ahorrar desde el primer día." }
+              { step: "01", title: "Estudio técnico", desc: `Analizamos tu tejado en ${municipio} vía satélite.`, icon: MapPin },
+              { step: "02", title: "Viabilidad", desc: "Un equipo técnico valida la estructura real.", icon: ClipboardCheck },
+              { step: "03", title: "Burocracia", desc: "Gestionamos licencias en tu ayuntamiento.", icon: ShieldCheck },
+              { step: "04", title: "Instalación", desc: "Montaje rápido por ingenieros locales.", icon: Rocket },
+              { step: "05", title: "Autoconsumo", desc: "Control total desde tu cuenta de la luz.", icon: Zap }
             ].map((s, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-blue-300 transition-colors">
-                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-blue-50 transition-colors">{s.step}</span>
-                <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+              <div key={i} className="bg-white border border-slate-200 rounded-[2rem] p-6 relative overflow-hidden group hover:shadow-xl hover:shadow-slate-200 transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors mb-4">
+                  <s.icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-black text-slate-900 mb-2">{s.title}</h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">{s.desc}</p>
+                <span className="absolute top-4 right-4 text-xs font-black text-slate-100 group-hover:text-slate-200 transition-colors">{s.step}</span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Beneficios - Confianza */}
-        <section className="bg-slate-900 rounded-[2rem] p-8 md:p-14 text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+        {/* Trust Section */}
+        <section className="bg-slate-950 rounded-[3rem] p-8 md:p-16 text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.05]" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px]" />
+          
           <div className="relative z-10">
-            <h2 className="text-3xl font-black mb-10 tracking-tight">¿Por qué confiar en nuestra plataforma?</h2>
-            <div className="grid md:grid-cols-3 gap-10">
-              <div className="group">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-blue-500/30 transition-colors border border-blue-500/30">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <h2 className="text-3xl md:text-5xl font-black mb-12 tracking-tighter italic">Compromiso de Calidad Fotovoltaica</h2>
+            <div className="grid md:grid-cols-3 gap-12">
+              {[
+                { title: "Vida Útil", text: "Paneles Tier-1 con garantía de rendimiento de 25 años en toda España.", icon: ShieldCheck },
+                { title: "Ingeniería", text: "Proyectos diseñados por ingenieros colegiados buscando el máximo ROI.", icon: Zap },
+                { title: "Atención", text: "Soporte post-venta y monitorización activa de tu sistema.", icon: TrendingUp }
+              ].map((item, i) => (
+                <div key={i}>
+                  <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-6">
+                    <item.icon className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <h3 className="text-xl font-black mb-4">{item.title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed font-medium">{item.text}</p>
                 </div>
-                <h3 className="text-xl font-bold mb-3">Garantía total</h3>
-                <p className="text-sm text-slate-400 leading-relaxed text-pretty">Instalaciones con garantías de hasta 25 años en paneles y 10 años en mano de obra en {municipio}.</p>
-              </div>
-              <div className="group">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-amber-500/30 transition-colors border border-amber-500/30">
-                  <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Máxima eficiencia</h3>
-                <p className="text-sm text-slate-400 leading-relaxed text-pretty">Nuestros colaboradores utilizan componentes de primera línea para maximizar el rendimiento de tu tejado.</p>
-              </div>
-              <div className="group">
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-emerald-500/30 transition-colors border border-emerald-500/30">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Estética Premium</h3>
-                <p className="text-sm text-slate-400 leading-relaxed text-pretty">Paneles Full Black que se integran perfectamente en la estética de tu hogar en {municipio}.</p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -181,13 +228,20 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
           municipio={municipio}
           provincia={provincia}
           comunidadAutonoma={data.comunidad_autonoma ?? provincia}
-          slug={slug}
+          slug={dbMuniSlug}
         />
 
-        <footer className="text-center text-xs text-slate-400">
-          <p>Datos de irradiación para {municipio} basados en PVGIS (JRC). Cálculos orientativos.</p>
+        <footer className="text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
+            Análisis de Autoconsumo · SolaryEco Ingeniería · 2026
+          </p>
         </footer>
       </div>
     </main>
-  );
+    );
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    console.error(`[PlacasSolaresMunicipioPage] Fatal crash for ${slug}:`, error);
+    return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
+  }
 }

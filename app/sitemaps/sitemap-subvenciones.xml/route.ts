@@ -10,7 +10,7 @@
  */
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, normalizeCcaaSlug, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 export const revalidate = 86400; // 24 hours
 
@@ -54,15 +54,16 @@ export async function GET(): Promise<Response> {
   const urls: string[] = [];
 
   for (const row of all) {
-    const ccaaSlug = slugify(row.comunidad_autonoma);
+    const ccaaSlug = normalizeCcaaSlug(row.comunidad_autonoma);
     const provSlug = slugify(row.provincia);
+    const muniSlug = cleanMunicipalitySlug(row.slug, provSlug);
 
     ccaaSet.add(ccaaSlug);
     provSet.add(`${ccaaSlug}/${provSlug}`);
 
     // Municipality-level URL
     urls.push(
-      `<url><loc>${escapeXml(`${SITE_URL}/subvenciones-solares/${ccaaSlug}/${provSlug}/${row.slug}`)}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`
+      `<url><loc>${escapeXml(`${SITE_URL}/subvenciones-solares/${ccaaSlug}/${provSlug}/${muniSlug}`)}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`
     );
   }
 

@@ -7,6 +7,7 @@ import {
   getPseoSlugIndexSlugsRange
 } from "@/data/repositories/pseo-slug-index.repo";
 import { GUIDE_SLUGS } from "@/lib/seo/sitemap-guides";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 
 export const SITEMAP_CHUNK_SIZE = 5000;
 
@@ -159,39 +160,41 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
 
     const municipalityRangeFrom = overlapFrom - section.from;
     const municipalityRangeTo = overlapTo - section.from;
-    const slugs = await getMunicipiosEnergiaSlugsRange(municipalityRangeFrom, municipalityRangeTo);
+    const muniRows = await getMunicipiosEnergiaSlugsRange(municipalityRangeFrom, municipalityRangeTo);
 
-    for (const slug of slugs) {
+    for (const { slug, provincia } of muniRows) {
+      const provSlug = slugify(provincia);
+      const cleanSlug = cleanMunicipalitySlug(slug, provSlug);
       let path = "";
       let priority = 0.7;
 
       switch (section.key) {
         case "placas":
-          path = `/placas-solares/${slug}`;
+          path = `/placas-solares/${cleanSlug}`;
           priority = 0.8;
           break;
         case "baterias":
-          path = `/baterias-solares/${slug}`;
+          path = `/baterias-solares/${cleanSlug}`;
           priority = 0.7;
           break;
         case "calc_generic":
-          path = `/calculadoras/${slug}`;
+          path = `/calculadoras/${cleanSlug}`;
           priority = 0.6;
           break;
         case "calc_placas":
-          path = `/calculadoras/placas-solares/${slug}`;
+          path = `/calculadoras/placas-solares/${cleanSlug}`;
           priority = 0.7;
           break;
         case "calc_finan":
-          path = `/calculadoras/financiacion/${slug}`;
+          path = `/calculadoras/financiacion/${cleanSlug}`;
           priority = 0.6;
           break;
         case "calc_bat":
-          path = `/calculadoras/baterias/${slug}`;
+          path = `/calculadoras/baterias/${cleanSlug}`;
           priority = 0.6;
           break;
         case "calc_exced":
-          path = `/calculadoras/excedentes/${slug}`;
+          path = `/calculadoras/excedentes/${cleanSlug}`;
           priority = 0.6;
           break;
       }

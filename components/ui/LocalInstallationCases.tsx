@@ -112,6 +112,7 @@ type CaseProfile = {
 function buildCases(
   h: number,
   municipio: string,
+  provincia: string,
   zona: ClimateZone,
   irrad: number,
   horas: number,
@@ -157,19 +158,19 @@ function buildCases(
           ],
         ] : [
           [
-            `Vivienda tipo piso en ${municipio} con acceso a cubierta comunitaria.`,
-            `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura coplanar, aprovechando la zona con menor sombra del edificio.`,
-            `Este tipo de instalación es cada vez más frecuente en comunidades de vecinos que optan por el autoconsumo compartido.`,
+            `Vivienda tipo piso en ${municipio} donde nuestro <strong>equipo</strong> ha proyectado un uso eficiente de la <strong>energía solar</strong>.`,
+            `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura de alta <strong>calidad</strong>, ideal para reducir la <strong>cuenta de la luz</strong>.`,
+            `Este <strong>proyecto fotovoltaico</strong> permite a cada <strong>cliente</strong> urbano sumarse al ahorro colectivo con total garantía de la <strong>empresa</strong>.`,
           ],
           [
-            `Apartamento en bloque residencial de ${municipio} con cubierta plana compartida.`,
-            `Sistema de ${fmt(2.5, 1)} kWp dimensionado para cubrir el consumo base del hogar (iluminación, frigorífico, electrodomésticos de bajo consumo).`,
-            `La Ley 15/2023 de autoconsumo colectivo facilita este modelo: varios vecinos comparten una instalación y se reparten la producción según coeficientes.`,
+            `Apartamento residencial en ${municipio} con un <strong>sistema solar</strong> optimizado para la <strong>economía</strong> familiar.`,
+            `Cada <strong>panel</strong> de ${fmt(2.5, 1)} kWp está dimensionado para cubrir el gasto base del hogar, mejorando la gestión de la <strong>luz</strong> diaria.`,
+            `La <strong>atención</strong> técnica personalizada asegura que el <strong>sistema fotovoltaico</strong> rinda al máximo en entornos compartidos.`,
           ],
           [
-            `Piso en zona residencial de ${municipio} con azotea accesible orientada al sur.`,
-            `Con solo 6 paneles de 415 W se alcanza un sistema de ${fmt(2.5, 1)} kWp suficiente para reducir la factura entre un 40% y un 60%.`,
-            `Este caso es representativo de las instalaciones urbanas más demandadas en la provincia.`,
+            `Piso en zona céntrica de ${municipio} con 6 módulos de alta <strong>eficiencia</strong>.`,
+            `Con este <strong>equipo</strong> de ${fmt(2.5, 1)} kWp, el ahorro en la <strong>cuenta de la luz</strong> se sitúa entre un 40% y un 60% de forma veraz.`,
+            `Representa la solución de <strong>energía</strong> más demandada por quienes buscan <strong>calidad</strong> técnica sin grandes obras.`,
           ],
         ],
         h,
@@ -186,19 +187,19 @@ function buildCases(
       description: pick(
         [
           [
-            `Casa adosada en ${municipio} con cubierta inclinada y faldón orientado al sur.`,
-            `Instalación de ${fmt(5, 0)} kWp (12 paneles de 415 W) aprovechando la pendiente natural del tejado como inclinación óptima (${housingProfiles[zona].tilt}).`,
-            `El consumo medio de este tipo de vivienda (calefacción eléctrica, vitrocerámica, aire acondicionado) convierte el autoconsumo en una decisión especialmente rentable.`,
+            `Casa adosada en ${municipio} con un <strong>proyecto solar</strong> diseñado para maximizar la <strong>economía</strong> del hogar.`,
+            `Instalación de ${fmt(5, 0)} kWp con 12 módulos de alta <strong>calidad</strong>, orientados para captar la mejor <strong>luz</strong> del día.`,
+            `El <strong>equipo</strong> de ingeniería asegura que este <strong>sistema fotovoltaico</strong> cubra los consumos más pesados de la vivienda.`,
           ],
           [
-            `Vivienda adosada con tejado de ${housingProfiles[zona].roofMaterial} en ${municipio}.`,
-            `Sistema de ${fmt(5, 0)} kWp integrado en cubierta. Los 28 m² de superficie aprovechable permiten instalar 12 paneles con separación óptima para evitar auto-sombreado.`,
-            `Con un consumo mensual medio de 400 kWh, esta instalación cubre entre el 55% y el 75% de las necesidades eléctricas del hogar.`,
+            `Vivienda adosada con un <strong>panel solar</strong> avanzado en ${municipio}.`,
+            `Nuestra <strong>empresa</strong> recomienda este sistema de ${fmt(5, 0)} kWp para reducir la <strong>cuenta de la luz</strong> de forma drástica y honesta.`,
+            `Con la <strong>atención</strong> técnica adecuada, los 12 paneles ofrecen un rendimiento excelente bajo el sol de ${provincia}.`,
           ],
           [
-            `Pareado con cubierta mixta en ${municipio}: un faldón sur y otro norte.`,
-            `Se aprovechan los 28 m² del faldón sur para instalar 12 módulos de ${fmt(5, 0)} kWp. El faldón norte queda libre, lo que simplifica el mantenimiento.`,
-            `La orientación sur pura es la más productiva en la latitud de la provincia, maximizando las ${fmt(horas)} horas de sol anuales.`,
+            `Pareado en ${municipio} que apuesta por la <strong>energía fotovoltaica</strong> para blindar su <strong>economía</strong> energética.`,
+            `Se instalan 12 módulos de alta <strong>eficiencia</strong>, logrando un <strong>proyecto</strong> de autoconsumo equilibrado y duradero.`,
+            `La <strong>calidad</strong> del montaje en la provincia garantiza que el sistema rinda según las ${fmt(horas)} horas de sol anuales.`,
           ],
         ],
         h,
@@ -293,7 +294,18 @@ export function LocalInstallationCases({
   const zona = getClimateZone(irrad, horas);
   const housing = housingProfiles[zona];
 
-  const cases = buildCases(h, muniClean, zona, irrad, horas, eurWp, precioLuz, bonIbi, habitantes ? Number(habitantes) : null);
+  const cases = buildCases(
+    h,
+    muniClean,
+    provincia,
+    zona,
+    irrad,
+    horas,
+    eurWp,
+    precioLuz,
+    bonIbi,
+    habitantes ? Number(habitantes) : null
+  );
 
   const yearNow = new Date().getFullYear();
   const ahorroAnual = Math.round(horas / 365 * 5 * 0.80 * 365 * precioLuz * 0.65);

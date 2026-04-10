@@ -274,6 +274,11 @@ export type Database = {
           utm_medium: string | null;
           utm_campaign: string | null;
           ip_hash: string | null;
+          direccion: string | null;
+          codigo_postal: string | null;
+          interes_bateria: string | null;
+          tipo_tejado: string | null;
+          consumo_mensual: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -294,6 +299,11 @@ export type Database = {
           utm_medium?: string | null;
           utm_campaign?: string | null;
           ip_hash?: string | null;
+          direccion?: string | null;
+          codigo_postal?: string | null;
+          interes_bateria?: string | null;
+          tipo_tejado?: string | null;
+          consumo_mensual?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -314,6 +324,11 @@ export type Database = {
           utm_medium?: string | null;
           utm_campaign?: string | null;
           ip_hash?: string | null;
+          direccion?: string | null;
+          codigo_postal?: string | null;
+          interes_bateria?: string | null;
+          tipo_tejado?: string | null;
+          consumo_mensual?: string | null;
           created_at?: string;
           updated_at?: string;
         };

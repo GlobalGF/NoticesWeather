@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { tryParseSlug } from "@/lib/utils/params";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
-import { slugify } from "@/lib/utils/slug";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { cachePolicy } from "@/lib/cache/policy";
@@ -14,9 +15,11 @@ import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { getMunicipioBySlug, getSeoSnapshotBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 import Fallback from "@/components/solar/Fallback";
 import dynamic from "next/dynamic";
 
@@ -154,15 +157,43 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         if (isBlockedSlug(slug)) notFound();
         
         console.info(`[PlacasSolaresMunicipioPage] 2. FETCHING DB for slug: ${slug}`);
-        const [municipio, seoSnapshot] = await Promise.all([
-            getMunicipioBySlug(slug),
-            getSeoSnapshotBySlug(slug)
-        ]);
+        const supabase = await createSupabaseServerClient();
+        
+        // Robust Fetch: Try to find any slug starting with our search term
+        const { data: muniRows, error: muniError } = await supabase
+            .from("municipios_energia")
+            .select("*")
+            .filter("slug", "ilike", `${slug}%`)
+            .limit(20);
 
-        if (!municipio) {
-            console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB`);
+        if (muniError || !muniRows || muniRows.length === 0) {
+            console.warn(`[PlacasSolaresMunicipioPage] 2b. NOT FOUND in DB for: ${slug}`);
             notFound();
         }
+
+        // Find the canonical match
+        const match = (muniRows as any[]).find((m: any) => {
+            const mProvSlug = slugify(m.provincia);
+            return cleanMunicipalitySlug(m.slug, mProvSlug) === rawMunicipio;
+        }) || (muniRows as any[]).find((m: any) => m.slug === rawMunicipio);
+
+        // Fallback to exactly matching the DB slug if no cleaned match found
+        const municipio: any = match || (muniRows as any[]).find((m: any) => m.slug === slug);
+
+        if (!municipio) {
+            console.warn(`[PlacasSolaresMunicipioPage] 2c. NO CLEANED MATCH in candidates`);
+            notFound();
+        }
+
+        const dbProvSlug = slugify(municipio.provincia);
+        const dbMuniSlug = cleanMunicipalitySlug(municipio.slug, dbProvSlug);
+
+        // Canonical Redirect
+        if (slug !== dbMuniSlug) {
+            redirect(`/placas-solares/${dbMuniSlug}`);
+        }
+
+        const seoSnapshot = await getSeoSnapshotBySlug(municipio.slug);
 
         // SANITY CHECK: If critical fields are missing, don't crash, show 404
         if (!municipio.municipio || !municipio.provincia) {
@@ -465,7 +496,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             <div className="sticky top-6">
                                 <LeadForm
                                     municipio={cleanLocationName(municipio.municipio)}
-                                    municipioSlug={slug}
+                                    municipioSlug={dbMuniSlug}
                                     provincia={municipio.provincia}
                                     ahorroEstimado={municipio.ahorro_estimado}
                                     irradiacionSolar={municipio.irradiacion_solar}
@@ -478,6 +509,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         </WeatherProvider>
         );
     } catch (error) {
+        if (isRedirectError(error)) throw error;
         console.error(`[PlacasSolaresMunicipioPage] Fatal crash for ${rawMunicipio}:`, error);
         return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
     }

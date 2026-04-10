@@ -1,10 +1,15 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
+import Fallback from "@/components/solar/Fallback";
 import { getMunicipioBySlug } from "@/lib/data/solar";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
+import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
 import { 
   Sun, 
   Battery as BatteryIcon, 
@@ -73,9 +78,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CalculadoraMunicipioPage({ params }: Props) {
   const { slug } = params;
-  if (isBlockedSlug(slug)) notFound();
-  const data = await getMunicipioBySlug(slug);
-  if (!data) notFound();
+  try {
+    if (isBlockedSlug(slug)) notFound();
+  
+  const supabase = await createSupabaseServerClient();
+  const { data: muniRows, error: muniError } = await supabase
+    .from("municipios_energia")
+    .select("*")
+    .filter("slug", "ilike", `${slug}%`)
+    .limit(20);
+    
+  if (muniError || !muniRows || muniRows.length === 0) {
+    console.warn(`[CalculadoraMunicipioPage] 2b. NOT FOUND in DB for: ${slug}`);
+    notFound();
+  }
+  
+  // Find the canonical match
+  const match = (muniRows as any[]).find((m: any) => {
+    const mProvSlug = slugify(m.provincia);
+    return cleanMunicipalitySlug(m.slug, mProvSlug) === slug;
+  }) || (muniRows as any[]).find((m: any) => m.slug === slug);
+
+  if (!match) notFound();
+
+  const dbProvSlug = slugify(match.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(match.slug, dbProvSlug);
+
+  // Canonical Redirect
+  if (slug !== dbMuniSlug) {
+      redirect(`/calculadoras/${dbMuniSlug}`);
+  }
+
+  const data = match;
 
   const municipio = data.municipio;
 
@@ -124,7 +158,18 @@ export default async function CalculadoraMunicipioPage({ params }: Props) {
           municipio={municipio}
           provincia={data.provincia}
           comunidadAutonoma={data.comunidad_autonoma ?? data.provincia}
-          slug={slug}
+          slug={dbMuniSlug}
+        />
+
+        {/* Honest SEO Content Block */}
+        <ServerSeoBlock
+          municipio={municipio}
+          provincia={data.provincia}
+          irradiacionAnual={data.irradiacion_solar}
+          ahorroEstimado={data.ahorro_estimado}
+          bonificacionIbi={data.bonificacion_ibi}
+          precioMedioLuz={data.precio_medio_luz ?? 0.18}
+          habitantes={data.habitantes}
         />
 
         {/* Section Divider */}
@@ -152,7 +197,7 @@ export default async function CalculadoraMunicipioPage({ params }: Props) {
             return (
               <Link
                 key={calc.id}
-                href={`/calculadoras/${calc.id}/${slug}`}
+                href={`/calculadoras/${calc.id}/${dbMuniSlug}`}
                 className="group relative"
               >
                 <div className="relative h-full flex flex-col bg-white border border-slate-200 rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-1 overflow-hidden">
@@ -196,5 +241,10 @@ export default async function CalculadoraMunicipioPage({ params }: Props) {
         </p>
       </footer>
     </main>
-  );
+    );
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    console.error(`[CalculadoraMunicipioPage] Fatal crash for ${slug}:`, error);
+    return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
+  }
 }

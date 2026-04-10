@@ -1,9 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
+import Fallback from "@/components/solar/Fallback";
 import { getMunicipioBySlug } from "@/lib/data/solar";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import dynamic from "next/dynamic";
 import { BatterySeoBlock } from "@/components/ui/BatterySeoBlock";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
@@ -51,9 +55,38 @@ function getStringHash(str: string): number {
 
 export default async function BateriasMunicipioPage({ params }: Props) {
   const { slug } = params;
-  if (isBlockedSlug(slug)) notFound();
-  const data = await getMunicipioBySlug(slug);
-  if (!data) notFound();
+  try {
+    if (isBlockedSlug(slug)) notFound();
+  
+  const supabase = await createSupabaseServerClient();
+  const { data: muniRows, error: muniError } = await supabase
+    .from("municipios_energia")
+    .select("*")
+    .filter("slug", "ilike", `${slug}%`)
+    .limit(20);
+    
+  if (muniError || !muniRows || muniRows.length === 0) {
+    console.warn(`[BateriasMunicipioPage] 2b. NOT FOUND in DB for: ${slug}`);
+    notFound();
+  }
+  
+  // Find the canonical match
+  const match = (muniRows as any[]).find((m: any) => {
+    const mProvSlug = slugify(m.provincia);
+    return cleanMunicipalitySlug(m.slug, mProvSlug) === slug;
+  }) || (muniRows as any[]).find((m: any) => m.slug === slug);
+
+  if (!match) notFound();
+
+  const dbProvSlug = slugify(match.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(match.slug, dbProvSlug);
+
+  // Canonical Redirect
+  if (slug !== dbMuniSlug) {
+      redirect(`/calculadoras/baterias/${dbMuniSlug}`);
+  }
+
+  const data = match;
 
   const municipio = data.municipio;
   const horasSol = data.horas_sol ?? 2500;
@@ -188,7 +221,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
            municipio={municipio}
            provincia={data.provincia}
            comunidadAutonoma={data.comunidad_autonoma ?? data.provincia}
-           slug={slug}
+           slug={dbMuniSlug}
         />
 
         {/* Lead Capture */}
@@ -214,17 +247,11 @@ export default async function BateriasMunicipioPage({ params }: Props) {
         </p>
       </footer>
     </main>
-  );
+    );
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    console.error(`[BateriasMunicipioPage] Fatal crash for ${slug}:`, error);
+    return <Fallback message="Estamos experimentando dificultades técnicas cargando los datos de este municipio. Por favor, inténtalo de nuevo en unos momentos." />;
+  }
 }
 
-function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
-}

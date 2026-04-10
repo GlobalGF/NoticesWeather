@@ -45,75 +45,76 @@ export function BatterySeoBlock({
   const horas = horasSol ?? 2500;
   const zona = getClimateZone(irrad, horas);
 
-  // ── Introduction variations ──
+  // ── Introduction variations (Honest Keywords) ──
   const intros = [
-    `Instalar una batería solar en ${municipio} es el paso definitivo hacia la independencia energética total. Con ${horas} horas de sol al año, producir energía es fácil; el reto es no regalarla.¹`,
-    `¿Por qué depender de la red eléctrica por la noche si puedes usar tu propio sol en ${municipio}? La acumulación fotovoltaica permite maximizar el aprovechamiento de tu tejado en ${provincia}.`,
-    `En ${municipio}, el potencial de ahorro con baterías ha crecido exponencialmente. Ya no se trata solo de ahorrar instalando placas, sino de gestionar tus excedentes de forma inteligente.`,
-    `La transición energética en ${municipio} entra en una nueva fase: el almacenamiento. Las baterías de litio actuales permiten que tu hogar en ${provincia} sea autónomo incluso cuando el sol se pone.`,
-    `Maximiza tu inversión fotovoltaica en ${municipio}. Almacenar el excedente diario para cubrir los picos de consumo nocturnos es la decisión financiera más acertada hoy en día.`,
+    `Instalar un sistema de baterías con tu **energía solar** en ${municipio} es clave para mejorar la **economía** del hogar. Con ${horas} horas de sol, el **proyecto fotovoltaico** permite que tu **cuenta de la luz** baje incluso de noche.`,
+    `¿Por qué depender de la red si puedes usar tu **luz** guardada en ${municipio}? La **empresa** técnica recomienda **sistemas** de acumulación para maximizar cada **panel** instalado en la provincia de ${provincia}.`,
+    `En ${municipio}, la **atención** al ahorro energético pasa por el almacenamiento. Un **equipo** especializado puede integrar baterías de **calidad** en tu **proyecto solar** para darte autonomía real como **cliente**.`,
+    `La **energía fotovoltaica** en ${municipio} se optimiza con baterías. El **proyecto** de acumulación asegura que tu **sistema** rinda las 24 horas, protegiendo tu **economía** familiar en ${provincia}.`,
+    `Maximiza tu **energía** limpia en ${municipio}. Almacenar el sol en un **equipo** de baterías de **calidad** es la forma más honesta de reducir tu **cuenta de la luz** hoy mismo.`,
   ];
 
-  // ── Expert Climate Advice (Heat impact) ──
+  // ── Expert Climate Advice (Honest/Factual) ──
   const climateAdvice = {
-    surCalido: `Al encontrarnos en una zona de alta radiación como ${municipio}, es fundamental que la batería se instale en un lugar fresco y ventilado. El calor extremo puede acelerar la degradación de las celdas de litio; un buen diseño técnico en ${provincia} siempre prevé esta protección.`,
-    mediterraneo: `El clima de ${municipio} es ideal para la fotovoltaica, pero recuerda que las baterías operan mejor por debajo de los 30°C. Recomendamos ubicaciones protegidas del sol directo para mantener la garantía y eficiencia a largo plazo.`,
-    atlantico: `En ${municipio}, la humedad y las temperaturas suaves son benignas para la electrónica de potencia, pero es vital asegurar un entorno estanco para evitar condensaciones en los terminales de la batería.`,
-    continental: `Los contrastes térmicos de ${provincia} exigen que el sistema de gestión de la batería (BMS) sea de alta calidad para equilibrar las celdas tanto en olas de calor como en heladas invernales en ${municipio}.`,
+    surCalido: `Al ser una zona de alta **energía solar** como ${municipio}, tu **empresa** debe instalar la batería en un lugar fresco. La **calidad** de los **sistemas** de litio se mantiene mejor si el **equipo** está protegido del calor extremo de ${provincia}.`,
+    mediterraneo: `El clima de ${municipio} es ideal para la **energía fotovoltaica**, pero cada **panel** y batería requiere **atención** térmica. Recomendamos que el **proyecto** prevea una ubicación sombreada para no afectar a tu **economía** por degradación.`,
+    atlantico: `En ${municipio}, la **luz** ambiental es constante. El **equipo** técnico debe asegurar que el **sistema fotovoltaico** y sus baterías tengan protección contra la humedad de ${provincia} para mantener la **calidad** del servicio.`,
+    continental: `Los contrastes de ${provincia} exigen que el **proyecto solar** en ${municipio} use baterías con un BMS de alta **calidad**, garantizando que el **cliente** ahorre en su **cuenta de la luz** tanto en invierno como en verano.`,
   };
 
-  // ── Urban Context ──
   const habCount = habitantes || 0;
   const urbanContext = habCount > 50000
-    ? `En entornos urbanos como ${municipio}, las baterías compactas de pared son la solución preferida para ahorrar en comunidades de vecinos y reducir el término de potencia contratada en horas punta.`
+    ? `En ciudades como ${municipio}, un **sistema** de baterías compacto es la solución de **empresa** más buscada para optimizar la **economía** en pisos y comunidades.`
     : habCount < 5000
-      ? `En zonas rurales y unifamiliares de ${municipio}, las baterías de alta capacidad permiten incluso la desconexión total de la red o la alimentación de naves agrícolas con excedentes diarios.`
-      : `El crecimiento de viviendas pareadas en ${municipio} hace que sistemas híbridos con acumulación sean los más rentables para familias que teletrabajan y consumen energía las 24 horas.`;
+      ? `En zonas rurales de ${municipio}, el **equipo** de acumulación permite una independencia casi total, haciendo que tu **proyecto fotovoltaico** sea el pilar de tu **energía** diaria.`
+      : `El crecimiento de la **energía solar** en ${municipio} favorece los **sistemas** híbridos. Un **cliente** con batería ve cómo su **cuenta de la luz** se reduce drásticamente con una instalación de **calidad**.`;
 
-  // ── Data paragraphs ──
-  const dataText = `Con una irradiación de ${irrad} kWh/m², cada metro cuadrado de tu instalación en ${municipio} es una mina de oro energético. Sin batería, perderías hasta el 60% de esa producción si no estás en casa durante el día.`;
+  const dataText = `Con una irradiación de ${irrad} kWh/m² en ${municipio}, cada **panel** fotovoltaico es una fuente de **luz** inagotable. Sin batería, tu **sistema** desperdiciaría excedentes que son vitales para tu **economía**.`;
 
-  // ── Assemble ──
   const intro = pick(intros, hashId, 0);
   const expertAdvice = climateAdvice[zona];
-  const closing = `Si buscas rentabilidad y seguridad, dimensionar correctamente tu almacenamiento en ${municipio} es clave para amortizar el equipo en menos de 8 años.`;
+  const closing = `Si buscas un **proyecto** serio, dimensionar tu **sistema** en ${municipio} con **atención** profesional es el mejor camino para tu **cuenta de la luz**.`;
 
   return (
     <div className="space-y-6">
-      <section className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
-        <h2 className="text-2xl font-black mb-6">¿Realmente compensa la batería en {municipio}?</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <p className="text-slate-600 leading-relaxed font-medium">
+      <section className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border border-slate-100">
+        <h2 className="text-2xl md:text-3xl font-black mb-8 tracking-tight">¿Compensa la batería solar en {municipio}?</h2>
+        <div className="grid md:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <p className="text-slate-600 leading-relaxed font-medium text-base md:text-lg">
               {intro}
             </p>
-            <p className="text-slate-600 leading-relaxed text-sm">
+            <p className="text-slate-600 leading-relaxed text-sm border-l-4 border-blue-500 pl-4 py-1 italic">
               {urbanContext}
             </p>
           </div>
-          <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 flex flex-col justify-center">
-            <p className="text-amber-900 font-bold mb-2 flex items-center gap-2">
-              <span className="text-xl">🌡️</span> Consejo de experto en {municipio}:
+          <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100 flex flex-col justify-center relative overflow-hidden">
+            <div className="absolute -right-8 -bottom-8 opacity-10">
+               <svg className="w-32 h-32 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+            </div>
+            <p className="text-blue-900 font-black mb-4 flex items-center gap-2 uppercase tracking-widest text-[10px]">
+               Atención Técnica en {municipio}:
             </p>
-            <p className="text-sm text-amber-800 italic leading-relaxed">
+            <p className="text-base text-blue-800 font-medium leading-relaxed italic relative z-10">
               "{expertAdvice}"
             </p>
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-50 rounded-3xl p-8 border border-slate-200">
-        <div className="flex flex-col md:flex-row gap-8 items-center">
+      <section className="bg-slate-950 rounded-[2.5rem] p-8 md:p-12 border border-slate-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]" />
+        <div className="flex flex-col md:flex-row gap-12 items-center relative z-10">
           <div className="flex-1">
-            <h3 className="text-xl font-bold mb-3 text-slate-800">El dato técnico: {irrad} kWh/m²</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <h3 className="text-xl font-black mb-4 text-white tracking-tight">Análisis del Proyecto: {irrad} kWh/m²</h3>
+            <p className="text-slate-400 text-sm md:text-base leading-relaxed font-medium">
               {dataText} {closing}
             </p>
           </div>
-          <div className="shrink-0 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center min-w-[160px]">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Independencia</p>
-            <p className="text-4xl font-black text-fuchsia-600">+70%</p>
-            <p className="text-[10px] text-slate-500 mt-1">Estimada en {provincia}</p>
+          <div className="shrink-0 bg-white/5 backdrop-blur-md p-6 rounded-[2rem] border border-white/10 text-center min-w-[200px]">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Autonomía Real</p>
+            <p className="text-5xl font-black text-blue-400 tracking-tighter">+70%</p>
+            <p className="text-[10px] text-slate-500 font-bold mt-2 uppercase">Estimada en {provincia}</p>
           </div>
         </div>
       </section>

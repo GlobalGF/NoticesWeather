@@ -11,6 +11,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
+import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 
 export const revalidate = 21600; // 6 hours
 
@@ -30,16 +31,21 @@ export async function GET(_req: NextRequest, context?: Params): Promise<Response
 
     const supabase = createSupabaseAdminClient();
 
-    type QueueRow = { slug: string; ruta_tipo: string | null; published_at: string | null };
+    type QueueRow = { 
+        slug: string; 
+        ruta_tipo: string | null; 
+        published_at: string | null;
+        municipios_energia?: { provincia: string } | null;
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: items, error } = (await supabase
         .from("publish_queue")
-        .select("slug, ruta_tipo, published_at")
+        .select("slug, ruta_tipo, published_at, municipios_energia(provincia)")
         .eq("comunidad", comunidad)
         .eq("status", "published")
         .order("priority_score", { ascending: false })
-        .limit(30000)) as { data: QueueRow[] | null; error: { message: string } | null };
+        .limit(30000)) as { data: any[] | null; error: { message: string } | null };
 
     if (error) {
         console.error("[sitemap]", comunidad, error.message);
@@ -69,8 +75,12 @@ export async function GET(_req: NextRequest, context?: Params): Promise<Response
             ? item.published_at.split("T")[0]
             : new Date().toISOString().split("T")[0];
 
+        const provName = item.municipios_energia?.provincia || "";
+        const provSlug = slugify(provName);
+        const cleanSlug = provName ? cleanMunicipalitySlug(item.slug, provSlug) : item.slug;
+
         return ROUTE_CONFIG.map((config) => {
-            const loc = `${SITE_URL}/${config.type}/${item.slug}`;
+            const loc = `${SITE_URL}/${config.type}/${cleanSlug}`;
             return `  <url>
     <loc>${escapeXml(loc)}</loc>
     <lastmod>${lastmod}</lastmod>

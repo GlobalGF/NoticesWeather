@@ -145,32 +145,51 @@ export function AntiCommercialWarning({ municipio, irradiacionAnual, horasSol }:
   const closing = pick(cfg.closing(muniClean), h, 2);
   const checklist = pick(checklistVariations, h, 3);
 
-  return (
-    <section className="bg-slate-50 rounded-2xl border border-slate-200 p-6 md:p-8 mt-6 mb-8 text-left shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 shadow-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">
-            {title}
-          </h3>
-          <p className="text-slate-600 text-sm mb-4 leading-relaxed">
-            {intro}
-          </p>
-          <ul className="text-slate-600 text-sm space-y-3 mb-5">
-            {checklist.map((item, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <svg className="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
-                <span><strong>{item.bold}</strong> {item.text}</span>
-              </li>
-            ))}
-          </ul>
+  const cardClasses = "bg-gradient-to-br from-slate-50 to-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-10 mt-10 mb-12 text-left shadow-2xl shadow-slate-200/30 relative overflow-hidden font-manrope";
 
-          <p className="text-slate-500 text-xs bg-white rounded-lg p-3 border border-slate-100 flex items-center gap-2">
-            <svg className="w-4 h-4 text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            {closing}
-          </p>
+  return (
+    <section className={cardClasses}>
+      <div className="absolute top-0 right-0 p-8 opacity-[0.03] rotate-12">
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xl shadow-blue-500/20 rotate-3 group-hover:rotate-0 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </div>
+          
+          <div className="flex-1">
+            <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight leading-tight">
+              {title}
+            </h3>
+            <p className="text-slate-600 text-lg mb-8 leading-relaxed font-medium">
+              {intro}
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
+              {checklist.map((item, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="mt-1">
+                    <svg className="h-6 w-6 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
+                  </div>
+                  <div className="text-sm">
+                    <strong className="block text-slate-900 font-black mb-1 text-base uppercase tracking-wide">{item.bold}</strong>
+                    <span className="text-slate-600 leading-relaxed font-medium">{item.text}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-blue-50/50 rounded-2xl p-5 border border-blue-100 flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              </div>
+              <p className="text-slate-700 text-sm font-bold leading-relaxed">
+                {closing}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

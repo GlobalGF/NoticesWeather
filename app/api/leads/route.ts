@@ -72,6 +72,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const slug = typeof body.municipio_slug === "string" ? body.municipio_slug : null;
     const provincia = typeof body.provincia === "string" ? body.provincia : "";
     const email = typeof body.email === "string" && body.email.includes("@") ? body.email.trim() : null;
+    const codigo_postal = typeof body.codigo_postal === "string" ? body.codigo_postal.trim() : null;
+    const direccion = typeof body.direccion === "string" ? body.direccion.trim() : null;
 
     /* Extra fields from LeadCaptureForm */
     const tejado = typeof body.tejado === "string" ? body.tejado : null;
@@ -131,24 +133,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const ipHash = hashIp(rawIp);
 
     /* -- Insert lead -- */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const leadData: any = {
+        nombre: nombre.trim(),
+        telefono,
+        email,
+        codigo_postal,
+        direccion,
+        interes_bateria: bateria,
+        tipo_tejado: tejado,
+        consumo_mensual: consumoMensual,
+        tipo_vivienda: tipo,
+        consumo_kwh: consumo,
+        municipio_nombre: municipio,
+        municipio_slug: slug,
+        provincia,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        ip_hash: ipHash,
+        estado: "nuevo",
+    };
+
     const { data: inserted, error: insertError } = (await supabase
         .from("leads")
-        .insert({
-            nombre: nombre.trim(),
-            telefono,
-            email,
-            tipo_vivienda: tipo,
-            consumo_kwh: consumo,
-            municipio_nombre: municipio,
-            municipio_slug: slug,
-            provincia,
-            utm_source: utmSource,
-            utm_medium: utmMedium,
-            utm_campaign: utmCampaign,
-            ip_hash: ipHash,
-            estado: "nuevo",
-        } as any)
+        .insert(leadData)
         .select("id")
         .single()) as any;
 
@@ -165,12 +173,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 🔆 <b>Nuevo Lead Solar</b>
 <b>Nombre:</b> ${nombre.trim()}
 <b>Teléfono:</b> ${telefono}
+<b>Email:</b> ${email || "—"}
+<b>C.P.:</b> ${codigo_postal || "—"}
+<b>Dirección:</b> ${direccion || "—"}
 <b>Municipio:</b> ${municipio} (${provincia})
 <b>Tipo:</b> ${tipo ?? "—"}
-<b>Consumo:</b> ${consumo ? consumo + " kWh/año" : "—"}
-${tejado ? `<b>Tejado:</b> ${tejado}` : ""}
-${bateria ? `<b>Batería:</b> ${bateria}` : ""}
-${email ? `<b>Email:</b> ${email}` : ""}
+<b>Consumo Anual:</b> ${consumo ? consumo + " kWh/año" : "—"}
+<b>Consumo Mes:</b> ${consumoMensual || "—"}
+<b>Tejado:</b> ${tejado || "—"}
+<b>Batería:</b> ${bateria || "—"}
 
 <i>Fuente: ${referer || "directo"}</i>
     `.trim();
@@ -186,12 +197,6 @@ ${email ? `<b>Email:</b> ${email}` : ""}
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
         const resend = new Resend(resendKey);
-        const extraLines = [
-            tejado ? `Tejado: ${tejado}` : null,
-            bateria ? `Interés baterías: ${bateria}` : null,
-            consumoMensual ? `Consumo mensual: ${consumoMensual}` : null,
-            email ? `Email cliente: ${email}` : null,
-        ].filter(Boolean).join("\n");
 
         resend.emails.send({
             from: "SolaryEco Leads <onboarding@resend.dev>",
@@ -203,11 +208,16 @@ ${email ? `<b>Email:</b> ${email}` : ""}
                 `ID: ${inserted.id}`,
                 `Nombre: ${nombre.trim()}`,
                 `Teléfono: ${telefono}`,
+                `Email: ${email || "—"}`,
+                `Código Postal: ${codigo_postal || "—"}`,
+                `Dirección: ${direccion || "—"}`,
                 `Municipio: ${municipio}`,
                 `Provincia: ${provincia}`,
                 `Tipo vivienda: ${tipo ?? "—"}`,
                 `Consumo anual: ${consumo ? consumo + " kWh" : "—"}`,
-                extraLines,
+                `Consumo mensual: ${consumoMensual || "—"}`,
+                `Tipo Tejado: ${tejado || "—"}`,
+                `Interés Baterías: ${bateria || "—"}`,
                 ``,
                 `Fuente: ${referer || "directo"}`,
                 `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,

@@ -71,14 +71,14 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
       duration: "1–3 días",
       icon: "1",
       detail: pick([
-        `Un técnico certificado visita tu vivienda en ${municipio} para analizar la cubierta: orientación, inclinación, superficie disponible y posibles sombras de edificios colindantes o vegetación. Se realizan mediciones con inclinómetro y, en instalaciones grandes, con dron o escáner lidar 3D.`,
-        `El instalador realiza un estudio solar personalizado de tu tejado en ${municipio}: mide la superficie útil, identifica sombras de chimeneas, antenas o árboles, y determina la orientación e inclinación óptimas. Los estudios más completos incluyen simulación 3D con software tipo PVsyst o Helioscope.`,
-        `El primer paso es un diagnóstico en campo de tu cubierta en ${municipio}. El técnico verifica el estado estructural del tejado, la presencia de amianto (uralita), la orientación respecto al sur y el espacio libre para los paneles. Con estos datos elabora un diseño preliminar y un presupuesto detallado.`,
+        `Un técnico de nuestro **equipo** visita tu vivienda en ${municipio} para realizar el **proyecto** inicial: analiza orientación, superficie y cada **panel** ideal para tu tejado. Este estudio de **calidad** asegura que la **energía solar** se aproveche al máximo.`,
+        `El instalador elabora un **proyecto fotovoltaico** personalizado para tu tejado en ${municipio}: identifica sombras y determina cómo optimizar la **luz** para que tu **empresa** u hogar empiece a ahorrar de forma veraz.`,
+        `El primer paso es un diagnóstico de **calidad** en tu cubierta de ${municipio}. El **equipo** técnico verifica el espacio para el **sistema** y la orientación óptima para que la **energía** generada baje tu **cuenta de la luz**.`,
       ], h, 10),
       tip: pick([
-        "Pide siempre un estudio de sombras 3D antes de firmar. Un buen instalador lo incluye sin coste.",
-        "Solicita que el presupuesto detalle potencia de paneles, modelo de inversor y garantías por separado.",
-        "Compara al menos 2–3 presupuestos de instaladores diferentes en la provincia antes de decidir.",
+        "Pide siempre un proyecto técnico detallado antes de firmar para asegurar la calidad del equipo.",
+        "Solicita que el presupuesto de tu empresa instaladora deslose cada panel y el modelo de inversor.",
+        "Compara la atención al cliente de varios instaladores en la provincia antes de decidir tu sistema.",
       ], h, 11),
     },
     {
@@ -113,14 +113,14 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
       duration: "1–3 días",
       icon: "4",
       detail: pick([
-        `El equipo de instaladores monta la estructura de soporte sobre la cubierta, fija los paneles fotovoltaicos, instala el inversor (normalmente junto al cuadro eléctrico principal) y realiza el conexionado eléctrico. En viviendas de ${municipio} con cubierta inclinada, el montaje típico se completa en 1–2 días laborables. Para cubiertas planas con estructura soporte elevada, puede extenderse a 3 días.`,
-        `La instalación física incluye: anclaje de la estructura al tejado (tornillería inox con sellado de juntas), colocación de paneles, tendido del cableado DC hasta el inversor, conexión al cuadro de protecciones y puesta a tierra. Un equipo de 2–3 técnicos completa una instalación residencial estándar en ${municipio} en 1–2 jornadas.`,
-        `El proceso de montaje en ${municipio} sigue un protocolo estricto: primero se impermeabiliza la zona de anclaje, luego se colocan los carriles de aluminio, se montan los paneles y se cablea en serie/paralelo hasta el inversor. La conexión al cuadro general del hogar es el último paso antes de la puesta en marcha.`,
+        `El **equipo** de montaje fija la estructura de alta **calidad**, instala cada **panel solar** e integra el inversor en tu vivienda de ${municipio}. Un proceso rápido que busca mejorar tu **economía** reduciendo la **cuenta de la luz** desde el primer día.`,
+        `La instalación física de tu **sistema fotovoltaico** en ${municipio} incluye anclajes inoxidables y cableado de **calidad**. Nuestra **empresa** asegura que el montaje cumpla con los estándares de seguridad y eficiencia.`,
+        `El proceso en ${municipio} sigue un protocolo de **atención** técnica estricto: se impermeabiliza la zona y se montan los **paneles** fotovoltaicos para que el flujo de **energía solar** sea constante y duradero.`,
       ], h, 40),
       tip: pick([
-        "El instalador debe entregar un certificado de instalación eléctrica (CIE) firmado por un electricista autorizado.",
-        "Verifica que la estructura de montaje es de aluminio anodizado: resiste mejor la intemperie que el acero galvanizado.",
-        "Asegúrate de que incluyen protecciones DC (fusibles y seccionador) entre los paneles y el inversor.",
+        "Asegura que tu empresa instaladora te entregue el certificado de equipo firmado por un técnico.",
+        "Verifica que el panel y la estructura sean de alta calidad para resistir la intemperie en la provincia.",
+        "Exige que el sistema incluya protecciones para la cuenta de la luz ante picos de tensión.",
       ], h, 41),
     },
     {
@@ -160,6 +160,12 @@ function fixStep6Detail(detail: string, horasSol: number | null): string {
 
 /* ── Component ──────────────────────────────────────────────────── */
 
+import { parseMarkdown } from "@/lib/utils/text";
+
+// ... (cleanName, hash, pick remain same)
+
+/* ── Component ──────────────────────────────────────────────────── */
+
 export function InstallationProcessTimeline({
   municipio,
   provincia,
@@ -178,66 +184,81 @@ export function InstallationProcessTimeline({
   const precioMedio = precioInstalacionMedio ? Number(precioInstalacionMedio) : null;
 
   const { steps: rawSteps, urbanContext } = buildSteps(muniClean, provClean, comClean, h, bonIbi, precioMedio, habitantes ? Number(habitantes) : null);
-
-  // Fix step 6 detail with actual sun hours
   const steps = rawSteps.map((s, i) => i === 5 ? { ...s, detail: fixStep6Detail(s.detail, horasSol) } : s);
 
   const totalDays = "30–60 días";
   const yearNow = new Date().getFullYear();
 
-  const timelineTitles = [
-    `Cómo instalar placas solares en ${muniClean} — Proceso completo ${yearNow}`,
-    `Guía de instalación fotovoltaica en ${muniClean}: de 0 a generar en ${totalDays}`,
-    `Instala paneles solares en ${muniClean} paso a paso (${yearNow})`,
-    `${totalDays} para empezar a ahorrar: guía de instalación solar en ${muniClean}`,
-  ];
+  const title = pick([
+    `Hoja de ruta solar para ${muniClean} — Guía ${yearNow}`,
+    `Cómo instalar placas solares en ${muniClean} paso a paso`,
+    `Tiempos y trámites de instalación en ${muniClean}`,
+  ], h, 1);
 
   return (
-    <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <section className="bg-gradient-to-br from-white to-slate-50/50 rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 font-manrope mt-10 overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+      
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-100">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 text-xs">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </span>
-          <p className="text-xs font-bold tracking-widest uppercase text-indigo-600">Guía paso a paso</p>
+      <div className="px-8 py-10 md:px-12 border-b border-slate-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <p className="text-[11px] font-black tracking-[0.2em] uppercase text-indigo-600">Proceso Verificado ${yearNow}</p>
         </div>
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-          {pick(timelineTitles, h, 3)}
+        <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight mb-4">
+          {title}
         </h2>
-        <p className="mt-1.5 text-sm text-slate-500">
-          {urbanContext} Plazo total estimado: <strong>{totalDays}</strong>.
-          {comClean && <> Normativa aplicable en {comClean}.</>}
-        </p>
+        <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6">
+           <p className="text-indigo-900 leading-relaxed font-bold italic text-base">
+            "{urbanContext}"
+          </p>
+          <div className="mt-4 flex items-center gap-4">
+             <span className="px-3 py-1 bg-white border border-indigo-100 rounded-lg text-xs font-black text-indigo-600 uppercase">
+                Plazo estimado: {totalDays}
+             </span>
+             <span className="text-[11px] text-indigo-400 font-bold uppercase tracking-widest">
+                Normativa {comClean}
+             </span>
+          </div>
+        </div>
       </div>
 
       {/* Timeline */}
-      <div className="px-6 py-4">
+      <div className="px-8 py-10 md:px-12">
         <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200" aria-hidden />
+          {/* Vertical line with gradient */}
+          <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-gradient-to-b from-indigo-500 via-blue-400 to-slate-200 rounded-full" aria-hidden />
 
-          <div className="space-y-0">
+          <div className="space-y-12">
             {steps.map((step, i) => (
-              <div key={step.number} className="relative flex gap-4 pb-6 last:pb-0">
-                {/* Circle */}
-                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 border-2 border-indigo-200 shadow-sm text-sm font-bold text-indigo-700">
+              <div key={step.number} className="relative flex gap-8 group">
+                {/* Circle with glow */}
+                <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-indigo-500 shadow-xl shadow-indigo-200/50 text-base font-black text-indigo-600 transition-transform group-hover:scale-110 group-hover:rotate-3">
                   {step.number}
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Paso {step.number}</span>
-                    <span className="text-[10px] text-slate-400 font-medium">· {step.duration}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.15em]">Fase {step.number}</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                    <span className="text-[11px] text-slate-400 font-black uppercase tracking-widest">{step.duration}</span>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900 mb-2">{step.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{step.detail}</p>
+                  <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">{step.title}</h3>
+                  <div className="text-lg text-slate-600 leading-relaxed font-medium">
+                    {parseMarkdown(step.detail)}
+                  </div>
 
                   {step.tip && (
-                    <div className="mt-3 rounded-lg bg-amber-50 border border-amber-100 px-3 py-2.5">
-                      <p className="text-xs text-amber-800 leading-relaxed">
-                        <span className="font-bold">Consejo:</span> {step.tip}
+                    <div className="mt-6 rounded-2xl bg-amber-50 border border-amber-100 p-5 relative overflow-hidden group/tip">
+                      <div className="absolute top-0 right-0 p-4 opacity-[0.05] grayscale group-hover/tip:grayscale-0 transition-all">
+                         <svg className="w-12 h-12 text-amber-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10s10-4.477 10-10a10 10 0 0 0-10-10zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2v2h-2v-2zm0 4h2v5h-2v-5z"/></svg>
+                      </div>
+                      <p className="text-sm font-bold text-amber-900 leading-relaxed relative z-10">
+                        <span className="uppercase tracking-[0.1em] text-[10px] block mb-1 text-amber-600">Consejo Experto</span>
+                        {step.tip}
                       </p>
                     </div>
                   )}
@@ -249,11 +270,9 @@ export function InstallationProcessTimeline({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
-        <p className="text-[10px] text-slate-400 leading-relaxed">
-          Plazos orientativos para instalaciones residenciales en {muniClean} ({provClean}).
-          Los tiempos de tramitación pueden variar según la carga de la Delegación de Industria
-          de {provClean} y la distribuidora eléctrica de la zona. RD 244/2019 · Ley 7/2021 de Cambio Climático.
+      <div className="px-8 py-6 bg-slate-100 border-t border-slate-200">
+        <p className="text-[11px] text-slate-400 leading-relaxed font-medium text-center">
+          *Plazos orientativos para instalaciones en {muniClean}. RD 244/2019 · {yearNow} · Ingeniería SolaryEco.
         </p>
       </div>
     </section>

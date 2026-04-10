@@ -253,10 +253,14 @@ export function LiveSolarCalculator({
       {/* CTA */}
       <div className="px-6 pb-5">
         <a
-          href="#lead-form"
-          className="block w-full rounded-xl bg-amber-400 px-6 py-3.5 text-center text-sm font-bold text-slate-900 shadow hover:bg-amber-500 active:scale-[0.98] transition-all"
+          href="#solicitar"
+          className="group relative block w-full rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-4 text-center text-sm font-black text-slate-900 shadow-xl shadow-amber-500/20 hover:from-amber-500 hover:to-amber-600 active:scale-[0.98] transition-all overflow-hidden"
         >
-          Solicitar presupuesto para {result.recommendedPanels} paneles en {municipio} →
+          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            Solicitar presupuesto para {result.recommendedPanels} paneles en {municipio}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
         </a>
       </div>
 

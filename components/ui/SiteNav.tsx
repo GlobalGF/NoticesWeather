@@ -74,11 +74,6 @@ export function SiteNav() {
   const getLinkHref = (link: { href: string; sticky: boolean }) => {
     if (!link.sticky || !context.slug) return link.href;
 
-    // Special case for batteries - redirected to specialized calculator
-    if (link.href === "/baterias-solares") {
-      return `/calculadoras/baterias/${context.slug}`;
-    }
-
     // Special case for Subsidies - needs full path
     if (link.href === "/subvenciones-solares") {
       if (context.ccaa && context.prov) {

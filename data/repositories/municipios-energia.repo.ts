@@ -202,21 +202,21 @@ export const getMunicipiosEnergiaCount = cache(async (): Promise<number> => {
   return cachedCount();
 });
 
-export async function getMunicipiosEnergiaSlugsRange(from: number, to: number): Promise<string[]> {
+export async function getMunicipiosEnergiaSlugsRange(from: number, to: number): Promise<Array<{ slug: string; provincia: string }>> {
   const safeFrom = Math.max(0, from);
   const safeTo = Math.max(safeFrom, to);
 
   const cachedQuery = unstable_cache(
     async () => {
       if (!hasSupabaseEnv()) {
-        return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => row.slug);
+        return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => ({ slug: row.slug, provincia: row.provincia }));
       }
 
       try {
         const supabase = await createSupabaseServerClient();
         const { data, error } = await supabase
           .from("municipios_energia")
-          .select("slug")
+          .select("slug, provincia")
           .order("slug", { ascending: true })
           .range(safeFrom, safeTo);
 
@@ -229,20 +229,23 @@ export async function getMunicipiosEnergiaSlugsRange(from: number, to: number): 
               to: safeTo
             });
           }
-          return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => row.slug);
+          return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => ({ slug: row.slug, provincia: row.provincia }));
         }
 
-        return (data as Array<{ slug: string }>).map((row) => row.slug);
+        return (data as Array<{ slug: string; provincia: string }>).map((row) => ({
+          slug: row.slug,
+          provincia: row.provincia
+        }));
       } catch (error) {
         console.error("[Supabase] municipios_energia slug range unexpected error", {
           from: safeFrom,
           to: safeTo,
           error
         });
-        return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => row.slug);
+        return fallbackRows.slice(safeFrom, safeTo + 1).map((row) => ({ slug: row.slug, provincia: row.provincia }));
       }
     },
-    [`municipios-energia:slug-range:${safeFrom}:${safeTo}`],
+    [`municipios-energia:slug-range-v2:${safeFrom}:${safeTo}`],
     { revalidate: cachePolicy.data.municipalitiesIndex, tags: [cacheTags.municipiosEnergia] }
   );
 
