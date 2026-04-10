@@ -24,14 +24,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       title: `Placas solares en ${name}`,
       description: `Paneles y placas solares en ${name}: irradiación, precio de instalación fotovoltaica, ahorro en factura y bonificaciones IBI/ICIO. ${stats?.totalMunicipios ?? ''} municipios disponibles.`,
       pathname: `/placas-solares?provincia=${encodeURIComponent(provincia)}`,
-      noIndex: true,
     });
   }
   return buildMetadata({
     title: "Placas solares en España",
     description: "Compara precios de instalación de placas solares fotovoltaicas en tu municipio. Paneles solares, rentabilidad energética, subvenciones y bonificaciones IBI en España.",
     pathname: "/placas-solares",
-    noIndex: true,
   });
 }
 
@@ -62,7 +60,11 @@ export default async function PlacasSolaresIndexPage({ searchParams }: Props) {
             <img
               src={meta.backgroundUrl}
               alt={provStats.provinceName}
+              width={1920}
+              height={1080}
               className="w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />

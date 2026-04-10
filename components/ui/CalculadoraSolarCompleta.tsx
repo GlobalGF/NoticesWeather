@@ -177,8 +177,8 @@ export function CalculadoraSolarCompleta({
         <div className="grid md:grid-cols-2 gap-4">
           {/* Tipo vivienda */}
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-            <label className="text-sm font-bold text-slate-700 mb-3 block">Tipo de vivienda</label>
-            <div className="grid grid-cols-3 gap-2">
+            <label htmlFor="habitation-type" className="text-sm font-bold text-slate-700 mb-3 block">Tipo de vivienda</label>
+            <div id="habitation-type" className="grid grid-cols-3 gap-2">
               {(Object.entries(VIVIENDA_CONFIG) as [TipoVivienda, typeof VIVIENDA_CONFIG["piso"]][]).map(([key, cfg]) => (
                 <button
                   key={key}
@@ -198,8 +198,8 @@ export function CalculadoraSolarCompleta({
 
           {/* Modo input: kWh or € */}
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-            <label className="text-sm font-bold text-slate-700 mb-3 block">¿Cómo quieres introducir tu consumo?</label>
-            <div className="flex gap-2 mb-4">
+            <label htmlFor="input-mode-selector" className="text-sm font-bold text-slate-700 mb-3 block">¿Cómo quieres introducir tu consumo?</label>
+            <div id="input-mode-selector" className="flex gap-2 mb-4">
               <button
                 onClick={() => setInputMode("kwh")}
                 className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
@@ -220,28 +220,28 @@ export function CalculadoraSolarCompleta({
             {inputMode === "kwh" ? (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-slate-500">Consumo mensual</span>
+                  <label htmlFor="consumo-range" className="text-xs text-slate-500">Consumo mensual</label>
                   <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
                     <span className="text-xl font-black text-blue-600 tabular-nums">{consumoMensual}</span>
-                    <span className="text-xs font-bold text-blue-400">kWh</span>
+                    <span className="text-xs font-bold text-blue-700">kWh</span>
                   </div>
                 </div>
-                <input type="range" min={80} max={1200} step={10} value={consumoMensual}
-                  onChange={e => setConsumoMensual(+e.target.value)} className="w-full accent-blue-600" />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1"><span>80</span><span>1.200 kWh</span></div>
+                <input id="consumo-range" type="range" min={80} max={1200} step={10} value={consumoMensual}
+                  onChange={e => setConsumoMensual(+e.target.value)} className="w-full accent-blue-600" aria-label="Consumo mensual en kWh" />
+                <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>80</span><span>1.200 kWh</span></div>
               </div>
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-slate-500">Factura mensual</span>
+                  <label htmlFor="factura-range" className="text-xs text-slate-500">Factura mensual</label>
                   <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-100">
                     <span className="text-xl font-black text-amber-600 tabular-nums">{facturaMensual}</span>
-                    <span className="text-xs font-bold text-amber-400">€</span>
+                    <span className="text-xs font-bold text-amber-700">€</span>
                   </div>
                 </div>
-                <input type="range" min={30} max={400} step={5} value={facturaMensual}
-                  onChange={e => setFacturaMensual(+e.target.value)} className="w-full accent-amber-600" />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1"><span>30 €</span><span>400 €</span></div>
+                <input id="factura-range" type="range" min={30} max={400} step={5} value={facturaMensual}
+                  onChange={e => setFacturaMensual(+e.target.value)} className="w-full accent-amber-600" aria-label="Factura mensual en euros" />
+                <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>30 €</span><span>400 €</span></div>
                 <p className="text-[10px] text-slate-400 mt-1">Equivale a ~{consumoKwh} kWh/mes</p>
               </div>
             )}
@@ -252,15 +252,15 @@ export function CalculadoraSolarCompleta({
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-bold text-slate-700">Precio medio electricidad</label>
+              <label htmlFor="precio-luz-range" className="text-sm font-bold text-slate-700">Precio medio electricidad</label>
               <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-100">
                 <span className="text-xl font-black text-amber-600 tabular-nums">{precioLuz.toFixed(2)}</span>
-                <span className="text-xs font-bold text-amber-400">€/kWh</span>
+                <span className="text-xs font-bold text-amber-700">€/kWh</span>
               </div>
             </div>
-            <input type="range" min={0.10} max={0.35} step={0.01} value={precioLuz}
-              onChange={e => setPrecioLuz(+e.target.value)} className="w-full accent-amber-600" />
-            <div className="flex justify-between text-[10px] text-slate-400 mt-1"><span>0,10 €</span><span>0,35 €</span></div>
+            <input id="precio-luz-range" type="range" min={0.10} max={0.35} step={0.01} value={precioLuz}
+              onChange={e => setPrecioLuz(+e.target.value)} className="w-full accent-amber-600" aria-label="Precio medio de electricidad" />
+            <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>0,10 €</span><span>0,35 €</span></div>
             {municipio && <p className="text-[10px] text-blue-500 mt-2 font-medium">Precio medio en {municipio}: {precioMedioLuz.toFixed(3)} €/kWh</p>}
           </div>
 
@@ -293,7 +293,7 @@ export function CalculadoraSolarCompleta({
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 4.5-3 6-1 1-2 2.5-2 4H10c0-1.5-1-3-2-4-1.5-1.5-3-3-3-6a7 7 0 0 1 7-7z"/><path d="M10 21h4"/></svg>
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-black uppercase tracking-widest">Recomendación para ti</h3>
+            <h2 className="text-sm font-black uppercase tracking-widest text-white">Recomendación para ti</h2>
             {rec.map((msg, i) => (
               <p key={i} className="text-sm text-blue-100 leading-relaxed">{msg}</p>
             ))}
@@ -320,12 +320,12 @@ export function CalculadoraSolarCompleta({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
             <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Tamaño sistema</p>
-            <p className="text-2xl font-black text-amber-400">{result.kwp} <span className="text-sm font-bold text-amber-400/60">kWp</span></p>
+            <p className="text-2xl font-black text-amber-600">{result.kwp} <span className="text-sm font-bold text-amber-600/60">kWp</span></p>
             <p className="text-[11px] text-slate-500 mt-1">{result.paneles} paneles · {result.superficieTejado} m²</p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
             <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Producción anual</p>
-            <p className="text-2xl font-black text-blue-400">{result.produccionAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-blue-400/60">kWh</span></p>
+            <p className="text-2xl font-black text-blue-600">{result.produccionAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-blue-600/60">kWh</span></p>
             <p className="text-[11px] text-slate-500 mt-1">Consumo: {result.consumoAnual.toLocaleString("es-ES")} kWh</p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
@@ -341,25 +341,25 @@ export function CalculadoraSolarCompleta({
             </div>
           )}
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-1">Ahorro anual</p>
-            <p className="text-2xl font-black text-emerald-400">{result.ahorroTotalAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-400/60">€</span></p>
-            <p className="text-[11px] text-emerald-500/60 mt-1">Autoconsumo {result.ahorroAutoconsumo}€ + excedentes {result.ingresoExcedentes}€</p>
+            <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Ahorro anual</p>
+            <p className="text-2xl font-black text-emerald-500">{result.ahorroTotalAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-500/70">€</span></p>
+            <p className="text-[11px] text-emerald-600 font-bold mt-1">Autoconsumo {result.ahorroAutoconsumo}€ + excedentes {result.ingresoExcedentes}€</p>
           </div>
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-1">Ahorro 25 años</p>
-            <p className="text-2xl font-black text-emerald-400">{result.ahorro25.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-400/60">€</span></p>
-            <p className="text-[11px] text-emerald-500/60 mt-1">Beneficio neto total</p>
+            <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Ahorro 25 años</p>
+            <p className="text-2xl font-black text-emerald-500">{result.ahorro25.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-500/70">€</span></p>
+            <p className="text-[11px] text-emerald-600 font-bold mt-1">Beneficio neto total</p>
           </div>
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1">Amortización</p>
-            <p className="text-2xl font-black text-amber-400">{result.amortizacion} <span className="text-sm font-bold text-amber-400/60">años</span></p>
-            <p className="text-[11px] text-amber-500/60 mt-1">ROI: {result.roi25}%</p>
+            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Amortización</p>
+            <p className="text-2xl font-black text-amber-600">{result.amortizacion} <span className="text-sm font-bold text-amber-600/70">años</span></p>
+            <p className="text-[11px] text-slate-500 font-medium mt-1">ROI: {result.roi25}%</p>
           </div>
           {subvencionPct > 0 && (
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
-              <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-1">Subvención</p>
-              <p className="text-2xl font-black text-blue-400">-{subvencionPct} <span className="text-sm font-bold text-blue-400/60">%</span></p>
-              <p className="text-[11px] text-blue-500/60 mt-1">Coste final: {result.costeTotal.toLocaleString("es-ES")} €</p>
+              <p className="text-[10px] uppercase tracking-widest text-blue-500 font-bold mb-1">Subvención</p>
+              <p className="text-2xl font-black text-blue-600">-{subvencionPct} <span className="text-sm font-bold text-blue-600/70">%</span></p>
+              <p className="text-[11px] text-blue-600 font-bold mt-1">Coste final: {result.costeTotal.toLocaleString("es-ES")} €</p>
             </div>
           )}
         </div>

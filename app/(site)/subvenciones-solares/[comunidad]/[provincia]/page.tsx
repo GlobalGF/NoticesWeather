@@ -21,7 +21,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `Ayudas placas solares en ${provName}`,
         description: `Consulta las subvenciones autonómicas y las bonificaciones de IBI e ICIO disponibles en cada municipio de ${provName}. Datos actualizados ${new Date().getFullYear()}.`,
         pathname: `/subvenciones-solares/${comunidad}/${provincia}`,
-        noIndex: true,
     });
 }
 

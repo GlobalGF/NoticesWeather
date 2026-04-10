@@ -122,9 +122,9 @@ export default function CalculadoraPlacasSolaresPage() {
               { step: "05", title: "Puesta en marcha", desc: "Empieza a generar tu propia energía verde." }
             ].map((s, i) => (
               <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden group hover:border-blue-300 transition-colors">
-                <span className="text-4xl font-black text-slate-100 absolute -top-2 -right-2 group-hover:text-blue-50 transition-colors">{s.step}</span>
+                <span className="text-4xl font-black text-slate-100 group-hover:text-blue-50/50 transition-colors absolute -top-2 -right-2 select-none">{s.step}</span>
                 <h3 className="text-sm font-bold text-slate-900 mb-2 relative z-10">{s.title}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed relative z-10">{s.desc}</p>
+                <p className="text-xs text-slate-600 leading-relaxed relative z-10 font-medium">{s.desc}</p>
               </div>
             ))}
           </div>

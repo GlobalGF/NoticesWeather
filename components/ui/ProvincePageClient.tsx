@@ -79,15 +79,23 @@ export default function ProvincePageClient({
     router.push(`${baseRoute}?provincia=${slug}`);
   };
 
+  const kpiData = useMemo(() => [
+    { label: "Municipios", value: stats.totalMunicipios.toLocaleString("es-ES"), color: "text-blue-700", bg: "bg-blue-50 border-blue-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg> },
+    { label: "Horas Sol/Año", value: stats.avgSunHours.toLocaleString("es-ES"), color: "text-amber-600", bg: "bg-amber-50 border-amber-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg> },
+    { label: "Radiación", value: `${stats.avgRadiation.toLocaleString("es-ES")} kWh/m²`, color: "text-orange-600", bg: "bg-orange-50 border-orange-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> },
+    { label: "Ahorro Medio", value: `${stats.avgSavings}€/año`, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+    { label: "Bonif. IBI Media", value: `${stats.avgIBI}%`, color: "text-purple-700", bg: "bg-purple-50 border-purple-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
+  ], [stats]);
+
   return (
     <div>
-      {/* ── Province Context Bar: Breadcrumb + Province Switcher ── */}
+      {/* ── Province Context Bar ── */}
       <div className="mx-auto max-w-6xl px-4 -mt-6 relative z-30 mb-8">
         <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
             <Link href="/" className="text-slate-400 hover:text-slate-700 transition-colors font-medium flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               <span className="hidden sm:inline">Inicio</span>
             </Link>
             <svg className="text-slate-300" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
@@ -158,23 +166,16 @@ export default function ProvincePageClient({
       {/* ── Province KPIs ── */}
       <div className="mx-auto max-w-6xl px-4 mb-10">
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          {[
-            { label: "Municipios", value: stats.totalMunicipios.toLocaleString("es-ES"), color: "text-blue-700", bg: "bg-blue-50 border-blue-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg> },
-            { label: "Horas Sol/Año", value: stats.avgSunHours.toLocaleString("es-ES"), color: "text-amber-600", bg: "bg-amber-50 border-amber-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg> },
-            { label: "Radiación", value: `${stats.avgRadiation.toLocaleString("es-ES")} kWh/m²`, color: "text-orange-600", bg: "bg-orange-50 border-orange-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> },
-            { label: "Ahorro Medio", value: `${stats.avgSavings}€/año`, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-            { label: "Bonif. IBI Media", value: `${stats.avgIBI}%`, color: "text-purple-600", bg: "bg-purple-50 border-purple-100", icon: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
-          ].map((kpi) => (
+          {kpiData.map((kpi) => (
             <div key={kpi.label} className={`${kpi.bg} border rounded-2xl p-4 flex flex-col items-center text-center gap-1.5 transition-transform hover:scale-[1.02]`}>
-              <div className={`${kpi.color} opacity-60`}>{kpi.icon}</div>
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">{kpi.label}</p>
+              <div className={`${kpi.color} opacity-80`}>{kpi.icon}</div>
+              <p className="text-[10px] uppercase tracking-widest text-slate-600 font-bold">{kpi.label}</p>
               <p className={`text-xl sm:text-2xl font-black ${kpi.color} tabular-nums`}>{kpi.value}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── City Search Bar ── */}
       <div className="mx-auto max-w-6xl px-4 mb-8">
         <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-5 sm:p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -241,7 +242,7 @@ export default function ProvincePageClient({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
-            {filteredMunicipios.map((m) => (
+            {filteredMunicipios.slice(0, 100).map((m) => (
               <Link
                 key={m.slug}
                 href={`${baseRoute}/${m.slug}`}
@@ -255,6 +256,11 @@ export default function ProvincePageClient({
                 </div>
               </Link>
             ))}
+            {filteredMunicipios.length > 100 && (
+              <div className="col-span-full py-6 text-center">
+                <p className="text-sm text-slate-400">Mostrando los primeros 100 municipios. Usa el buscador para filtrar.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

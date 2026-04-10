@@ -27,14 +27,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       title: `Precio luz hoy en ${name} (PVPC)`,
       description: `Precio de la luz hoy en ${name}: tarifa PVPC en €/kWh hora a hora. Compara precios, tarifas de consumo y potencia contratada. Ahorro en factura y compensación de excedentes solares por municipio.`,
       pathname: `/precio-luz?provincia=${provincia}`,
-      noIndex: true,
     });
   }
   return buildMetadata({
     title: "Precio de la luz hoy hora a hora PVPC",
     description: "Precio de la luz hoy hora a hora con gráfico 24h en vivo. PVPC actualizado de Red Eléctrica: horas baratas, predicción de mañana y cuándo poner la lavadora. Datos REE.",
     pathname: "/precio-luz",
-    noIndex: true,
   });
 }
 

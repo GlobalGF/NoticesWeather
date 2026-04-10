@@ -8,7 +8,6 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Herramientas profesionales para dimensionar tu instalación fotovoltaica: calcula paneles necesarios, capacidad de baterías, compensación de excedentes y financiación solar.",
   pathname: "/calculadoras",
-  noIndex: true,
 });
 
 const CALCULATORS = [

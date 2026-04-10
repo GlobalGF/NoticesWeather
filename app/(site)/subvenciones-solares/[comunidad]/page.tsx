@@ -123,7 +123,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     pathname: `/subvenciones-solares/${parsed}`,
-    noIndex: true,
   });
 }
 
