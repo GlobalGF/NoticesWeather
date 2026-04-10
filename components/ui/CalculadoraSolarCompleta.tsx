@@ -1,10 +1,37 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Sun, 
+  Battery as BatteryIcon, 
+  Zap, 
+  Euro, 
+  ArrowRight, 
+  CheckCircle2, 
+  Info, 
+  Home, 
+  Building2, 
+  Building,
+  TrendingUp,
+  ShieldCheck,
+  Star,
+  Users,
+  Timer,
+  Wallet,
+  Lock,
+  Activity
+} from "lucide-react";
 import { estimateAnnualPvProduction } from "@/calculators/pv-production";
 import { estimateAnnualSavings } from "@/calculators/savings";
 import { estimatePaybackYears } from "@/calculators/payback";
 import { calculateBatteryRecommendation } from "@/calculators/battery-calculator";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 type Props = {
   irradiancia?: number;
@@ -25,10 +52,10 @@ const BATTERY_COST_PER_KWH = 450;
 type TipoVivienda = "piso" | "adosado" | "unifamiliar";
 type InputMode = "kwh" | "eur";
 
-const VIVIENDA_CONFIG: Record<TipoVivienda, { label: string; tejadom2: number; consumoDefecto: number; autoconsumoBase: number }> = {
-  piso:         { label: "Piso / apartamento",  tejadom2: 20,  consumoDefecto: 200, autoconsumoBase: 45 },
-  adosado:      { label: "Adosado / dúplex",    tejadom2: 40,  consumoDefecto: 350, autoconsumoBase: 55 },
-  unifamiliar:  { label: "Unifamiliar / chalet", tejadom2: 80, consumoDefecto: 500, autoconsumoBase: 60 },
+const VIVIENDA_CONFIG: Record<TipoVivienda, { label: string; icon: any; tejadom2: number; consumoDefecto: number; autoconsumoBase: number }> = {
+  piso:         { label: "Piso / Apartamento", icon: Building2, tejadom2: 20,  consumoDefecto: 200, autoconsumoBase: 45 },
+  adosado:      { label: "Adosado / Dúplex", icon: Building, tejadom2: 40,  consumoDefecto: 350, autoconsumoBase: 55 },
+  unifamiliar:  { label: "Unifamiliar / Chalet", icon: Home, tejadom2: 80, consumoDefecto: 500, autoconsumoBase: 60 },
 };
 
 export function CalculadoraSolarCompleta({
@@ -48,6 +75,7 @@ export function CalculadoraSolarCompleta({
   const [precioLuz, setPrecioLuz] = useState(precioMedioLuz);
   const [conBaterias, setConBaterias] = useState(false);
 
+  // Form states
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ nombre: "", telefono: "", email: "", ciudad: "" });
   const [formError, setFormError] = useState<string | null>(null);
@@ -61,7 +89,6 @@ export function CalculadoraSolarCompleta({
   const autoconsumoBase = VIVIENDA_CONFIG[tipoVivienda].autoconsumoBase;
   const autoconsumo = conBaterias ? Math.min(autoconsumoBase + 30, 95) : autoconsumoBase;
 
-  // Solar hours per day (for battery calc)
   const sunHoursDay = irradiancia / 365;
 
   const result = useMemo(() => {
@@ -76,12 +103,10 @@ export function CalculadoraSolarCompleta({
     const ingresoExcedentes = excedentes * COMPENSATION_PRICE;
     const ahorroTotalAnual = ahorroAutoconsumo + ingresoExcedentes;
 
-    // Installation cost: use local data if available, else formula
     const costeSolar = precioInstalacion ?? kwpRound * COST_PER_KWP;
     const superficieTejado = paneles * 2;
     const tejadom2Max = VIVIENDA_CONFIG[tipoVivienda].tejadom2;
 
-    // Battery calculation
     const bat = calculateBatteryRecommendation({
       monthlyConsumptionKwh: consumoKwh,
       installationPowerKw: kwpRound,
@@ -89,31 +114,23 @@ export function CalculadoraSolarCompleta({
       sunHoursPerDay: sunHoursDay,
     });
     const costeBaterias = conBaterias ? bat.requiredCapacityKwh * BATTERY_COST_PER_KWH : 0;
-
-    // Total cost with subvention
     const costeTotal = (costeSolar + costeBaterias) * (1 - subvencionPct / 100);
-
-    // IBI bonus (over 20 years typical)
     const ahorroIbi = bonificacionIbi > 0 ? bonificacionIbi * 20 : 0;
 
     const amortizacion = estimatePaybackYears(costeTotal - ahorroIbi, ahorroTotalAnual);
     const ahorro25 = ahorroTotalAnual * 25 - costeTotal + ahorroIbi;
-
-    // ROI %
     const roi25 = costeTotal > 0 ? ((ahorroTotalAnual * 25 + ahorroIbi - costeTotal) / costeTotal) * 100 : 0;
 
-    // Cumulative for chart
     const cumulativeSin: number[] = [];
     const cumulativeCon: number[] = [];
-    // "Sin baterías" scenario
     const ratioSin = VIVIENDA_CONFIG[tipoVivienda].autoconsumoBase / 100;
     const ahorroSin = estimateAnnualSavings(produccionAnual, ratioSin, precioLuz) + produccionAnual * (1 - ratioSin) * COMPENSATION_PRICE;
     const costeSin = precioInstalacion ?? kwpRound * COST_PER_KWP;
     const costeSinSub = costeSin * (1 - subvencionPct / 100);
-    // "Con baterías" scenario
+    
     const ratioCon = Math.min(VIVIENDA_CONFIG[tipoVivienda].autoconsumoBase + 30, 95) / 100;
     const ahorroCon = estimateAnnualSavings(produccionAnual, ratioCon, precioLuz) + produccionAnual * (1 - ratioCon) * COMPENSATION_PRICE;
-    const costeConBat = costeSinSub + bat.requiredCapacityKwh * BATTERY_COST_PER_KWH * (1 - subvencionPct / 100);
+    const costeConBat = (costeSin + bat.requiredCapacityKwh * BATTERY_COST_PER_KWH) * (1 - subvencionPct / 100);
 
     for (let y = 1; y <= 25; y++) {
       cumulativeSin.push(ahorroSin * y - costeSinSub);
@@ -145,503 +162,482 @@ export function CalculadoraSolarCompleta({
     };
   }, [consumoKwh, precioLuz, autoconsumo, irradiancia, conBaterias, tipoVivienda, sunHoursDay, precioInstalacion, subvencionPct, bonificacionIbi]);
 
-  const maxCum = Math.max(
-    ...result.cumulativeSin.map(Math.abs),
-    ...result.cumulativeCon.map(Math.abs),
-    1
-  );
-
-  // Recommendation engine
-  const rec = useMemo(() => {
-    const msgs: string[] = [];
-    msgs.push(`Te recomendamos instalar ${result.kwp} kWp (${result.paneles} paneles de ${PANEL_W}W).`);
-    if (!result.cabeEnTejado) {
-      msgs.push(`Necesitas ~${result.superficieTejado} m² de tejado, pero un ${VIVIENDA_CONFIG[tipoVivienda].label.toLowerCase()} suele tener ~${result.tejadom2Max} m². Considera reducir el tamaño o un sistema comunitario.`);
-    }
-    if (conBaterias && result.bat.recommendedBatteries > 0) {
-      msgs.push(`Baterías: ${result.bat.recommendedBatteries} × 5 kWh (${result.bat.requiredCapacityKwh.toFixed(1)} kWh útiles). Independencia energética: ${result.bat.energyIndependencePct}%.`);
-    } else if (!conBaterias && result.bat.requiredCapacityKwh > 2) {
-      msgs.push(`Sin baterías, solo aprovechas ~${autoconsumoBase}% de tu producción. Con baterías podrías llegar al ~${autoconsumoBase + 30}%.`);
-    }
-    if (result.amortizacion <= 6) msgs.push("Amortización rápida — excelente inversión.");
-    else if (result.amortizacion <= 10) msgs.push("Amortización en rango normal.");
-    else msgs.push("Amortización larga. Revisa si hay subvenciones disponibles en tu zona.");
-    return msgs;
-  }, [result, conBaterias, tipoVivienda, autoconsumoBase]);
+  const maxCum = Math.max(...result.cumulativeSin.map(Math.abs), ...result.cumulativeCon.map(Math.abs), 1);
 
   return (
-    <div className="space-y-8">
-      {/* ── INPUTS ── */}
-      <div className="space-y-4">
-        {/* Row 1: Tipo vivienda + modo input */}
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Tipo vivienda */}
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-            <label htmlFor="habitation-type" className="text-sm font-bold text-slate-700 mb-3 block">Tipo de vivienda</label>
-            <div id="habitation-type" className="grid grid-cols-3 gap-2">
-              {(Object.entries(VIVIENDA_CONFIG) as [TipoVivienda, typeof VIVIENDA_CONFIG["piso"]][]).map(([key, cfg]) => (
-                <button
-                  key={key}
-                  onClick={() => { setTipoVivienda(key); setConsumoMensual(cfg.consumoDefecto); }}
-                  className={`rounded-xl border-2 px-3 py-3 text-center transition-all text-xs font-bold ${
-                    tipoVivienda === key
-                      ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                  }`}
-                >
-                  <span className="block text-lg mb-1">{key === "piso" ? "🏢" : key === "adosado" ? "🏘️" : "🏡"}</span>
-                  {cfg.label.split(" / ")[0]}
-                </button>
-              ))}
-            </div>
+    <div className="space-y-12">
+      {/* ── TOP HEADER / AI INSIGHT ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-6 md:p-10 text-white shadow-2xl border border-white/10"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-amber-500/5" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px]" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 space-y-4 text-center md:text-left">
+             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
+               <span className="relative flex h-2 w-2">
+                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+               </span>
+               Análisis en Tiempo Real para {municipio}
+             </div>
+             <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+               Tu rentabilidad solar es <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">imparable</span>.
+             </h2>
+             <p className="text-slate-400 text-base md:text-lg font-light leading-relaxed max-w-2xl">
+               Basado en tu consumo y la irradiación local ({irradiancia} kWh/m²), podrías ahorrar <span className="text-white font-bold">{result.ahorroTotalAnual.toLocaleString("es-ES")}€</span> este mismo año.
+             </p>
           </div>
-
-          {/* Modo input: kWh or € */}
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-            <label htmlFor="input-mode-selector" className="text-sm font-bold text-slate-700 mb-3 block">¿Cómo quieres introducir tu consumo?</label>
-            <div id="input-mode-selector" className="flex gap-2 mb-4">
-              <button
-                onClick={() => setInputMode("kwh")}
-                className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
-                  inputMode === "kwh"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                }`}
-              >kWh / mes</button>
-              <button
-                onClick={() => setInputMode("eur")}
-                className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
-                  inputMode === "eur"
-                    ? "border-amber-500 bg-amber-50 text-amber-700"
-                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                }`}
-              >€ / mes</button>
-            </div>
-            {inputMode === "kwh" ? (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="consumo-range" className="text-xs text-slate-500">Consumo mensual</label>
-                  <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
-                    <span className="text-xl font-black text-blue-600 tabular-nums">{consumoMensual}</span>
-                    <span className="text-xs font-bold text-blue-700">kWh</span>
-                  </div>
-                </div>
-                <input id="consumo-range" type="range" min={80} max={1200} step={10} value={consumoMensual}
-                  onChange={e => setConsumoMensual(+e.target.value)} className="w-full accent-blue-600" aria-label="Consumo mensual en kWh" />
-                <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>80</span><span>1.200 kWh</span></div>
-              </div>
-            ) : (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="factura-range" className="text-xs text-slate-500">Factura mensual</label>
-                  <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-100">
-                    <span className="text-xl font-black text-amber-600 tabular-nums">{facturaMensual}</span>
-                    <span className="text-xs font-bold text-amber-700">€</span>
-                  </div>
-                </div>
-                <input id="factura-range" type="range" min={30} max={400} step={5} value={facturaMensual}
-                  onChange={e => setFacturaMensual(+e.target.value)} className="w-full accent-amber-600" aria-label="Factura mensual en euros" />
-                <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>30 €</span><span>400 €</span></div>
-                <p className="text-[10px] text-slate-400 mt-1">Equivale a ~{consumoKwh} kWh/mes</p>
-              </div>
-            )}
+          
+          <div className="shrink-0 flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl group">
+             <TrendingUp className="w-10 h-10 text-emerald-400 mb-4 group-hover:scale-110 transition-transform" />
+             <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Ahorro 25 años</p>
+             <p className="text-4xl font-black text-white">{result.ahorro25.toLocaleString("es-ES")}€</p>
+             <div className="mt-4 flex items-center gap-2 text-[11px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full">
+                <CheckCircle2 className="w-3 h-3" />
+                ROI {result.roi25}%
+             </div>
           </div>
         </div>
+      </motion.div>
 
-        {/* Row 2: Precio luz + Baterías toggle */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <label htmlFor="precio-luz-range" className="text-sm font-bold text-slate-700">Precio medio electricidad</label>
-              <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-100">
-                <span className="text-xl font-black text-amber-600 tabular-nums">{precioLuz.toFixed(2)}</span>
-                <span className="text-xs font-bold text-amber-700">€/kWh</span>
-              </div>
+      <div className="grid lg:grid-cols-12 gap-8 items-start">
+        {/* ── LEFT COLUMN: INPUTS (4 Cols) ── */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Housing Selection Card */}
+          <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-2">
+              <Home className="w-4 h-4 text-blue-500" />
+              Tipo de Vivienda en {provincia}
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {(Object.entries(VIVIENDA_CONFIG) as [TipoVivienda, typeof VIVIENDA_CONFIG["piso"]][]).map(([key, cfg]) => {
+                const Icon = cfg.icon;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => { setTipoVivienda(key); setConsumoMensual(cfg.consumoDefecto); }}
+                    className={cn(
+                      "group relative flex flex-col items-center justify-center rounded-2xl border-2 p-4 transition-all duration-300",
+                      tipoVivienda === key 
+                        ? "border-blue-600 bg-blue-50 text-blue-900 shadow-inner"
+                        : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200 hover:bg-white"
+                    )}
+                  >
+                    <Icon className={cn("mb-2 h-6 w-6 transition-transform group-hover:scale-110", tipoVivienda === key ? "text-blue-600" : "text-slate-300")} />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-center leading-none">{cfg.label.split(" / ")[0]}</span>
+                    {tipoVivienda === key && (
+                      <motion.div layoutId="housing-highlight" className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-blue-600" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <input id="precio-luz-range" type="range" min={0.10} max={0.35} step={0.01} value={precioLuz}
-              onChange={e => setPrecioLuz(+e.target.value)} className="w-full accent-amber-600" aria-label="Precio medio de electricidad" />
-            <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>0,10 €</span><span>0,35 €</span></div>
-            {municipio && <p className="text-[10px] text-blue-500 mt-2 font-medium">Precio medio en {municipio}: {precioMedioLuz.toFixed(3)} €/kWh</p>}
           </div>
 
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col justify-between">
-            <label className="text-sm font-bold text-slate-700 mb-3 block">Comparar con baterías</label>
-            <button
-              onClick={() => setConBaterias(c => !c)}
-              className={`w-full rounded-xl border-2 py-4 text-sm font-bold transition-all flex items-center justify-center gap-3 ${
-                conBaterias
-                  ? "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="22" x="4" y="1" rx="2" ry="2"/><line x1="8" x2="16" y1="5" y2="5"/><line x1="12" x2="12" y1="9" y2="17"/><line x1="8" x2="16" y1="13" y2="13"/></svg>
-              {conBaterias ? "Con baterías activado" : "Sin baterías (pulsa para comparar)"}
-            </button>
+          {/* Consumption Card */}
+          <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                 <Zap className="w-4 h-4 text-amber-500" />
+                 Gasto Energético
+               </h3>
+               <div className="bg-slate-100 p-1 rounded-xl flex">
+                  <button 
+                    onClick={() => setInputMode("kwh")}
+                    className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all", inputMode === "kwh" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500")}
+                  >kwh</button>
+                  <button 
+                    onClick={() => setInputMode("eur")}
+                    className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all", inputMode === "eur" ? "bg-white text-amber-600 shadow-sm" : "text-slate-500")}
+                  >€/mes</button>
+               </div>
+            </div>
+
+            <div className="space-y-8">
+               <div className="text-center">
+                  <p className="text-5xl font-black tracking-tighter text-slate-900 tabular-nums">
+                    {inputMode === "kwh" ? consumoMensual : facturaMensual}
+                    <span className="text-xl ml-1 text-slate-400">{inputMode === "kwh" ? "kWh" : "€"}</span>
+                  </p>
+               </div>
+               
+               <div className="relative pt-2">
+                  <input 
+                    type="range" 
+                    min={inputMode === "kwh" ? 80 : 30} 
+                    max={inputMode === "kwh" ? 1200 : 400} 
+                    step={inputMode === "kwh" ? 10 : 5} 
+                    value={inputMode === "kwh" ? consumoMensual : facturaMensual}
+                    onChange={(e) => inputMode === "kwh" ? setConsumoMensual(+e.target.value) : setFacturaMensual(+e.target.value)}
+                    className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                  />
+                  <div className="flex justify-between mt-3 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                    <span>Mín</span>
+                    <span>Máx</span>
+                  </div>
+               </div>
+
+               <div className="rounded-2xl bg-blue-50/50 p-4 border border-blue-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none mb-1">Precio Luz</p>
+                    <p className="text-sm font-black text-blue-900">{precioLuz.toFixed(2)}€/kWh</p>
+                  </div>
+                  <input 
+                    type="range" min={0.10} max={0.35} step={0.01} value={precioLuz}
+                    onChange={e => setPrecioLuz(+e.target.value)}
+                    className="w-24 h-1.5 accent-blue-600"
+                  />
+               </div>
+            </div>
+          </div>
+
+          {/* Battery Comparison Card */}
+          <button 
+            onClick={() => setConBaterias(!conBaterias)}
+            className={cn(
+              "w-full rounded-3xl p-6 border-2 transition-all duration-500 flex items-center justify-between group overflow-hidden relative",
+              conBaterias 
+                ? "bg-slate-900 border-fuchsia-500 text-white shadow-xl shadow-fuchsia-500/10" 
+                : "bg-white border-slate-100 text-slate-600 hover:border-slate-200"
+            )}
+          >
             {conBaterias && (
-              <p className="text-[10px] text-fuchsia-500 mt-2 font-medium">
-                Autoconsumo pasa de {autoconsumoBase}% a {autoconsumo}% con baterías
-              </p>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.2 }} className="absolute inset-0 bg-[url('/grid.svg')] pointer-events-none" />
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── RECOMMENDATION BANNER ── */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-5 text-white">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 4.5-3 6-1 1-2 2.5-2 4H10c0-1.5-1-3-2-4-1.5-1.5-3-3-3-6a7 7 0 0 1 7-7z"/><path d="M10 21h4"/></svg>
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">Recomendación para ti</h2>
-            {rec.map((msg, i) => (
-              <p key={i} className="text-sm text-blue-100 leading-relaxed">{msg}</p>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── RESULTS PANEL ── */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 md:p-8 text-white">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-black tracking-tight">Tu instalación solar personalizada</h3>
-            <p className="text-xs text-slate-400">
-              {result.kwp} kWp · {result.paneles} paneles · {autoconsumo}% autoconsumo
-              {conBaterias ? ` · ${result.bat.recommendedBatteries} baterías` : ""}
-            </p>
-          </div>
-        </div>
-
-        {/* KPI Grid — 7 cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Tamaño sistema</p>
-            <p className="text-2xl font-black text-amber-600">{result.kwp} <span className="text-sm font-bold text-amber-600/60">kWp</span></p>
-            <p className="text-[11px] text-slate-500 mt-1">{result.paneles} paneles · {result.superficieTejado} m²</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Producción anual</p>
-            <p className="text-2xl font-black text-blue-600">{result.produccionAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-blue-600/60">kWh</span></p>
-            <p className="text-[11px] text-slate-500 mt-1">Consumo: {result.consumoAnual.toLocaleString("es-ES")} kWh</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Coste instalación</p>
-            <p className="text-2xl font-black text-white">{result.costeSolar.toLocaleString("es-ES")} <span className="text-sm font-bold text-white/60">€</span></p>
-            <p className="text-[11px] text-slate-500 mt-1">{precioInstalacion ? "Precio local" : `~${COST_PER_KWP} €/kWp`}</p>
-          </div>
-          {conBaterias && result.costeBaterias > 0 && (
-            <div className="bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-2xl p-4">
-              <p className="text-[10px] uppercase tracking-widest text-fuchsia-400 font-bold mb-1">Baterías</p>
-              <p className="text-2xl font-black text-fuchsia-400">{result.costeBaterias.toLocaleString("es-ES")} <span className="text-sm font-bold text-fuchsia-400/60">€</span></p>
-              <p className="text-[11px] text-fuchsia-500/60 mt-1">{result.bat.recommendedBatteries}× 5 kWh · {result.bat.energyIndependencePct}% indep.</p>
-            </div>
-          )}
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Ahorro anual</p>
-            <p className="text-2xl font-black text-emerald-500">{result.ahorroTotalAnual.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-500/70">€</span></p>
-            <p className="text-[11px] text-emerald-600 font-bold mt-1">Autoconsumo {result.ahorroAutoconsumo}€ + excedentes {result.ingresoExcedentes}€</p>
-          </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Ahorro 25 años</p>
-            <p className="text-2xl font-black text-emerald-500">{result.ahorro25.toLocaleString("es-ES")} <span className="text-sm font-bold text-emerald-500/70">€</span></p>
-            <p className="text-[11px] text-emerald-600 font-bold mt-1">Beneficio neto total</p>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Amortización</p>
-            <p className="text-2xl font-black text-amber-600">{result.amortizacion} <span className="text-sm font-bold text-amber-600/70">años</span></p>
-            <p className="text-[11px] text-slate-500 font-medium mt-1">ROI: {result.roi25}%</p>
-          </div>
-          {subvencionPct > 0 && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
-              <p className="text-[10px] uppercase tracking-widest text-blue-500 font-bold mb-1">Subvención</p>
-              <p className="text-2xl font-black text-blue-600">-{subvencionPct} <span className="text-sm font-bold text-blue-600/70">%</span></p>
-              <p className="text-[11px] text-blue-600 font-bold mt-1">Coste final: {result.costeTotal.toLocaleString("es-ES")} €</p>
-            </div>
-          )}
-        </div>
-
-        {/* ── COMPARISON CHART: sin vs con baterías ── */}
-        <div>
-          <h4 className="text-sm font-bold text-slate-300 mb-1">Ahorro acumulado — 25 años</h4>
-          <p className="text-[11px] text-slate-500 mb-3">
-            {conBaterias
-              ? `Comparación: sin baterías (${result.ahorroSinAnual} €/año) vs con baterías (${result.ahorroConAnual} €/año)`
-              : `Evolución del ahorro anual de ${result.ahorroTotalAnual.toLocaleString("es-ES")} €`}
-          </p>
-          <div className="flex items-end gap-[2px] h-36 md:h-44">
-            {result.cumulativeSin.map((valSin, i) => {
-              const valCon = result.cumulativeCon[i];
-              const pctSin = maxCum > 0 ? (Math.abs(valSin) / maxCum) * 100 : 0;
-              const pctCon = maxCum > 0 ? (Math.abs(valCon) / maxCum) * 100 : 0;
-              const posSin = valSin >= 0;
-              const posCon = valCon >= 0;
-              return (
-                <div key={i} className="flex-1 flex flex-col justify-end group relative" style={{ height: "100%" }}>
-                  {conBaterias ? (
-                    <div className="flex gap-[1px] w-full h-full items-end">
-                      <div
-                        className={`flex-1 rounded-t transition-all ${posSin ? "bg-emerald-500/60" : "bg-red-400/60"}`}
-                        style={{ height: `${Math.max(pctSin, 2)}%` }}
-                      />
-                      <div
-                        className={`flex-1 rounded-t transition-all ${posCon ? "bg-fuchsia-500" : "bg-red-400"}`}
-                        style={{ height: `${Math.max(pctCon, 2)}%` }}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`w-full rounded-t transition-all ${posSin ? "bg-emerald-500" : "bg-red-400"} group-hover:opacity-80`}
-                      style={{ height: `${Math.max(pctSin, 2)}%` }}
-                    />
-                  )}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-700 text-[10px] text-white px-2 py-1 rounded whitespace-nowrap z-10 shadow-lg">
-                    <p>Año {i + 1}: {valSin >= 0 ? "+" : ""}{valSin.toLocaleString("es-ES")} €</p>
-                    {conBaterias && <p className="text-fuchsia-300">+ bat: {valCon >= 0 ? "+" : ""}{valCon.toLocaleString("es-ES")} €</p>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-            <span>Año 1</span>
-            <span>Año {Math.ceil(result.amortizacion)} = ROI</span>
-            <span>Año 25</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500" />{conBaterias ? "Sin baterías" : "Beneficio neto"}</span>
-            {conBaterias && <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-fuchsia-500" />Con baterías</span>}
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-red-400" />Amortizando</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── CTA: ¿Quieres hacerlo realidad? ── */}
-      {!formSubmitted ? (
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl border-2 border-emerald-200 p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-
-          {!showForm ? (
-            /* ── Collapsed: Summary + CTA button ── */
-            <div className="text-center relative z-10">
-              <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mb-2">
-                Asegure su tranquilidad energética hoy mismo
-              </h3>
-              <p className="text-sm text-slate-600 max-w-lg mx-auto mb-6 leading-relaxed">
-                Su configuración de <strong>{result.kwp} kWp</strong> y <strong>{result.paneles} paneles</strong> es ideal para cubrir su consumo. 
-                Proteja a su familia de las subidas eléctricas y comience a ahorrar <strong>{result.ahorroTotalAnual.toLocaleString("es-ES")} €</strong> cada año.
-              </p>
-
-              {/* Pre-filled summary chips */}
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
-                  {VIVIENDA_CONFIG[tipoVivienda].label}
-                </span>
-                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
-                  {consumoKwh} kWh/mes
-                </span>
-                <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
-                  {result.kwp} kWp · {result.paneles} paneles
-                </span>
-                {conBaterias && (
-                  <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-fuchsia-500"><polyline points="20 6 9 17 4 12"/></svg>
-                    Autonomía Total
-                  </span>
-                )}
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={cn("p-3 rounded-2xl transition-all duration-500", conBaterias ? "bg-fuchsia-500 text-white" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100")}>
+                <BatteryIcon className="w-6 h-6" />
               </div>
+              <div className="text-left">
+                <p className={cn("text-xs font-black uppercase tracking-widest mb-0.5", conBaterias ? "text-fuchsia-400" : "text-slate-400")}>Configuración</p>
+                <p className="text-lg font-black tracking-tight">{conBaterias ? "Con Baterías" : "Batería no Incluida"}</p>
+              </div>
+            </div>
+            <div className={cn("w-12 h-6 flex items-center rounded-full px-1 transition-all relative z-10", conBaterias ? "bg-fuchsia-500" : "bg-slate-200")}>
+               <motion.div 
+                 animate={{ x: conBaterias ? 24 : 0 }}
+                 className="h-4 w-4 rounded-full bg-white shadow-sm" 
+               />
+            </div>
+          </button>
+        </div>
 
-              <div className="flex flex-col items-center gap-4">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-10 py-4 rounded-2xl transition-all shadow-xl shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95"
-                >
-                  Solicitar presupuesto gratuito
-                </button>
-                
-                <div className="flex flex-col gap-1 text-center">
-                  <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    Alta demanda: Instalaciones disponibles para el próximo trimestre
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-medium">
-                    Garantía técnica de 25 años · Sin compromiso de compra · Instaladores certificados
+        {/* ── RIGHT COLUMN: RESULTS (7 Cols) ── */}
+        <div className="lg:col-span-7 space-y-8">
+          {/* Main Hero Results */}
+          <div className="grid grid-cols-2 gap-4">
+             <motion.div 
+               layout
+               className="rounded-3xl bg-emerald-50 border border-emerald-100 p-6 shadow-sm flex flex-col justify-between"
+             >
+                <Euro className="w-5 h-5 text-emerald-600 mb-4" />
+                <div>
+                  <p className="text-xs font-bold text-emerald-700/60 uppercase tracking-widest mb-1">Ahorro Mensual</p>
+                  <p className="text-4xl font-black text-emerald-700 tracking-tighter transition-all">
+                    {Math.round(result.ahorroTotalAnual / 12)}€
                   </p>
                 </div>
-              </div>
-            </div>
-          ) : (
-            /* ── Expanded: Contact form ── */
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <div className="mt-4 pt-4 border-t border-emerald-200/50 flex items-center gap-2 text-[10px] font-bold text-emerald-800">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   {result.ingresoExcedentes > 0 ? `Incluye ${Math.round(result.ingresoExcedentes / 12)}€ excedentes` : 'Autoconsumo óptimo'}
                 </div>
+             </motion.div>
+
+             <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between text-white shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                <Timer className="w-5 h-5 text-blue-400 mb-4" />
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Tu presupuesto personalizado</h3>
-                  <p className="text-xs text-slate-500">Solo necesitamos 3 datos — el resto ya lo tenemos de la calculadora</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Amortización</p>
+                  <p className="text-4xl font-black text-white tracking-tighter">
+                    {result.amortizacion} <span className="text-xl text-slate-500">años</span>
+                  </p>
                 </div>
-              </div>
-
-              {/* Already captured data */}
-              <div className="bg-white/80 rounded-xl border border-emerald-100 p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Sistema</p>
-                  <p className="text-sm font-black text-slate-800">{result.kwp} kWp</p>
+                <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                   {result.amortizacion <= 6 ? '⚡ Inversión Maestra' : '✓ Rango Estándar'}
                 </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Coste est.</p>
-                  <p className="text-sm font-black text-slate-800">{result.costeTotal.toLocaleString("es-ES")} €</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Ahorro/año</p>
-                  <p className="text-sm font-black text-emerald-600">{result.ahorroTotalAnual.toLocaleString("es-ES")} €</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Amortización</p>
-                  <p className="text-sm font-black text-amber-600">{result.amortizacion} años</p>
-                </div>
-              </div>
-
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setFormError(null);
-
-                  const { nombre, telefono, email, ciudad } = formData;
-                  if (nombre.trim().length < 2) { setFormError("Escribe tu nombre (min. 2 caracteres)."); return; }
-                  const cleanPhone = telefono.replace(/[\s\-\.]/g, "");
-                  if (!/^[6789]\d{8}$/.test(cleanPhone)) { setFormError("Teléfono español inválido (9 dígitos)."); return; }
-                  if (!email.includes("@") || !email.includes(".")) { setFormError("Email inválido."); return; }
-                  if (!municipio && ciudad.trim().length < 2) { setFormError("Indica tu ciudad o municipio."); return; }
-
-                  setFormSubmitting(true);
-                  try {
-                    const tipoMap: Record<string, string> = { piso: "piso", adosado: "unifamiliar", unifamiliar: "unifamiliar" };
-                    const res = await fetch("/api/leads", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        nombre: nombre.trim(),
-                        telefono: cleanPhone,
-                        email: email.trim(),
-                        tipo_vivienda: tipoMap[tipoVivienda] ?? "unifamiliar",
-                        consumo_kwh: result.consumoAnual,
-                        municipio: municipio ?? ciudad.trim(),
-                        municipio_slug: slug ?? "",
-                        provincia: provincia ?? "",
-                        bateria: conBaterias ? "Sí" : "No",
-                      }),
-                    });
-                    if (!res.ok) {
-                      const data = await res.json().catch(() => null);
-                      setFormError(data?.error ?? "Error al enviar. Inténtalo de nuevo.");
-                      setFormSubmitting(false);
-                      return;
-                    }
-                    setFormSubmitted(true);
-                  } catch {
-                    setFormError("Error de conexión. Inténtalo de nuevo.");
-                    setFormSubmitting(false);
-                  }
-                }}
-                className="grid gap-4 sm:grid-cols-3"
-              >
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-bold text-slate-700">Nombre</span>
-                  <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData(d => ({ ...d, nombre: e.target.value }))}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                    placeholder="Tu nombre"
-                  />
-                </label>
-
-                {/* Campo ciudad solo si no hay municipio */}
-                {!municipio && (
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-bold text-slate-700">Ciudad o municipio</span>
-                    <input
-                      type="text"
-                      value={formData.ciudad}
-                      onChange={(e) => setFormData(d => ({ ...d, ciudad: e.target.value }))}
-                      className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                      placeholder="Ej: Madrid, Valencia..."
-                    />
-                  </label>
-                )}
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-bold text-slate-700">Teléfono</span>
-                  <input
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData(d => ({ ...d, telefono: e.target.value }))}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                    placeholder="600 123 456"
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-bold text-slate-700">Email</span>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(d => ({ ...d, email: e.target.value }))}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                    placeholder="tu@email.com"
-                  />
-                </label>
-
-                {formError && <p className="sm:col-span-3 text-sm font-medium text-red-600">{formError}</p>}
-
-                <div className="sm:col-span-3 flex flex-col sm:flex-row items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={formSubmitting}
-                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
-                  >
-                    {formSubmitting ? "Enviando..." : "Recibir presupuesto gratis"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-
-              <p className="text-[10px] text-slate-400 mt-4 leading-relaxed">
-                Al enviar aceptas que tus datos sean cedidos a instaladores solares certificados en tu zona.
-                Consulta nuestra <a href="/legal/politica-privacidad" className="underline hover:text-slate-600">política de privacidad</a>.
-              </p>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* ── Success state ── */
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl border-2 border-emerald-300 p-6 md:p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+             </div>
           </div>
-          <h3 className="text-xl font-black text-slate-900 mb-2">Solicitud recibida</h3>
-          <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-            Un asesor solar te contactará en menos de 24 horas con un presupuesto detallado
-            para tu instalación de {result.kwp} kWp{municipio ? ` en ${municipio}` : ""}.
-          </p>
-          <div className="mt-4 inline-flex items-center gap-2 bg-emerald-100 rounded-full px-4 py-2 text-xs font-bold text-emerald-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Ahorro estimado: {result.ahorroTotalAnual.toLocaleString("es-ES")} €/año
+
+          {/* Technical Specs & Visualization */}
+          <div className="rounded-[2.5rem] bg-slate-50 border border-slate-200 p-8 shadow-inner">
+             <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-1 w-full space-y-8">
+                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                     <Sun className="w-4 h-4" />
+                     Configuración del Sistema
+                   </h3>
+                   
+                   <div className="grid gap-6">
+                      <div className="flex items-center justify-between group">
+                         <div>
+                            <p className="text-xl font-black text-slate-900 leading-none mb-1 transition-transform group-hover:translate-x-1">{result.paneles} Paneles</p>
+                            <p className="text-xs text-slate-500 font-medium">{PANEL_W}W · Mono-cristalinos Full Black</p>
+                         </div>
+                         <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                            <Zap className="w-5 h-5 text-amber-500" />
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between group">
+                         <div>
+                            <p className="text-xl font-black text-slate-900 leading-none mb-1 transition-transform group-hover:translate-x-1">{result.kwp} kWp Potencia</p>
+                            <p className="text-xs text-slate-500 font-medium">Inversor de alta eficiencia incluido</p>
+                         </div>
+                         <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between group">
+                         <div>
+                            <p className="text-xl font-black text-slate-900 leading-none mb-1 transition-transform group-hover:translate-x-1">{result.costeTotal.toLocaleString("es-ES")}€ Inversión</p>
+                            <p className="text-xs text-slate-500 font-medium">
+                               {subvencionPct > 0 ? `Incluye ayuda del ${subvencionPct}%` : 'Presupuesto llave en mano'}
+                            </p>
+                         </div>
+                         <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                            <Wallet className="w-5 h-5 text-blue-500" />
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* VISUAL CHART 25y */}
+                <div className="w-full md:w-[280px] space-y-4">
+                   <div className="rounded-3xl bg-white p-5 border border-slate-200 shadow-sm relative overflow-hidden h-64 flex flex-col">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Proyección de Ahorro</p>
+                      <div className="flex-1 flex items-end gap-[1px]">
+                         {result.cumulativeSin.map((val, i) => {
+                            const valCon = result.cumulativeCon[i];
+                            const currentVal = conBaterias ? valCon : val;
+                            const pct = (Math.abs(currentVal) / maxCum) * 100;
+                            const isPositive = currentVal >= 0;
+                            
+                            return (
+                               <div key={i} className="flex-1 group relative h-full flex flex-col justify-end">
+                                  <motion.div 
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${Math.max(pct, 4)}%` }}
+                                    className={cn(
+                                       "w-full rounded-t-[2px] transition-colors",
+                                       isPositive 
+                                         ? (conBaterias ? "bg-fuchsia-400" : "bg-emerald-400")
+                                         : "bg-slate-200"
+                                    )}
+                                  />
+                                  {/* Tooltip on hover */}
+                                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 text-white text-[8px] font-bold px-2 py-1 rounded-md z-20 whitespace-nowrap shadow-xl">
+                                     Año {i+1}: {Math.round(currentVal).toLocaleString()}€
+                                  </div>
+                               </div>
+                            )
+                         })}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                         <div className="flex items-center gap-1.5 grayscale opacity-50">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <span className="text-[8px] font-bold uppercase text-slate-500 tracking-tighter">ROI alcanzado</span>
+                         </div>
+                         <div className="text-[10px] font-black text-slate-300">25 AÑOS</div>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* ── SUPREME CONVERSION FUNNEL ── */}
+      <div id="cta" className="relative group">
+         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-amber-500 rounded-[3rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+         <div className="relative rounded-[3rem] bg-white border border-slate-100 p-8 md:p-14 overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <AnimatePresence mode="wait">
+               {!formSubmitted ? (
+                  <motion.div 
+                    key="form-step"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.05 }}
+                    className="relative z-10 grid lg:grid-cols-2 gap-12 items-center"
+                  >
+                     <div className="space-y-8">
+                        <div>
+                           <div className="inline-flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-amber-100 italic">
+                             <Star className="w-3 h-3 fill-amber-500" /> Oferta Limitada en {municipio}
+                           </div>
+                           <h3 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
+                              Transforma tu tejado en un <span className="text-emerald-600 italic">activo premium</span>.
+                           </h3>
+                           <p className="text-lg text-slate-500 font-light leading-relaxed max-w-md">
+                              No solo es ahorro, es independencia. Hemos pre-calculado para tu vivienda en {provincia} un sistema que amortiza en solo <span className="text-slate-900 font-bold">{result.amortizacion} años</span>.
+                           </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                           <div className="flex items-center gap-4 group">
+                              <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors">
+                                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                              </div>
+                              <p className="text-sm font-bold text-slate-600">Garantía de rendimiento lineal por contrato durante 25 años.</p>
+                           </div>
+                           <div className="flex items-center gap-4 group">
+                              <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors">
+                                 <Activity className="w-6 h-6 text-blue-500" />
+                              </div>
+                              <p className="text-sm font-bold text-slate-600">Simulación técnica basada en datos meteorológicos reales (PVGIS).</p>
+                           </div>
+                           <div className="flex items-center gap-4 group">
+                              <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-amber-50 group-hover:border-amber-200 transition-colors">
+                                 <Lock className="w-6 h-6 text-amber-500" />
+                              </div>
+                              <p className="text-sm font-bold text-slate-600">Tus datos están protegidos por la RGPD. Sin compromiso comercial.</p>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="bg-slate-50 rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-inner">
+                        {!showForm ? (
+                           <div className="text-center space-y-6">
+                              <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm text-left">
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Estudio Preliminar</p>
+                                 <div className="space-y-2">
+                                    <div className="flex justify-between items-center text-sm font-bold">
+                                       <span className="text-slate-500">Paneles</span>
+                                       <span className="text-slate-900">{result.paneles} x {PANEL_W}W</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm font-bold">
+                                       <span className="text-slate-500">Ahorro total</span>
+                                       <span className="text-emerald-600">{result.ahorro25.toLocaleString()}€</span>
+                                    </div>
+                                 </div>
+                              </div>
+                              
+                              <button 
+                                 onClick={() => setShowForm(true)}
+                                 className="w-full bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-2xl hover:-translate-y-1 relative group overflow-hidden"
+                              >
+                                 <span className="relative z-10 flex items-center justify-center gap-3">
+                                    ¡Solicitar Presupuesto VIP! <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                 </span>
+                                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                              </button>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest tracking-tight">Estudio gratuito · Sin compromiso · Datos cifrados</p>
+                           </div>
+                        ) : (
+                           <form 
+                              onSubmit={async (e) => {
+                                 e.preventDefault();
+                                 setFormError(null);
+                                 const { nombre, telefono, email, ciudad } = formData;
+                                 if (nombre.trim().length < 2) { setFormError("Danos tu nombre"); return; }
+                                 const cleanPhone = telefono.replace(/\s/g, "");
+                                 if (!/^[6789]\d{8}$/.test(cleanPhone)) { setFormError("Teléfono inválido"); return; }
+                                 if (!email.includes("@")) { setFormError("Email inválido"); return; }
+                                 
+                                 setFormSubmitting(true);
+                                 try {
+                                    const res = await fetch("/api/leads", {
+                                       method: "POST",
+                                       headers: { "Content-Type": "application/json" },
+                                       body: JSON.stringify({
+                                          ...formData,
+                                          tipo_vivienda: tipoVivienda,
+                                          consumo_kwh: result.consumoAnual,
+                                          municipio: municipio ?? ciudad,
+                                          municipio_slug: slug ?? "",
+                                          provincia: provincia ?? "",
+                                          bateria: conBaterias ? "Sí" : "No",
+                                          kwp: result.kwp,
+                                          coste_est: result.costeTotal
+                                       }),
+                                    });
+                                    if (res.ok) setFormSubmitted(true);
+                                    else setFormError("Error al enviar");
+                                 } catch {
+                                    setFormError("Error de conexión");
+                                 } finally {
+                                    setFormSubmitting(false);
+                                 }
+                              }}
+                              className="space-y-4"
+                           >
+                              <div className="grid grid-cols-2 gap-4">
+                                 <input 
+                                    type="text" placeholder="Nombre completo" required
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                    value={formData.nombre} onChange={(e) => setFormData(f => ({ ...f, nombre: e.target.value }))}
+                                 />
+                                 <input 
+                                    type="tel" placeholder="Tu Teléfono" required
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                    value={formData.telefono} onChange={(e) => setFormData(f => ({ ...f, telefono: e.target.value }))}
+                                 />
+                              </div>
+                              <input 
+                                 type="email" placeholder="Email de contacto" required
+                                 className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                 value={formData.email} onChange={(e) => setFormData(f => ({ ...f, email: e.target.value }))}
+                              />
+                              {!municipio && (
+                                 <input 
+                                    type="text" placeholder="Tu Ciudad" required
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                    value={formData.ciudad} onChange={(e) => setFormData(f => ({ ...f, ciudad: e.target.value }))}
+                                 />
+                              )}
+                              
+                              {formError && <p className="text-[10px] font-black text-rose-500 uppercase">{formError}</p>}
+                              
+                              <button 
+                                 type="submit" disabled={formSubmitting}
+                                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 disabled:opacity-50 transition-all uppercase tracking-widest text-xs"
+                              >
+                                 {formSubmitting ? "Enviando..." : "Enviar a Expertos →"}
+                              </button>
+
+                              <p className="text-[9px] text-slate-400 text-center leading-relaxed">
+                                 Al pulsar confirmas que has leído y aceptas nuestra política de privacidad. Tus datos serán tratados exclusivamente para este estudio solar personalizado.
+                              </p>
+                           </form>
+                        )}
+                     </div>
+                  </motion.div>
+               ) : (
+                  /* ── SUCCESS STATE ── */
+                  <motion.div 
+                    key="success"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col items-center justify-center py-20 text-center space-y-6"
+                  >
+                     <div className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+                           <CheckCircle2 className="w-12 h-12" />
+                        </motion.div>
+                     </div>
+                     <h3 className="text-4xl font-black tracking-tight">¡Solicitud VIP recibida!</h3>
+                     <p className="text-slate-500 max-w-sm mx-auto leading-relaxed">
+                        Un asesor experto para la zona de <span className="text-slate-900 font-bold">{municipio}</span> revisará tu estudio y te contactará en menos de 24h.
+                     </p>
+                     <div className="pt-4">
+                        <button 
+                          onClick={() => setFormSubmitted(false)}
+                          className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
+                        >
+                          Volver al Simulador
+                        </button>
+                     </div>
+                  </motion.div>
+               )}
+            </AnimatePresence>
+         </div>
+      </div>
     </div>
   );
 }

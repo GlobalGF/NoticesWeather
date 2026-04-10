@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/placas-solares", label: "Placas Solares", sticky: true },
   { href: "/baterias-solares", label: "Baterías", sticky: true },
   { href: "/subvenciones-solares", label: "Subvenciones", sticky: true },
-  { href: "/precio-luz", label: "Precio Luz", sticky: true },
+  { href: "/precio-luz", label: "Precio Luz", sticky: false }, // User: price-luz shouldn't have city slug
   { href: "/calculadoras", label: "Calculadoras", sticky: true },
 ];
 
@@ -16,39 +16,78 @@ const navLinks = [
 const MUNICIPALITY_MODULES = new Set([
   "/placas-solares",
   "/baterias-solares",
-  "/bonificacion-ibi",
-  "/autoconsumo-compartido",
+  "/calculadoras",
+  "/subvenciones-solares",
 ]);
 
-// Known content sub-page slugs that are NOT municipalities
-const CONTENT_SUBPAGES = new Set([
-  "horas-baratas",
-  "geo",
-]);
+interface CityContext {
+  slug: string | null;
+  ccaa: string | null;
+  prov: string | null;
+}
 
 export function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname() ?? "";
-
+  
+  // 1. Detect context from current URL (Runs on both Server and Client)
   const segments = pathname.split("/").filter(Boolean);
-  const parentModule = segments.length >= 1 ? `/${segments[0]}` : null;
-  const lastSegment = segments.length === 2 ? segments[1] : null;
+  const urlModule = segments.length >= 1 ? `/${segments[0]}` : null;
+  
+  let urlContext: CityContext = { slug: null, ccaa: null, prov: null };
+  if (MUNICIPALITY_MODULES.has(urlModule!)) {
+     if (urlModule === "/subvenciones-solares" && segments.length === 4) {
+       urlContext = { ccaa: segments[1], prov: segments[2], slug: segments[3] };
+     } else if (urlModule === "/calculadoras" && segments.length === 3) {
+       urlContext = { slug: segments[2], ccaa: null, prov: null };
+     } else if (segments.length === 2 && segments[0] !== "geo") {
+       urlContext = { slug: segments[1], ccaa: null, prov: null };
+     }
+  }
 
-  // Only extract a municipality slug when on a known municipality module page
-  // and the slug isn't a content sub-page like "horas-baratas"
-  const municipioSlug =
-    lastSegment &&
-    parentModule &&
-    MUNICIPALITY_MODULES.has(parentModule) &&
-    !CONTENT_SUBPAGES.has(lastSegment)
-      ? lastSegment
-      : null;
+  // 2. Persisted state (Client-only hydration)
+  const [persistedContext, setPersistedContext] = useState<CityContext>({ slug: null, ccaa: null, prov: null });
+
+  // Hydrate from session storage on mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem("lastCityContext");
+    if (saved) {
+      try {
+        setPersistedContext(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
+
+  // Update session storage when URL context changes
+  useEffect(() => {
+    if (urlContext.slug) {
+      setPersistedContext(prev => {
+        const updated = { ...prev, ...urlContext };
+        sessionStorage.setItem("lastCityContext", JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [urlContext.slug, urlContext.ccaa, urlContext.prov]);
+
+  const context = urlContext.slug ? urlContext : persistedContext;
 
   const getLinkHref = (link: { href: string; sticky: boolean }) => {
-    if (link.sticky && municipioSlug && MUNICIPALITY_MODULES.has(link.href)) {
-      return `${link.href}/${municipioSlug}`;
+    if (!link.sticky || !context.slug) return link.href;
+
+    // Special case for batteries - redirected to specialized calculator
+    if (link.href === "/baterias-solares") {
+      return `/calculadoras/baterias/${context.slug}`;
     }
-    return link.href;
+
+    // Special case for Subsidies - needs full path
+    if (link.href === "/subvenciones-solares") {
+      if (context.ccaa && context.prov) {
+        return `/subvenciones-solares/${context.ccaa}/${context.prov}/${context.slug}`;
+      }
+      return link.href; // Fallback to generic
+    }
+
+    return `${link.href}/${context.slug}`;
   };
 
   return (

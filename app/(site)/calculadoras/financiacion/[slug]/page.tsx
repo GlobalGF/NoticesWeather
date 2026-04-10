@@ -5,6 +5,7 @@ import { getMunicipioBySlug } from "@/lib/data/solar";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SolarFinancingCalculator } from "@/components/ui/SolarFinancingCalculator";
+import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
 
 export const dynamicParams = true;
 export const revalidate = 86400;
@@ -75,32 +76,12 @@ export default async function FinanciacionMunicipioPage({ params }: Props) {
           <SolarFinancingCalculator municipio={municipio} costeMedio={costeMedio} ahorroAnual={ahorroAnual} />
         </section>
 
-        <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Más calculadoras para {municipio}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Link href={`/calculadoras/placas-solares/${slug}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-blue-50 hover:border-blue-300 transition-colors group">
-              <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 text-blue-700 font-bold text-sm shrink-0">P</span>
-              <div>
-                <p className="text-sm font-semibold text-slate-800 group-hover:text-blue-700">Placas Solares en {municipio}</p>
-                <p className="text-xs text-slate-500">Paneles, ahorro y amortización</p>
-              </div>
-            </Link>
-            <Link href={`/calculadoras/baterias/${slug}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-colors group">
-              <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-fuchsia-100 text-fuchsia-700 font-bold text-sm shrink-0">B</span>
-              <div>
-                <p className="text-sm font-semibold text-slate-800 group-hover:text-fuchsia-700">Baterías en {municipio}</p>
-                <p className="text-xs text-slate-500">Dimensiona tu almacenamiento</p>
-              </div>
-            </Link>
-            <Link href={`/calculadoras/excedentes/${slug}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-teal-50 hover:border-teal-300 transition-colors group">
-              <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-100 text-teal-700 font-bold text-sm shrink-0">E</span>
-              <div>
-                <p className="text-sm font-semibold text-slate-800 group-hover:text-teal-700">Excedentes en {municipio}</p>
-                <p className="text-xs text-slate-500">Monetiza tu energía sobrante</p>
-              </div>
-            </Link>
-          </div>
-        </section>
+        <CalculatorMunicipalitySwitcher
+          municipio={municipio}
+          provincia={data.provincia}
+          comunidadAutonoma={data.comunidad_autonoma ?? data.provincia}
+          slug={slug}
+        />
 
         <footer className="text-center text-xs text-slate-400">
           <p>Datos de precios para {municipio} actualizados periódicamente. Simulación orientativa.</p>

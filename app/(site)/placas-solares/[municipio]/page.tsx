@@ -34,6 +34,7 @@ const SubsidiesSeoBlock = dynamic(() => import("@/components/ui/SubsidiesSeoBloc
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
+import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
 
 export const revalidate = cachePolicy.page.solarCity;
 export const dynamicParams = true;
@@ -375,57 +376,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 habitantes={municipio.habitantes}
                             />
 
-                            {/* CTA Calculadoras Avanzadas */}
-                            <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 rounded-2xl shadow-xl mt-8 p-8 md:p-10 border border-indigo-900">
-                                {/* Decorative elements */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400 opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 opacity-20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
-
-                                <div className="relative z-10 lg:flex items-center justify-between gap-8">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/30 text-indigo-400 text-xs shadow-inner">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                            </span>
-                                            <p className="text-sm font-bold tracking-widest uppercase text-indigo-300">Simuladores Avanzados</p>
-                                        </div>
-                                        <h2 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight mb-4">
-                                            Calculadoras Solares para {municipio.municipio}
-                                        </h2>
-                                        <p className="text-slate-300 text-base leading-relaxed mb-6 max-w-lg font-light">
-                                            Dimensiona tu instalación fotovoltaica: calcula el número exacto de paneles solares, simula la financiación de tus placas y estima los ingresos por verter excedentes a la red eléctrica en {municipio.provincia}.
-                                        </p>
-                                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                                            <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                                                Dimensionador de Paneles Solares
-                                            </li>
-                                            <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                                                Simulador de Financiación
-                                            </li>
-                                            <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                                                Monetización de Excedentes
-                                            </li>
-                                            <li className="flex items-center gap-2 text-sm text-slate-400">
-                                                <svg className="h-4 w-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
-                                                Calculadora de Baterías
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div className="shrink-0 mt-6 lg:mt-0 flex lg:flex-col gap-4">
-                                        <a
-                                            href={`/calculadoras?m=${slug}`}
-                                            className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 px-8 py-4 text-sm font-bold text-amber-950 shadow-lg shadow-yellow-500/30 transition-all hover:scale-105 hover:shadow-yellow-500/50"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:rotate-12"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /></svg>
-                                            Probar Calculadoras
-                                            <span className="absolute -inset-0.5 -z-10 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 opacity-0 blur backdrop-filter transition-opacity duration-300 group-hover:opacity-60"></span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </section>
+                            <CalculatorMunicipalitySwitcher
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                comunidadAutonoma={municipio.comunidad_autonoma ?? municipio.provincia}
+                                slug={slug}
+                            />
 
                             <AntiCommercialWarning 
                                 municipio={municipio.municipio} 

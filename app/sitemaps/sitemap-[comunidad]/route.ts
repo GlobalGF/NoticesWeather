@@ -53,21 +53,29 @@ export async function GET(_req: NextRequest, context?: Params): Promise<Response
 </urlset>`);
     }
 
-    // Each published municipality gets 3 URLs (one per route type)
-    const ROUTE_TYPES = ["placas-solares", "baterias-solares"];
+    // Each published municipality gets 7 URLs
+    const ROUTE_CONFIG = [
+        { type: "placas-solares", priority: "0.8" },
+        { type: "baterias-solares", priority: "0.7" },
+        { type: "calculadoras", priority: "0.6" },
+        { type: "calculadoras/placas-solares", priority: "0.7" },
+        { type: "calculadoras/financiacion", priority: "0.6" },
+        { type: "calculadoras/baterias", priority: "0.6" },
+        { type: "calculadoras/excedentes", priority: "0.6" },
+    ];
 
     const urls = items.flatMap((item) => {
         const lastmod = item.published_at
             ? item.published_at.split("T")[0]
             : new Date().toISOString().split("T")[0];
 
-        return ROUTE_TYPES.map((ruta) => {
-            const loc = `${SITE_URL}/${ruta}/${item.slug}`;
+        return ROUTE_CONFIG.map((config) => {
+            const loc = `${SITE_URL}/${config.type}/${item.slug}`;
             return `  <url>
     <loc>${escapeXml(loc)}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>${ruta === "placas-solares" ? "0.8" : "0.7"}</priority>
+    <priority>${config.priority}</priority>
   </url>`;
         });
     });

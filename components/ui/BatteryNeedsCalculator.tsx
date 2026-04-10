@@ -1,10 +1,31 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Battery as BatteryIcon, 
+  Zap, 
+  Sun, 
+  ArrowRight, 
+  ShieldCheck, 
+  TrendingUp, 
+  Info,
+  Layers,
+  Activity,
+  Timer,
+  CheckCircle2,
+  Euro
+} from "lucide-react";
 import {
   calculateBatteryRecommendation,
   type TariffType
 } from "@/calculators/battery-calculator";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 type Props = {
   municipio: string;
@@ -29,158 +50,218 @@ export function BatteryNeedsCalculator({ municipio, annualSunHours }: Props) {
   );
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] relative mt-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-50/20 via-transparent to-transparent pointer-events-none"></div>
-
-      <div className="bg-slate-900/95 backdrop-blur-md px-4 md:px-6 py-4 md:py-5 flex items-center gap-3 md:gap-4 relative z-10 border-b border-slate-800/60">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-fuchsia-600/10 text-fuchsia-400 border border-fuchsia-500/20 shadow-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="22" x="4" y="1" rx="2" ry="2"/><line x1="8" x2="16" y1="5" y2="5"/><line x1="12" x2="12" y1="9" y2="17"/><line x1="8" x2="16" y1="13" y2="13"/></svg>
+    <div className="relative group mt-12">
+      {/* Decorative background glow */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-fuchsia-600/20 to-purple-600/20 rounded-[2.5rem] blur-2xl opacity-50 transition duration-1000 group-hover:opacity-75"></div>
+      
+      <div className="relative bg-slate-950 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden">
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] pointer-events-none" />
+        
+        {/* HEADER */}
+        <div className="px-8 py-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-b from-white/[0.02] to-transparent">
+           <div className="flex items-center gap-5">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center shadow-lg shadow-fuchsia-500/20 ring-1 ring-white/20">
+                 <BatteryIcon className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                 <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Ecosistema de Almacenamiento</h2>
+                 <p className="text-fuchsia-300/60 text-sm font-medium">Dimensionamiento físico y financiero para {municipio}</p>
+              </div>
+           </div>
+           
+           <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5">
+              <ShieldCheck className="w-3.5 h-3.5 text-fuchsia-400" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-fuchsia-400">Dimensionamiento Seguro y Privado</p>
+           </div>
         </div>
-        <div>
-          <h2 className="text-lg md:text-2xl font-black text-white tracking-tight">Capacidad de Almacenamiento</h2>
-          <p className="text-xs md:text-sm text-fuchsia-200/70 font-medium mt-0.5">Calcula cuántas baterías solares podrías necesitar en {municipio}</p>
+
+        <div className="p-8 md:p-10">
+           <div className="grid lg:grid-cols-12 gap-12 items-start">
+              {/* CONTROLS (5 Cols) */}
+              <div className="lg:col-span-12 xl:col-span-5 space-y-8">
+                 <div className="grid gap-8">
+                    {/* Consumo */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                             <Activity className="w-3.5 h-3.5 text-fuchsia-500" /> Consumo Mensual
+                          </label>
+                          <span className="text-xl font-black text-white tabular-nums">{monthlyConsumption} <span className="text-[10px] text-slate-500">kWh</span></span>
+                       </div>
+                       <input 
+                         type="range" min={50} max={1500} step={50} value={monthlyConsumption}
+                         onChange={(e) => setMonthlyConsumption(Number(e.target.value))}
+                         className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-fuchsia-500"
+                       />
+                    </div>
+
+                    {/* Potencia */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                             <Sun className="w-3.5 h-3.5 text-amber-500" /> Potencia Fotovoltaica
+                          </label>
+                          <span className="text-xl font-black text-white tabular-nums">{installationPower} <span className="text-[10px] text-slate-500">kWp</span></span>
+                       </div>
+                       <input 
+                         type="range" min={1} max={10} step={0.1} value={installationPower}
+                         onChange={(e) => setInstallationPower(Number(e.target.value))}
+                         className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-amber-500"
+                       />
+                    </div>
+
+                    {/* Horas Sol */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                             <Timer className="w-3.5 h-3.5 text-blue-500" /> Horas Sol Efectivas
+                          </label>
+                          <span className="text-xl font-black text-white tabular-nums">{sunHoursPerDay} <span className="text-[10px] text-slate-500">h/día</span></span>
+                       </div>
+                       <input 
+                         type="range" min={1} max={12} step={0.1} value={sunHoursPerDay}
+                         onChange={(e) => setSunHoursPerDay(Number(e.target.value))}
+                         className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-500"
+                       />
+                    </div>
+
+                    {/* Tarifa */}
+                    <div className="pt-6 border-t border-white/5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Modalidad de Facturación</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                           {(["2.0TD", "indexada", "fija"] as TariffType[]).map(t => (
+                              <button
+                                key={t}
+                                onClick={() => setTariff(t)}
+                                className={cn(
+                                   "py-3 px-2 rounded-xl border-2 text-[10px] font-black uppercase tracking-tighter transition-all",
+                                   tariff === t 
+                                     ? "bg-fuchsia-500/10 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_20px_rgba(232,121,249,0.1)]"
+                                     : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
+                                )}
+                              >
+                                {t === "2.0TD" ? "Estándar 2.0" : t === "indexada" ? "Mercado PVPC" : "Tarifa Plana"}
+                              </button>
+                           ))}
+                        </div>
+                    </div>
+                 </div>
+              </div>
+
+              {/* RESULTS (7 Cols) */}
+              <div className="lg:col-span-12 xl:col-span-7">
+                 <div className="grid md:grid-cols-2 gap-8">
+                    {/* Visual Gauge Side */}
+                    <div className="space-y-8 flex flex-col items-center">
+                       {/* INDEPENDENCE GAUGE */}
+                       <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+                          <svg className="w-full h-full transform -rotate-90">
+                             <circle 
+                               cx="50%" cy="50%" r="45%" 
+                               className="stroke-white/[0.05] fill-none" 
+                               strokeWidth="8" 
+                             />
+                             <motion.circle 
+                               cx="50%" cy="50%" r="45%" 
+                               className="stroke-fuchsia-500 fill-none" 
+                               strokeWidth="8"
+                               strokeDasharray="100 100"
+                               initial={{ strokeDashoffset: 100 }}
+                               animate={{ strokeDashoffset: 100 - result.energyIndependencePct }}
+                               transition={{ duration: 1.5, ease: "easeOut" }}
+                               strokeLinecap="round"
+                             />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                             <p className="text-4xl md:text-6xl font-black text-white tabular-nums tracking-tighter">{result.energyIndependencePct}%</p>
+                             <p className="text-[10px] font-black uppercase tracking-widest text-fuchsia-400/80">Independencia</p>
+                          </div>
+                       </div>
+                       
+                       {/* Battery Stack Visualization */}
+                       <div className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 p-4">
+                             <Layers className="w-4 h-4 text-slate-700" />
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6">Módulos Físicos (LFP)</p>
+                          <div className="flex flex-wrap gap-2 justify-center">
+                             <AnimatePresence>
+                                {[...Array(Math.max(result.recommendedBatteries, 1))].map((_, i) => (
+                                   <motion.div 
+                                      key={i}
+                                      initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                                      exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                                      transition={{ delay: i * 0.1 }}
+                                      className="w-12 h-6 md:w-16 md:h-8 rounded-lg bg-gradient-to-br from-fuchsia-500 to-purple-600 shadow-lg shadow-fuchsia-500/20 flex items-center justify-center border border-white/20"
+                                   >
+                                      <div className="w-1/2 h-0.5 bg-white/30 rounded-full" />
+                                   </motion.div>
+                                ))}
+                             </AnimatePresence>
+                          </div>
+                          <p className="text-center mt-6 text-xl font-black text-white">{result.recommendedBatteries} Módulos <span className="text-xs text-slate-500 font-bold tracking-normal">× 5kWh cada uno</span></p>
+                       </div>
+                    </div>
+
+                    {/* Data List Side */}
+                    <div className="grid gap-4">
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Capacidad Total</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">{result.requiredCapacityKwh.toLocaleString()} <span className="text-sm text-slate-500">kWh</span></p>
+                             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                          </div>
+                       </div>
+
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ahorro Extra Anual</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-emerald-400 tracking-tighter">+{result.estimatedAnnualSavingsEur.toLocaleString()} <span className="text-sm text-emerald-400/40">€</span></p>
+                             <TrendingUp className="w-5 h-5 text-emerald-400" />
+                          </div>
+                       </div>
+
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Inversión Estimada</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">{result.estimatedCostEur.toLocaleString()} <span className="text-sm text-slate-500">€</span></p>
+                             <Euro className="w-5 h-5 text-fuchsia-500" />
+                          </div>
+                       </div>
+
+                       <div className="bg-slate-900 border border-white/5 rounded-2xl p-6 flex flex-col justify-between shadow-inner">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">Periodo Retorno</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">{result.paybackYears} <span className="text-sm text-slate-600 font-bold uppercase">años</span></p>
+                             <ShieldCheck className="w-5 h-5 text-blue-500" />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* CTA / BANNER */}
+                 <div className="mt-8 relative group cursor-pointer">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-500 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition cursor-default"></div>
+                    <div className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 flex items-center justify-between gap-6 transition-all group-hover:bg-slate-800/80 overflow-hidden">
+                       <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/5 to-transparent pointer-events-none" />
+                       <div className="flex-1">
+                          <h4 className="text-white font-black tracking-tight mb-1">Optimiza tu independencia en {municipio}</h4>
+                          <p className="text-xs text-slate-400 font-medium leading-relaxed">Combinando tu producción fotovoltaica con {result.requiredCapacityKwh}kWh de almacenamiento, cubrirás casi el <span className="text-fuchsia-400 font-bold">{result.energyIndependencePct}%</span> de tu consumo anual.</p>
+                       </div>
+                       <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-fuchsia-500 group-hover:border-fuchsia-400 transition-all">
+                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
-      </div>
 
-      <div className="p-4 md:p-8 relative z-10">
-        <div className="grid gap-6 md:gap-10 lg:grid-cols-12 lg:gap-12">
-          {/* Controls */}
-          <div className="lg:col-span-5 space-y-6 flex flex-col justify-center">
-            <div className="bg-slate-50/50 p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-400/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-               <div className="relative z-10 grid gap-6">
-                  <div className="grid gap-2">
-                    <label className="text-sm font-bold text-slate-700">Consumo eléctrico mensual</label>
-                    <div className="flex items-center">
-                      <input
-                        type="range"
-                        min={50} max={1500} step={50}
-                        value={monthlyConsumption}
-                        onChange={(e) => setMonthlyConsumption(Number(e.target.value))}
-                        className="flex-1 h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-fuchsia-600 hover:accent-fuchsia-500 transition-all shadow-inner"
-                      />
-                      <span className="ml-4 tabular-nums font-black text-fuchsia-700 min-w-[60px] text-right">{monthlyConsumption} <span className="text-xs font-bold text-fuchsia-600/60">kWh</span></span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <label className="text-sm font-bold text-slate-700">Potencia de instalación</label>
-                    <div className="flex items-center">
-                      <input
-                        type="range"
-                        min={1} max={10} step={0.1}
-                        value={installationPower}
-                        onChange={(e) => setInstallationPower(Number(e.target.value))}
-                        className="flex-1 h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-fuchsia-600 hover:accent-fuchsia-500 transition-all shadow-inner"
-                      />
-                      <span className="ml-4 tabular-nums font-black text-fuchsia-700 min-w-[60px] text-right">{installationPower} <span className="text-xs font-bold text-fuchsia-600/60">kW</span></span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <label className="text-sm font-bold text-slate-700 justify-between flex">
-                      <span>Horas de sol</span>
-                      <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Local: {annualSunHours}h/año</span>
-                    </label>
-                    <div className="flex items-center">
-                      <input
-                        type="range"
-                        min={1} max={12} step={0.1}
-                        value={sunHoursPerDay}
-                        onChange={(e) => setSunHoursPerDay(Number(e.target.value))}
-                        className="flex-1 h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-amber-500 shadow-inner"
-                      />
-                      <span className="ml-4 tabular-nums font-black text-amber-600 min-w-[60px] text-right">{sunHoursPerDay} <span className="text-xs font-bold text-amber-600/60">h/día</span></span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2 border-t border-slate-100 pt-5 mt-2">
-                    <label className="text-sm font-bold text-slate-700">Tarifa eléctrica</label>
-                    <select
-                      value={tariff}
-                      onChange={(e) => setTariff(e.target.value as TariffType)}
-                      className="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-fuchsia-500 focus:border-fuchsia-500 block p-3 shadow-sm font-medium transition-colors cursor-pointer"
-                    >
-                      <option value="2.0TD">Tarifa 2.0TD (Regulada/Discriminación horaria)</option>
-                      <option value="indexada">Mercado Indexado</option>
-                      <option value="fija">Tarifa Fija a 24h</option>
-                    </select>
-                  </div>
-               </div>
-            </div>
-          </div>
-
-          {/* Results Area */}
-          <div className="lg:col-span-7 flex flex-col h-full gap-5">
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 flex-1">
-               <div className="bg-gradient-to-br from-fuchsia-600 to-purple-800 rounded-3xl p-6 flex flex-col justify-center text-center shadow-[0_8px_30px_rgba(192,38,211,0.2)] group relative overflow-hidden text-white border border-fuchsia-500/30">
-                  <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 pointer-events-none"></div>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-400/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform duration-700 group-hover:scale-150"></div>
-                  <p className="text-[10px] font-bold text-fuchsia-100 uppercase tracking-widest mb-2 relative z-10">Baterías Físicas (Módulos)</p>
-                  <p className="text-6xl font-black tabular-nums transition-transform duration-500 group-hover:scale-110 drop-shadow-md relative z-10">{result.recommendedBatteries}</p>
-                  <p className="text-xs text-fuchsia-100 font-medium mt-3 bg-black/10 py-1.5 px-3 rounded-full inline-block mx-auto backdrop-blur-md relative z-10 border border-white/10 shadow-sm shadow-fuchsia-900/20">módulos recomendados</p>
-               </div>
-
-               <div className="bg-white border text-center border-slate-200 rounded-3xl p-6 flex flex-col justify-center relative overflow-hidden group hover:border-slate-300 transition-colors shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Capacidad Nevesaria</p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <p className="text-5xl font-black text-slate-800 tabular-nums transition-transform duration-500 group-hover:scale-110 tracking-tight">{result.requiredCapacityKwh.toLocaleString("es-ES")}</p>
-                    <span className="text-sm font-bold text-slate-400">kWh</span>
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium mt-3 bg-slate-50 py-1.5 px-3 rounded-full inline-block mx-auto border border-slate-100">almacenamiento óptimo</p>
-               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 flex-1">
-               <div className="bg-white border text-center border-slate-200 rounded-3xl p-6 flex flex-col justify-center relative overflow-hidden group hover:border-slate-300 transition-colors shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex justify-center items-center gap-1.5"><span className="text-emerald-500">💰</span> Ahorro Anual Estimado</p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <p className="text-4xl lg:text-5xl font-black text-emerald-600 tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight">{result.estimatedAnnualSavingsEur.toLocaleString("es-ES")}</p>
-                    <span className="text-sm font-bold text-emerald-600/60">€</span>
-                  </div>
-               </div>
-
-               <div className="bg-white border text-center border-slate-200 rounded-3xl p-6 flex flex-col justify-center relative overflow-hidden group hover:border-slate-300 transition-colors shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Inversión Estimada</p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <p className="text-4xl lg:text-5xl font-black text-slate-800 tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight">{result.estimatedCostEur.toLocaleString("es-ES")}</p>
-                    <span className="text-sm font-bold text-slate-400">€</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-2 italic font-medium">Instalación básica incl.</p>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 flex-1">
-               <div className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white rounded-3xl p-6 flex flex-col justify-center text-center shadow-sm relative overflow-hidden group hover:border-slate-600 transition-colors">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">Amortización Estimada</p>
-                  <div className="flex items-baseline justify-center gap-1 relative z-10">
-                    <p className="text-4xl lg:text-5xl font-black tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight text-white drop-shadow-sm">{result.paybackYears}</p>
-                    <span className="text-sm font-bold text-slate-300">años</span>
-                  </div>
-               </div>
-
-               <div className="bg-white border-2 border-fuchsia-100 rounded-3xl p-6 flex flex-col justify-center text-center shadow-sm relative overflow-hidden group hover:border-fuchsia-200 transition-colors">
-                  <p className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-widest mb-2 relative z-10">Independencia Red</p>
-                  <p className="text-4xl lg:text-5xl font-black tabular-nums transition-transform duration-500 group-hover:scale-105 tracking-tight relative z-10 text-slate-900">{result.energyIndependencePct}%</p>
-               </div>
-            </div>
-
-            <div className="bg-fuchsia-50/80 rounded-2xl p-4 border border-fuchsia-100 flex items-start gap-4 shadow-sm items-center">
-               <div className="bg-white p-2 rounded-xl shadow-sm border border-fuchsia-100 shrink-0 text-fuchsia-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
-               </div>
-               <p className="text-sm text-fuchsia-900/80 font-medium leading-relaxed">
-                 Con este escenario, una vivienda en <strong className="text-fuchsia-900">{municipio}</strong> podría cubrir aproximadamente el <strong>{result.energyIndependencePct}%</strong> de su energía anual combinando producción fotovoltaica y sistema de baterías.
-               </p>
-            </div>
-          </div>
+        <div className="px-10 py-4 bg-white/[0.02] border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600 text-center">
+           ESTUDIO PRELIMINAR GENERADO PARA {municipio} · DATOS PVGIS 2026 · {new Date().toLocaleDateString("es-ES")}
         </div>
-      </div>
-      <div className="bg-slate-50 px-4 md:px-8 py-3 border-t border-slate-100 flex items-center justify-between">
-        <p className="text-[10px] text-slate-400 font-medium italic">
-          * Los cálculos son estimaciones basadas en perfiles promedio. La inversión real requiere un estudio técnico in-situ de un instalador certificado.
-        </p>
       </div>
     </div>
   );

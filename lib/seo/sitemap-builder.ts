@@ -15,17 +15,13 @@ const STATIC_PAGES: Array<{ path: string; changefreq: "daily" | "weekly" | "mont
   { path: "/", changefreq: "daily", priority: 1.0 },
   { path: "/placas-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/precio-luz", changefreq: "daily", priority: 0.9 },
-  { path: "/precio-luz/horas-baratas", changefreq: "daily", priority: 0.8 },
   { path: "/baterias-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/subvenciones-solares", changefreq: "weekly", priority: 0.9 },
-  { path: "/bonificacion-ibi", changefreq: "weekly", priority: 0.8 },
   { path: "/calculadoras", changefreq: "monthly", priority: 0.7 },
-  { path: "/radiacion-solar", changefreq: "monthly", priority: 0.7 },
-  { path: "/autoconsumo-compartido", changefreq: "monthly", priority: 0.7 },
-  { path: "/coeficiente-autoconsumo", changefreq: "monthly", priority: 0.7 },
-  { path: "/normativa-solar", changefreq: "monthly", priority: 0.7 },
-  { path: "/presupuesto-solar", changefreq: "monthly", priority: 0.8 },
-  { path: "/sobre-nosotros", changefreq: "monthly", priority: 0.5 },
+  { path: "/calculadoras/placas-solares", changefreq: "weekly", priority: 0.8 },
+  { path: "/calculadoras/financiacion", changefreq: "weekly", priority: 0.8 },
+  { path: "/calculadoras/baterias", changefreq: "weekly", priority: 0.8 },
+  { path: "/calculadoras/excedentes", changefreq: "weekly", priority: 0.8 },
 ];
 
 type SitemapUrl = {
@@ -84,13 +80,19 @@ async function getSitemapCounts(): Promise<SitemapCounts> {
 }
 
 export async function getSitemapPageCount(): Promise<number> {
-  const { municipiosCount, pseoSlugCount } = await getSitemapCounts();
+  const { municipiosCount } = await getSitemapCounts();
 
-  // 2 URL types per municipality (placas-solares, baterias-solares)
-  const dynamicLocalUrls = municipiosCount * 2;
-  const guideUrls = GUIDE_SLUGS.length;
+  // 7 URL types per municipality:
+  // 1. /placas-solares/[slug]
+  // 2. /baterias-solares/[slug]
+  // 3. /calculadoras/[slug]
+  // 4. /calculadoras/placas-solares/[slug]
+  // 5. /calculadoras/financiacion/[slug]
+  // 6. /calculadoras/baterias/[slug]
+  // 7. /calculadoras/excedentes/[slug]
+  const dynamicLocalUrls = municipiosCount * 7;
   const staticUrls = STATIC_PAGES.length;
-  const totalUrls = dynamicLocalUrls + guideUrls + pseoSlugCount + staticUrls;
+  const totalUrls = dynamicLocalUrls + staticUrls;
 
   return Math.max(1, Math.ceil(totalUrls / SITEMAP_CHUNK_SIZE));
 }
@@ -124,18 +126,13 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
 
   const sections = [
     { key: "static" as const, from: 0, to: STATIC_PAGES.length - 1 },
-    { key: "municipio" as const, from: STATIC_PAGES.length, to: STATIC_PAGES.length + totalMunicipioUrlsPerType - 1 },
+    { key: "placas" as const, from: STATIC_PAGES.length, to: STATIC_PAGES.length + totalMunicipioUrlsPerType - 1 },
     { key: "baterias" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 - 1 },
-    {
-      key: "guia" as const,
-      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2,
-      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length - 1
-    },
-    {
-      key: "pseo_slug" as const,
-      from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length,
-      to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2 + GUIDE_SLUGS.length + pseoSlugCount - 1
-    }
+    { key: "calc_generic" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 2, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3 - 1 },
+    { key: "calc_placas" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 3, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 4 - 1 },
+    { key: "calc_finan" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 4, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 5 - 1 },
+    { key: "calc_bat" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 5, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 6 - 1 },
+    { key: "calc_exced" as const, from: STATIC_PAGES.length + totalMunicipioUrlsPerType * 6, to: STATIC_PAGES.length + totalMunicipioUrlsPerType * 7 - 1 },
   ];
 
   const urls: SitemapUrl[] = [];
@@ -160,51 +157,50 @@ export async function getSitemapChunkUrls(page: number, baseUrl: string): Promis
       continue;
     }
 
-    if (section.key === "guia") {
-      const guideStart = overlapFrom - section.from;
-      const guideEnd = overlapTo - section.from;
-      for (const guideSlug of GUIDE_SLUGS.slice(guideStart, guideEnd + 1)) {
-        urls.push({
-          loc: `${baseUrl}/guias/${guideSlug}`,
-          lastmod: DEPLOY_DATE,
-          changefreq: "weekly",
-          priority: 0.7
-        });
-      }
-      continue;
-    }
-
-    if (section.key === "pseo_slug") {
-      const pseoRangeFrom = overlapFrom - section.from;
-      const pseoRangeTo = overlapTo - section.from;
-      const slugs = await getPseoSlugIndexSlugsRange(pseoRangeFrom, pseoRangeTo);
-
-      for (const slug of slugs) {
-        urls.push({
-          loc: `${baseUrl}/solucion-solar/${slug}`,
-          lastmod: DEPLOY_DATE,
-          changefreq: "weekly",
-          priority: 0.7
-        });
-      }
-      continue;
-    }
-
     const municipalityRangeFrom = overlapFrom - section.from;
     const municipalityRangeTo = overlapTo - section.from;
     const slugs = await getMunicipiosEnergiaSlugsRange(municipalityRangeFrom, municipalityRangeTo);
 
     for (const slug of slugs) {
-      const path =
-        section.key === "municipio"
-          ? `/placas-solares/${slug}`
-          : `/baterias-solares/${slug}`;
+      let path = "";
+      let priority = 0.7;
+
+      switch (section.key) {
+        case "placas":
+          path = `/placas-solares/${slug}`;
+          priority = 0.8;
+          break;
+        case "baterias":
+          path = `/baterias-solares/${slug}`;
+          priority = 0.7;
+          break;
+        case "calc_generic":
+          path = `/calculadoras/${slug}`;
+          priority = 0.6;
+          break;
+        case "calc_placas":
+          path = `/calculadoras/placas-solares/${slug}`;
+          priority = 0.7;
+          break;
+        case "calc_finan":
+          path = `/calculadoras/financiacion/${slug}`;
+          priority = 0.6;
+          break;
+        case "calc_bat":
+          path = `/calculadoras/baterias/${slug}`;
+          priority = 0.6;
+          break;
+        case "calc_exced":
+          path = `/calculadoras/excedentes/${slug}`;
+          priority = 0.6;
+          break;
+      }
 
       urls.push({
         loc: `${baseUrl}${path}`,
-        lastmod: resolveLastmod(null), // uses DEPLOY_DATE; extend slug fetch to include updated_at if needed
+        lastmod: resolveLastmod(null),
         changefreq: "weekly",
-        priority: section.key === "municipio" ? 0.8 : 0.7
+        priority
       });
     }
   }

@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
+import { LocalCalculatorCTA } from "@/components/ui/LocalCalculatorCTA";
 
 export const dynamicParams = true;
 export const revalidate = 86400;
@@ -229,6 +230,12 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
                             )}
                         </div>
                     </section>
+
+                    <LocalCalculatorCTA 
+                        municipio={muniName} 
+                        slug={municipio} 
+                        variant="emerald"
+                    />
 
                     {/* Bonificación IBI/ICIO — conditional on real data */}
                     <section className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">

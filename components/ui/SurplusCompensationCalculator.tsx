@@ -1,6 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Zap, 
+  ArrowRight, 
+  CheckCircle2, 
+  Euro, 
+  Sun, 
+  TrendingUp,
+  Activity,
+  History,
+  Coins,
+  ArrowDownLeft,
+  ShieldCheck
+} from "lucide-react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 type SurplusCompensationCalculatorProps = {
   municipio: string;
@@ -12,141 +32,222 @@ export function SurplusCompensationCalculator({ municipio, irradiancia = 1700, p
   // Estimar excedente diario basado en irradiancia local (3kWp, 78% rendimiento, 40% excedentes)
   const excedenteDiarioEstimado = Math.round((3 * irradiancia * 0.78 * 0.4) / 365);
   const [excedenteDiario, setExcedenteDiario] = useState<number>(excedenteDiarioEstimado);
-  const [precioCompensacion, setPrecioCompensacion] = useState<number>(precioMedioLuz ? Math.round(precioMedioLuz * 0.45 * 100) / 100 : 0.08); // ~45% del precio minorista
+  const [precioCompensacion, setPrecioCompensacion] = useState<number>(precioMedioLuz ? Math.round(precioMedioLuz * 0.45 * 100) / 100 : 0.08);
 
-  const ingresoDiario = excedenteDiario * precioCompensacion;
-  const ingresoMensual = ingresoDiario * 30;
-  const ingresoAnual = ingresoDiario * 365;
+  const result = useMemo(() => {
+    const ingresoDiario = excedenteDiario * precioCompensacion;
+    const ingresoMensual = ingresoDiario * 30;
+    const ingresoAnual = ingresoDiario * 365;
+
+    return {
+      ingresoDiario,
+      ingresoMensual: Math.round(ingresoMensual),
+      ingresoAnual: Math.round(ingresoAnual),
+    };
+  }, [excedenteDiario, precioCompensacion]);
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] relative mt-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/20 via-transparent to-transparent pointer-events-none"></div>
-
-      <div className="bg-slate-900/95 backdrop-blur-md px-4 md:px-6 py-4 md:py-5 flex items-center gap-3 md:gap-4 relative z-10 border-b border-slate-800/60">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/30 to-emerald-600/10 text-emerald-400 border border-emerald-500/20 shadow-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div>
-          <h2 className="text-lg md:text-2xl font-black text-white tracking-tight">Monetización de Excedentes</h2>
-          <p className="text-xs md:text-sm text-emerald-200/70 font-medium mt-0.5">Calcula tus ingresos por verter energía sobrante a la red en {municipio}</p>
-        </div>
-      </div>
-
-      <div className="p-6 md:p-8 relative z-10">
-        <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
-          {/* Controls */}
-          <div className="space-y-8 flex flex-col justify-center">
-            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <label htmlFor="exc-diario" className="block text-sm font-bold text-slate-700">
-                    Energía sobrante volcada
-                  </label>
-                  <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-emerald-100 ring-1 ring-emerald-50">
-                    <span className="text-xl font-black text-emerald-600 tabular-nums leading-none">{excedenteDiario}</span>
-                    <span className="text-xs font-bold text-emerald-600/60">kWh/día</span>
-                  </div>
-                </div>
-                <input
-                  id="exc-diario"
-                  type="range"
-                  min={1}
-                  max={40}
-                  step={1}
-                  value={excedenteDiario}
-                  onChange={(e) => setExcedenteDiario(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-400 transition-all shadow-inner"
-                />
-                <div className="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1">
-                  <span>1 kWh</span>
-                  <span>40 kWh</span>
-                </div>
+    <div className="relative group mt-12">
+      {/* Decorative background glow */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 rounded-[2.5rem] blur-2xl opacity-50 transition duration-1000 group-hover:opacity-75"></div>
+      
+      <div className="relative bg-slate-950 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden">
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] pointer-events-none" />
+        
+        {/* HEADER */}
+        <div className="px-8 py-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-b from-white/[0.02] to-transparent">
+           <div className="flex items-center gap-5">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/20">
+                 <Coins className="w-7 h-7 text-white" />
               </div>
-            </div>
-
-            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-slate-400/5 rounded-full blur-2xl translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <label htmlFor="exc-precio" className="block text-sm font-bold text-slate-700">
-                    Precio de compensación
-                  </label>
-                  <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
-                    <span className="text-xl font-black text-slate-700 tabular-nums leading-none">{precioCompensacion.toFixed(3)}</span>
-                    <span className="text-xs font-bold text-slate-400">€/kWh</span>
-                  </div>
-                </div>
-                <input
-                  id="exc-precio"
-                  type="range"
-                  min={0.03}
-                  max={0.20}
-                  step={0.01}
-                  value={precioCompensacion}
-                  onChange={(e) => setPrecioCompensacion(Number(e.target.value))}
-                  className="w-full h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-600 hover:accent-slate-500 transition-all shadow-inner"
-                />
-                <div className="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1 mb-4">
-                  <span>0.03 €</span>
-                  <span>0.20 €</span>
-                </div>
-                <div className="flex items-start gap-2 text-xs text-slate-500 font-medium bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-slate-100 shadow-sm">
-                  <span className="text-base shrink-0">💡</span>
-                  <p className="leading-relaxed">La media del mercado mayorista oscila entre <strong>0.05€ y 0.10€</strong> según la comercializadora.</p>
-                </div>
+              <div>
+                 <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Estrategia de Excedentes</h2>
+                 <p className="text-emerald-300/60 text-sm font-medium">Maximización de Compensación en {municipio}</p>
               </div>
-            </div>
-          </div>
+           </div>
+           
+           <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Referencia Transparente OMIE</p>
+           </div>
+        </div>
 
-          {/* Receipt View */}
-          <div className="bg-white rounded-3xl p-1 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative">
-            <div className="bg-slate-50/50 rounded-[1.4rem] h-full p-6 md:p-8 flex flex-col relative overflow-hidden">
-               
-               {/* Dynamic background rings */}
-               <div className="absolute -right-20 -top-20 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none transition-all duration-700" 
-                    style={{ transform: `scale(${1 + (ingresoMensual / 100)})` }} />
-               <div className="absolute -left-10 bottom-20 w-40 h-40 bg-teal-400/5 rounded-full blur-2xl pointer-events-none" />
-
-               <div className="flex items-center gap-3 border-b border-slate-200/80 pb-5 mb-6 relative z-10">
-                   <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400"><path d="M4 4h16v16H4z"/><path d="M4 8h16"/><path d="M8 4v4"/></svg>
-                   </div>
-                   <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Balance de Facturación</span>
-               </div>
-
-               <div className="space-y-6 mb-8 relative z-10">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 sm:gap-2">
-                    <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-slate-100 shadow-sm flex-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Impacto Diario</p>
-                        <p className="text-2xl font-black text-slate-700 tabular-nums">+{ingresoDiario.toLocaleString("es-ES", { style: "currency", currency: "EUR" })}</p>
+        <div className="p-8 md:p-10">
+           <div className="grid lg:grid-cols-12 gap-12 items-start">
+              {/* CONTROLS (5 Cols) */}
+              <div className="lg:col-span-12 xl:col-span-5 space-y-8">
+                 <div className="grid gap-8">
+                    {/* Excedente */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                             <Zap className="w-3.5 h-3.5 text-amber-500" /> Energía Volcada a Red
+                          </label>
+                          <span className="text-xl font-black text-white tabular-nums">{excedenteDiario} <span className="text-[10px] text-slate-500">kWh/día</span></span>
+                       </div>
+                       <input 
+                         type="range" min={1} max={50} step={1} value={excedenteDiario}
+                         onChange={(e) => setExcedenteDiario(Number(e.target.value))}
+                         className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                       />
+                       <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                          <span>Mín</span>
+                          <span>Máx (50 kWh)</span>
+                       </div>
                     </div>
-                    
-                    <div className="hidden sm:flex h-[2px] w-8 bg-slate-200 mb-6 shrink-0" />
-                    
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50/30 p-4 rounded-2xl border border-emerald-100 shadow-sm flex-1 sm:text-right relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-400/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2"></div>
-                        <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-wider mb-2 relative z-10">Descuento Mensual</p>
-                        <p className="text-3xl sm:text-4xl md:text-5xl font-black text-emerald-600 tabular-nums drop-shadow-sm transition-all duration-500 tracking-tight relative z-10">{ingresoMensual.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-lg font-bold text-emerald-400">€</span></p>
-                    </div>
-                  </div>
-               </div>
 
-               <div className="mt-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl gap-4 border border-slate-700/50">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
-                  <div className="relative z-10">
-                     <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                       Ahorro Extra Anual
-                     </p>
-                     <p className="text-xs text-slate-400 max-w-[180px] leading-relaxed">Dinero que dejas de pagar a tu compañía eléctrica al año</p>
-                  </div>
-                  <div className="sm:text-right relative z-10">
-                     <p className="text-4xl md:text-5xl font-black tabular-nums tracking-tight text-white drop-shadow-md">{ingresoAnual.toLocaleString("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}</p>
-                  </div>
-               </div>
-            </div>
-          </div>
+                    {/* Precio Compensacion */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> Precio Compensación
+                          </label>
+                          <span className="text-xl font-black text-emerald-400 tabular-nums">{precioCompensacion.toFixed(3)} <span className="text-[10px] text-emerald-400/40">€/kWh</span></span>
+                       </div>
+                       <input 
+                         type="range" min={0.03} max={0.25} step={0.005} value={precioCompensacion}
+                         onChange={(e) => setPrecioCompensacion(Number(e.target.value))}
+                         className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-emerald-400"
+                       />
+                       <div className="rounded-2xl bg-white/5 p-4 border border-white/10 flex items-start gap-3">
+                          <Activity className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                          <p className="text-[10px] font-medium text-slate-400 leading-relaxed uppercase tracking-tight">
+                             El precio en <span className="text-white font-bold">{municipio}</span> suele variar entre 0.04€ y 0.12€. Algunas comercializadoras ofrecen "Batería Virtual" para compensar la factura a 0€.
+                          </p>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              {/* RESULTS (7 Cols) */}
+              <div className="lg:col-span-12 xl:col-span-7">
+                 <div className="grid md:grid-cols-2 gap-8">
+                    {/* Visual Cashflow Side */}
+                    <div className="space-y-8">
+                        {/* FLOW VISUALIZATION */}
+                        <div className="relative w-full min-h-[350px] md:aspect-video flex flex-col items-center justify-between bg-white/[0.02] border border-white/5 rounded-[2.5rem] group/viz px-8 py-10 lg:py-12">
+                           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-[2.5rem]" />
+                           
+                           {/* TOP RESULT */}
+                           <div className="text-center relative z-20">
+                              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Ahorro Mensual Estimado</p>
+                              <div className="relative inline-block">
+                                 <div className="absolute -inset-8 bg-emerald-500/10 blur-2xl opacity-0 group-hover/viz:opacity-100 transition-opacity duration-1000" />
+                                 <p className="text-4xl md:text-6xl font-black text-white tabular-nums tracking-tighter relative">+{result.ingresoMensual}€</p>
+                              </div>
+                           </div>
+
+                           {/* THE FLOW */}
+                           <div className="relative w-full flex items-center justify-between gap-4 max-w-sm mt-auto">
+                              {/* Particles container */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                 <AnimatePresence>
+                                    {[...Array(3)].map((_, i) => (
+                                       <motion.div 
+                                          key={i}
+                                          animate={{ 
+                                             x: [-120, 120], 
+                                             opacity: [0, 1, 0],
+                                             scale: [0.5, 1.2, 0.5]
+                                          }}
+                                          transition={{ 
+                                             repeat: Infinity, 
+                                             duration: 2.5, 
+                                             delay: i * 0.8,
+                                             ease: "easeInOut"
+                                          }}
+                                          className="absolute h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]"
+                                       />
+                                    ))}
+                                 </AnimatePresence>
+                              </div>
+
+                              <div className="flex flex-col items-center gap-3 relative z-10">
+                                 <div className="h-16 w-16 md:h-20 md:w-20 rounded-3xl bg-slate-900 border border-white/10 flex items-center justify-center shadow-2xl group-hover/viz:border-emerald-500/40 transition-colors">
+                                    <Sun className="w-8 h-8 md:w-10 md:h-10 text-amber-500" />
+                                 </div>
+                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Excedente</p>
+                              </div>
+
+                              <div className="flex flex-col items-center gap-3 relative z-10">
+                                 <div className="h-16 w-16 md:h-20 md:w-20 rounded-3xl bg-slate-900 border border-white/10 flex items-center justify-center shadow-2xl group-hover/viz:border-emerald-500/40 transition-colors">
+                                    <ArrowDownLeft className="w-8 h-8 md:w-10 md:h-10 text-emerald-500" />
+                                 </div>
+                                 <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Factura</p>
+                              </div>
+                           </div>
+                        </div>
+                       
+                       {/* Annual Shield Card */}
+                       <div className="w-full bg-slate-900 border border-white/5 rounded-3xl p-6 flex items-center justify-between text-white shadow-xl group">
+                          <div className="flex-1">
+                             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1 flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3 h-3" /> Escudo Energético Año 1
+                             </p>
+                             <p className="text-2xl font-black">-{result.ingresoAnual}€ <span className="text-xs text-slate-400 font-medium tracking-normal">en tu factura</span></p>
+                          </div>
+                          <History className="w-10 h-10 text-slate-700 group-hover:rotate-[-45deg] transition-transform duration-700" />
+                       </div>
+                    </div>
+
+                    {/* Data List Side */}
+                    <div className="grid gap-4">
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors relative group">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ahorro Diario Red</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">+{result.ingresoDiario.toFixed(2)} <span className="text-sm text-slate-500">€</span></p>
+                             <Euro className="w-5 h-5 text-emerald-400" />
+                          </div>
+                       </div>
+
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Valor Excedente Anual</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-emerald-400 tracking-tighter">{result.ingresoAnual.toLocaleString()} <span className="text-sm text-emerald-400/40">€/año</span></p>
+                             <TrendingUp className="w-5 h-5 text-emerald-400" />
+                          </div>
+                       </div>
+
+                       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/[0.08] transition-colors">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Equivalencia Almacenada</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">{(excedenteDiario * 365).toLocaleString()} <span className="text-sm text-slate-500">kWh</span></p>
+                             <Activity className="w-5 h-5 text-amber-400" />
+                          </div>
+                       </div>
+
+                       <div className="bg-slate-900 border border-white/5 rounded-2xl p-6 flex flex-col justify-between shadow-inner">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">Impacto en ROI</p>
+                          <div className="flex items-baseline justify-between mt-2">
+                             <p className="text-3xl font-black text-white tracking-tighter">✓ Acelerado</p>
+                             <ShieldCheck className="w-5 h-5 text-blue-500" />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* CTA / BANNER */}
+                 <div className="mt-8 relative group cursor-pointer overflow-hidden rounded-2xl border border-white/10 transition-all hover:border-emerald-500/50">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
+                    <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 bg-slate-900/50">
+                       <div className="h-16 w-16 md:h-20 md:w-20 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                          <ArrowDownLeft className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />
+                       </div>
+                       <div className="flex-1 text-center md:text-left">
+                          <h4 className="text-lg font-black text-white tracking-tight mb-2">Activa tu "Batería Virtual" en {municipio}</h4>
+                          <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-sm">No pierdas ni un solo vatio. Hemos seleccionado las comercializadoras en {municipio} con los mejores precios de excedentes y servicios de hucha solar para llevar tu factura a <span className="text-white font-bold">0 €</span>.</p>
+                       </div>
+                       <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-emerald-500 group-hover:border-emerald-400 transition-all">
+                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        <div className="px-10 py-4 bg-white/[0.02] border-t border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 text-center">
+           ANÁLISIS DE MONETIZACIÓN ESTIMADO PARA {municipio} · DATOS PVGIS 2026
         </div>
       </div>
     </div>
