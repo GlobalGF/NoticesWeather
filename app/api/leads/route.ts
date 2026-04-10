@@ -24,7 +24,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createHash } from "crypto";
 import { Resend } from "resend";
-import { sendTelegramMessage } from "@/lib/utils/telegram";
+import { sendTelegramMessage, escapeHtml } from "@/lib/utils/telegram";
 
 /* ── Config ──────────────────────────────────────────────── */
 const MAX_BODY_BYTES = 4_096;
@@ -168,30 +168,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         );
     }
 
+
     /* -- 1. Send Telegram Alert (Native, no n8n) -- */
     const telegramText = `
 🔆 <b>Nuevo Lead Solar</b>
-<b>Nombre:</b> ${nombre.trim()}
-<b>Teléfono:</b> ${telefono}
-<b>Email:</b> ${email || "—"}
-<b>C.P.:</b> ${codigo_postal || "—"}
-<b>Dirección:</b> ${direccion || "—"}
-<b>Municipio:</b> ${municipio} (${provincia})
-<b>Tipo:</b> ${tipo ?? "—"}
-<b>Consumo Anual:</b> ${consumo ? consumo + " kWh/año" : "—"}
-<b>Consumo Mes:</b> ${consumoMensual || "—"}
-<b>Tejado:</b> ${tejado || "—"}
-<b>Batería:</b> ${bateria || "—"}
+<b>Nombre:</b> ${escapeHtml(nombre.trim())}
+<b>Teléfono:</b> ${escapeHtml(telefono)}
+<b>Email:</b> ${escapeHtml(email || "—")}
+<b>C.P.:</b> ${escapeHtml(codigo_postal || "—")}
+<b>Dirección:</b> ${escapeHtml(direccion || "—")}
+<b>Municipio:</b> ${escapeHtml(municipio)} (${escapeHtml(provincia)})
+<b>Tipo:</b> ${escapeHtml(tipo ?? "—")}
+<b>Consumo Anual:</b> ${consumo ? escapeHtml(String(consumo)) + " kWh/año" : "—"}
+<b>Consumo Mes:</b> ${escapeHtml(consumoMensual || "—")}
+<b>Tejado:</b> ${escapeHtml(tejado || "—")}
+<b>Batería:</b> ${escapeHtml(bateria || "—")}
 
-<i>Fuente: ${referer || "directo"}</i>
+<i>Fuente: ${escapeHtml(referer || "directo")}</i>
     `.trim();
 
     sendTelegramMessage(telegramText)
         .then(res => {
             if (res.success) console.log(`[api/leads] Telegram alert sent for lead ${inserted.id}`);
-            else console.warn(`[api/leads] Telegram alert failed:`, res.error);
+            else console.error(`[api/leads] Telegram alert failed for lead ${inserted.id}:`, JSON.stringify(res.error));
         })
-        .catch(err => console.error(`[api/leads] Telegram fatal error:`, err));
+        .catch(err => console.error(`[api/leads] Telegram fatal error for lead ${inserted.id}:`, err));
 
     /* -- Send email notification (non-blocking) -- */
     const resendKey = process.env.RESEND_API_KEY;

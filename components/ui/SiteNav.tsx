@@ -20,6 +20,23 @@ const MUNICIPALITY_MODULES = new Set([
   "/subvenciones-solares",
 ]);
 
+// List of calculator pages that are NOT city specific
+const CALCULATOR_CATEGORIES = new Set([
+  "placas-solares",
+  "baterias",
+  "excedentes",
+  "financiacion"
+]);
+
+// Slugs that should NEVER be treated as cities (Regions/Provinces)
+const FORBIDDEN_SLUGS = new Set([
+  "andalucia", "aragon", "asturias", "principado-de-asturias", "illes-balears", "islas-baleares",
+  "canarias", "cantabria", "castilla-y-leon", "castilla-la-mancha", "cataluna", "catalunya",
+  "comunitat-valenciana", "valencia", "extremadura", "galicia", "comunidad-madrid", "madrid",
+  "region-de-murcia", "murcia", "comunidad-foral-navarra", "navarra", "pais-vasco", "euskadi",
+  "la-rioja", "ceuta", "melilla"
+]);
+
 interface CityContext {
   slug: string | null;
   ccaa: string | null;
@@ -30,37 +47,53 @@ export function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname() ?? "";
   
-  // 1. Detect context from current URL (Runs on both Server and Client)
+  // 1. Detect context from current URL
   const segments = pathname.split("/").filter(Boolean);
   const urlModule = segments.length >= 1 ? `/${segments[0]}` : null;
   
   let urlContext: CityContext = { slug: null, ccaa: null, prov: null };
-  if (MUNICIPALITY_MODULES.has(urlModule!)) {
-     if (urlModule === "/subvenciones-solares" && segments.length === 4) {
-       urlContext = { ccaa: segments[1], prov: segments[2], slug: segments[3] };
-     } else if (urlModule === "/calculadoras" && segments.length === 3) {
-       urlContext = { slug: segments[2], ccaa: null, prov: null };
-     } else if (segments.length === 2 && segments[0] !== "geo") {
-       urlContext = { slug: segments[1], ccaa: null, prov: null };
-     }
+
+  if (urlModule === "/subvenciones-solares") {
+      if (segments.length === 4) {
+          urlContext = { ccaa: segments[1], prov: segments[2], slug: segments[3] };
+      }
+  } else if (urlModule === "/calculadoras") {
+      if (segments.length === 3) {
+          urlContext = { slug: segments[2], ccaa: null, prov: null };
+      } else if (segments.length === 2 && !CALCULATOR_CATEGORIES.has(segments[1])) {
+          urlContext = { slug: segments[1], ccaa: null, prov: null };
+      }
+  } else if (MUNICIPALITY_MODULES.has(urlModule!) && segments.length === 2 && segments[0] !== "geo") {
+      urlContext = { slug: segments[1], ccaa: null, prov: null };
+  }
+
+  // Safety: Ensure urlContext never contains a forbidden slug
+  if (urlContext.slug && FORBIDDEN_SLUGS.has(urlContext.slug)) {
+      urlContext.slug = null;
   }
 
   // 2. Persisted state (Client-only hydration)
   const [persistedContext, setPersistedContext] = useState<CityContext>({ slug: null, ccaa: null, prov: null });
 
-  // Hydrate from session storage on mount
+  // Hydrate from session storage on mount + Clean legacy junk
   useEffect(() => {
     const saved = sessionStorage.getItem("lastCityContext");
     if (saved) {
       try {
-        setPersistedContext(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (parsed.slug && FORBIDDEN_SLUGS.has(parsed.slug)) {
+            console.warn(`[SiteNav] Clearing forbidden city slug: ${parsed.slug}`);
+            sessionStorage.removeItem("lastCityContext");
+        } else {
+            setPersistedContext(parsed);
+        }
       } catch (e) {}
     }
   }, []);
 
   // Update session storage when URL context changes
   useEffect(() => {
-    if (urlContext.slug) {
+    if (urlContext.slug && !FORBIDDEN_SLUGS.has(urlContext.slug)) {
       setPersistedContext(prev => {
         const updated = { ...prev, ...urlContext };
         sessionStorage.setItem("lastCityContext", JSON.stringify(updated));
@@ -69,10 +102,14 @@ export function SiteNav() {
     }
   }, [urlContext.slug, urlContext.ccaa, urlContext.prov]);
 
+  // Resolution: 
+  // 1. Current page city takes priority.
+  // 2. Fallback to persisted city from other pages.
+  // This keeps "Piera" selected even when browsing regional Hubs.
   const context = urlContext.slug ? urlContext : persistedContext;
 
   const getLinkHref = (link: { href: string; sticky: boolean }) => {
-    if (!link.sticky || !context.slug) return link.href;
+    if (!link.sticky || !context.slug || FORBIDDEN_SLUGS.has(context.slug)) return link.href;
 
     // Special case for Subsidies - needs full path
     if (link.href === "/subvenciones-solares") {

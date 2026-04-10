@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={manrope.className}>
+      <head>
         {/* Google Tag Manager */}
         <Script id="gtm-script" strategy="afterInteractive">
           {`
@@ -46,7 +46,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })(window,document,'script','dataLayer','GTM-MNDBG8WV');
           `}
         </Script>
-
+      </head>
+      <body className={manrope.className}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe 

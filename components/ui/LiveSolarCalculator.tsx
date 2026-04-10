@@ -90,51 +90,32 @@ export function LiveSolarCalculator({
   const { data, loading, error } = useWeather();
   const [consumo, setConsumo] = useState(300); // kWh/month
 
-  // No weather data? Show SEO-visible fallback with static estimates
+  // No weather data? Show a lightweight skeleton to prevent layout shift and "fake calculator" flash
   if (loading) {
-    // Static estimate: assume ~500 W/m² avg GHI, 25°C
-    const staticResult = calculate(500, 25, consumo, precioMedioLuz, "auto");
     return (
-      <section
-        className="mt-8 rounded-2xl border border-slate-200 bg-white p-6"
-        aria-label={`Calculadora solar para ${municipio}`}
+      <section 
+        className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 animate-pulse"
+        aria-hidden="true"
       >
-        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
-          <span aria-hidden="true" className="text-amber-500">⚡</span>
-          Calculadora de producción solar en {municipio}
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Una instalación típica de {staticResult.recommendedPanels} paneles de {PANEL_PEAK_W}W
-          en {municipio} produce aproximadamente {fmt(staticResult.dailyProductionKwh, 1)} kWh
-          diarios, generando un ahorro estimado de {fmt(staticResult.annualSavingsEur)} € al año
-          al precio de {precioMedioLuz.toFixed(2)} €/kWh. Los datos en tiempo real se cargan
-          con la información meteorológica actual.
-        </p>
-        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Producción diaria</p>
-            <p className="mt-1 text-2xl font-extrabold text-amber-900">{fmt(staticResult.dailyProductionKwh, 1)} kWh</p>
-          </div>
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Ahorro mensual</p>
-            <p className="mt-1 text-2xl font-extrabold text-emerald-900">{fmt(staticResult.monthlySavingsEur)} €</p>
-          </div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Ahorro anual</p>
-            <p className="mt-1 text-2xl font-extrabold text-blue-900">{fmt(staticResult.annualSavingsEur)} €</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Paneles recomendados</p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900">{staticResult.recommendedPanels}</p>
-          </div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-6 w-6 rounded-full bg-slate-100" />
+          <div className="h-6 w-48 rounded bg-slate-100" />
         </div>
-        <p className="mt-3 text-xs text-slate-400">Cargando datos meteorológicos en tiempo real…</p>
+        <div className="h-4 w-full rounded bg-slate-50 mb-2" />
+        <div className="h-4 w-2/3 rounded bg-slate-50 mb-6" />
+        
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 rounded-xl bg-slate-50" />
+          ))}
+        </div>
+        <div className="mt-4 h-3 w-32 rounded bg-slate-50" />
       </section>
     );
   }
 
   if (error || !data) {
-    return null; // silently hide — AhorroCalculator is the fallback
+    return null; // hide if error — no fallback needed as this is an enhancement block
   }
 
   const ghi = data.ghi ?? data.short_rad ?? null;
