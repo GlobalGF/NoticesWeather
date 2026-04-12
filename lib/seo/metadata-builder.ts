@@ -20,6 +20,8 @@ export function buildMetadata(input: MetadataInput): Metadata {
     description: input.description,
     alternates: { canonical },
     robots: input.noIndex ? { index: false, follow: true } : undefined,
+    authors: [{ name: "SolaryEco", url: base }],
+    publisher: "SolaryEco",
     openGraph: {
       title: input.title,
       description: input.description,

@@ -83,20 +83,29 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
                             </div>
 
                             {/* Links */}
-                            <div className="mt-auto flex gap-2 pt-5">
+                            <div className="mt-auto flex flex-col gap-2 pt-5">
                                 <Link
                                     href={`/placas-solares/${m.slug}`}
                                     className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 shadow-sm"
                                 >
-                                    Ver rentabilidad
+                                    Placas solares en {m.municipio}
                                 </Link>
-                                <Link
-                                    href={`/baterias-solares/${m.slug}`}
-                                    className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 shadow-sm"
-                                >
-                                    Baterías
-                                </Link>
+                                <div className="flex gap-2">
+                                    <Link
+                                        href={`/baterias-solares/${m.slug}`}
+                                        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 shadow-sm"
+                                    >
+                                        Baterías en {m.municipio}
+                                    </Link>
+                                    <Link
+                                        href={`/placas-solares/${m.slug}/precio`}
+                                        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 shadow-sm"
+                                    >
+                                        Precio solar
+                                    </Link>
+                                </div>
                             </div>
+
                         </article>
                     </li>
                 ))}

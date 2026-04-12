@@ -32,11 +32,14 @@ const InstallationProcessTimeline = dynamic(() => import("@/components/ui/Instal
 const LocalInstallationCases = dynamic(() => import("@/components/ui/LocalInstallationCases").then(mod => mod.LocalInstallationCases));
 const CityClimateSolarProfile = dynamic(() => import("@/components/ui/CityClimateSolarProfile").then(mod => mod.CityClimateSolarProfile));
 const SubsidiesSeoBlock = dynamic(() => import("@/components/ui/SubsidiesSeoBlock").then(mod => mod.SubsidiesSeoBlock));
+const ProvinceRanking = dynamic(() => import("@/components/ui/ProvinceRanking").then(mod => mod.ProvinceRanking));
+const ContextualCityLinks = dynamic(() => import("@/components/ui/ContextualCityLinks").then(mod => mod.ContextualCityLinks));
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
-import { buildSolarEnergyPageSchema, buildMunicipioFaqs } from "@/lib/seo/schema-org";
+import { buildSolarEnergyPageSchema, buildMunicipioFaqs, buildOrganizationSchema } from "@/lib/seo/schema-org";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
+import { PricingBreakdownTable } from "@/components/ui/PricingBreakdownTable";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
 
 export const revalidate = cachePolicy.page.solarCity;
@@ -207,20 +210,21 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
             console.warn(`[PlacasSolaresMunicipioPage] 3b. Weather failed (continuing with fallback)`);
         }
 
-        // Fetch nearby
+        // Fetch nearby (12 for ProvinceRanking, 3 for NearbyCards)
         console.info(`[PlacasSolaresMunicipioPage] 4. FETCHING NEARBY for province: ${municipio.provincia}`);
-        const nearbyMunicipios = await getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 6);
-        const nearbyItems = nearbyMunicipios
+        const nearbyMunicipios = await getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 12);
+        const allProvinceItems = nearbyMunicipios.map(m => ({
+            slug: m.slug,
+            municipio: m.municipio,
+            provincia: m.provincia,
+            habitantes: m.habitantes ?? 0,
+            ahorroEstimado: m.ahorro_estimado,
+            irradiacionSolar: m.irradiacion_solar,
+            bonificacionIbi: m.bonificacion_ibi,
+        }));
+        const nearbyItems = allProvinceItems
             .filter(m => m.slug !== slug)
-            .slice(0, 3)
-            .map(m => ({
-                slug: m.slug,
-                municipio: m.municipio,
-                provincia: m.provincia,
-                ahorroEstimado: m.ahorro_estimado,
-                irradiacionSolar: m.irradiacion_solar,
-                bonificacionIbi: m.bonificacion_ibi,
-            }));
+            .slice(0, 3);
 
         console.info(`[PlacasSolaresMunicipioPage] 5. FETCHING ENERGY PRICE`);
         const precioLuz = await getPrecioLuzHoy();
@@ -261,6 +265,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationSchema()) }}
             />
 
             <main className="bg-slate-50 min-h-screen font-sans pb-16 overflow-x-hidden">
@@ -328,6 +336,21 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             <LiveSolarCalculator
                                 municipio={municipio.municipio}
                                 precioMedioLuz={precioLuz}
+                            />
+
+                            {/* Pricing Breakdown — directly answers "cuánto cuesta" */}
+                            <PricingBreakdownTable
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                eurPorWatio={municipio.eur_por_watio}
+                                precioInstalacionMin={municipio.precio_instalacion_min_eur}
+                                precioInstalacionMedio={municipio.precio_instalacion_medio_eur}
+                                precioInstalacionMax={municipio.precio_instalacion_max_eur}
+                                bonificacionIbi={municipio.bonificacion_ibi}
+                                irradiacionSolar={municipio.irradiacion_solar}
+                                horasSol={municipio.horas_sol}
+                                precioLuz={precioLuz}
+                                slug={slug}
                             />
 
                             <SolarWeatherWidget municipio={municipio.municipio} />
@@ -407,6 +430,20 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 habitantes={municipio.habitantes}
                             />
 
+                            {/* Province Ranking — internal links to top cities */}
+                            <ProvinceRanking
+                                items={allProvinceItems.map(m => ({
+                                    slug: m.slug,
+                                    municipio: m.municipio,
+                                    habitantes: m.habitantes,
+                                    irradiacionSolar: m.irradiacionSolar,
+                                    ahorroEstimado: m.ahorroEstimado,
+                                    bonificacionIbi: m.bonificacionIbi,
+                                }))}
+                                provincia={municipio.provincia}
+                                currentSlug={slug}
+                            />
+
                             <CalculatorMunicipalitySwitcher
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia}
@@ -435,6 +472,16 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
                             {/* ── FAQ Accordion (SSR — visible to Googlebot) ── */}
                             <FaqAccordion faqs={faqs} municipio={municipio.municipio} />
+
+                            {/* Contextual internal links with keyword-rich anchors */}
+                            <ContextualCityLinks
+                                municipio={municipio.municipio}
+                                provincia={municipio.provincia}
+                                slug={slug}
+                                comunidadSlug={slugify(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
+                                provinciaSlug={slugify(municipio.provincia || "sevilla")}
+                                nearbyCities={allProvinceItems.filter(m => m.slug !== slug)}
+                            />
 
                             {/* Related municipalities */}
                             <NearbyMunicipalityCards items={nearbyItems} currentMunicipio={municipio.municipio} />

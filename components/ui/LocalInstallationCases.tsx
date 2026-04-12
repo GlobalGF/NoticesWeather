@@ -12,6 +12,7 @@
 /* ── Types ─────────────────────────────────────────────────────── */
 
 import { parseMarkdown } from "@/lib/utils/text";
+import { FALLBACK_ES } from "@/lib/data/constants";
 
 type Props = {
   municipio: string;
@@ -118,7 +119,7 @@ function buildCases(
   zona: ClimateZone,
   irrad: number,
   horas: number,
-  eurWp: number,
+  baseEurWp: number,
   precioLuz: number,
   bonIbi: number | null,
   habitantes: number | null,
@@ -162,17 +163,14 @@ function buildCases(
           [
             `Vivienda tipo piso en ${municipio} donde nuestro **equipo** ha proyectado un uso eficiente de la **energía solar**.`,
             `Instalación compacta de ${fmt(2.5, 1)} kWp sobre estructura de alta **calidad**, ideal para reducir la **cuenta de la luz**.`,
-            `Este **proyecto fotovoltaico** permite a cada **cliente** urbano sumarse al ahorro colectivo con total garantía de la **empresa**.`,
           ],
           [
             `Apartamento residencial en ${municipio} con un **sistema solar** optimizado para la **economía** familiar.`,
             `Cada **panel** de ${fmt(2.5, 1)} kWp está dimensionado para cubrir el gasto base del hogar, mejorando la gestión de la **luz** diaria.`,
-            `La **atención** técnica personalizada asegura que el **sistema fotovoltaico** rinda al máximo en entornos compartidos.`,
           ],
           [
             `Piso en zona céntrica de ${municipio} con 6 módulos de alta **eficiencia**.`,
             `Con este **equipo** de ${fmt(2.5, 1)} kWp, el ahorro en la **cuenta de la luz** se sitúa entre un 40% y un 60% de forma veraz.`,
-            `Representa la solución de **energía** más demandada por quienes buscan **calidad** técnica sin grandes obras.`,
           ],
         ],
         h,
@@ -191,17 +189,14 @@ function buildCases(
           [
             `Casa adosada en ${municipio} con un **proyecto solar** diseñado para maximizar la **economía** del hogar.`,
             `Instalación de ${fmt(5, 0)} kWp con 12 módulos de alta **calidad**, orientados para captar la mejor **luz** del día.`,
-            `El **equipo** de ingeniería asegura que este **sistema fotovoltaico** cubra los consumos más pesados de la vivienda.`,
           ],
           [
             `Vivienda adosada con un **panel solar** avanzado en ${municipio}.`,
             `Nuestra **empresa** recomienda este sistema de ${fmt(5, 0)} kWp para reducir la **cuenta de la luz** de forma drástica y honesta.`,
-            `Con la **atención** técnica adecuada, los 12 paneles ofrecen un rendimiento excelente bajo el sol de ${provincia}.`,
           ],
           [
             `Pareado en ${municipio} que apuesta por la **energía fotovoltaica** para blindar su **economía** energética.`,
             `Se instalan 12 módulos de alta **eficiencia**, logrando un **proyecto** de autoconsumo equilibrado y duradero.`,
-            `La **calidad** del montaje en la provincia garantiza que el sistema rinda según las ${fmt(horas)} horas de sol anuales.`,
           ],
         ],
         h,
@@ -219,18 +214,15 @@ function buildCases(
         [
           [
             `Vivienda unifamiliar aislada en ${municipio} con alto consumo por climatización y piscina.`,
-            `Instalación de ${fmt(8, 0)} kWp (19 paneles) distribuidos en cubierta y pérgola solar sobre la terraza. Incluye optimizadores de potencia para gestionar sombras parciales.`,
-            `El excedente de producción solar en verano se compensa directamente en la factura a ${fmt(precioLuz, 3)} €/kWh, reduciendo el coste del mantenimiento de la piscina a prácticamente cero.`,
+            `Instalación de ${fmt(8, 0)} kWp (19 paneles) distribuidos en cubierta y pérgola solar sobre la terraza.`,
           ],
           [
-            `Chalet con parcela en ${municipio}, consumo elevado (700 kWh/mes) por aerotermia, domótica y electrodomésticos.`,
-            `Sistema de ${fmt(8, 0)} kWp con microinversores: cada panel opera de forma independiente, lo que mejora el rendimiento un 5–15% frente a inversores centralizados.`,
-            `La irradiación de ${fmt(irrad)} kWh/m² en esta zona permite producciones superiores a ${fmt(irrad * 8 * 0.80 / 1000)} kWh/año — sobradamente rentable incluso sin subvención.`,
+            `Chalet con parcela en ${municipio}, consumo elevado (700 kWh/mes) por aerotermia y domótica.`,
+            `La irradiación de ${fmt(irrad)} kWh/m² en esta zona permite producciones superiores a ${fmt(irrad * 8 * 0.80 / 1000)} kWh/año.`,
           ],
           [
             `Casa aislada con cubierta a cuatro aguas en ${municipio}. Se aprovechan los faldones sur y este.`,
-            `Planta de ${fmt(8, 0)} kWp con 19 módulos monocristalinos PERC de última generación. La producción estimada cubre más del 70% del consumo anual del hogar.`,
-            `Al contar con ${fmt(horas)} h de sol y ${fmt(irrad)} kWh/m² de irradiación, el retorno de la inversión es uno de los más rápidos de la provincia.`,
+            `Planta de ${fmt(8, 0)} kWp con 19 módulos monocristalinos PERC de última generación.`,
           ],
         ],
         h,
@@ -240,20 +232,19 @@ function buildCases(
   ];
 
   return profiles.map((p) => {
-    const coste = Math.round(p.kWp * eurWp * 1000);
-    const perfRatio = 0.80;
+    // PRICING CURVE: 2.5kWp is more expensive/W, 8kWp is cheaper/W
+    const wpMultiplier = p.kWp <= 3 ? 1.20 : p.kWp <= 5 ? 1.00 : 0.90;
+    const specificEurWp = baseEurWp * wpMultiplier;
+    const coste = Math.round(p.kWp * specificEurWp * 1000);
+    
     const peakSunHours = horas / 365;
-    const produccionAnual = Math.round(p.kWp * peakSunHours * perfRatio * 365);
+    const produccionAnual = Math.round(p.kWp * peakSunHours * 0.80 * 365);
     const autoconsumoRate = p.consumoMensual <= 300 ? 0.55 : p.consumoMensual <= 500 ? 0.65 : 0.70;
-    const kWhAutocons = Math.round(produccionAnual * autoconsumoRate);
-    const kWhExcedente = produccionAnual - kWhAutocons;
-    const ahorroAutoc = kWhAutocons * precioLuz;
-    const ahorroExced = kWhExcedente * 0.05;
-    const ahorroAnual = Math.round(ahorroAutoc + ahorroExced);
-    const bonIbiAhorro = bonIbi ? Math.round(coste * 0.01 * bonIbi * 0.008) : null; // approximate IBI savings
-    const paybackBase = ahorroAnual > 0 ? coste / ahorroAnual : 99;
-    const payback = Math.round(bonIbiAhorro ? (coste - (bonIbiAhorro * 3)) / ahorroAnual : paybackBase);
-    const co2Evitado = Math.round(produccionAnual * 0.000233 * 1000); // kg CO₂
+    const ahorroAnual = Math.round((produccionAnual * autoconsumoRate * precioLuz) + (produccionAnual * (1 - autoconsumoRate) * 0.05));
+    
+    const bonIbiAhorro = bonIbi ? Math.round(coste * 0.01 * bonIbi * 0.008) : null; 
+    const payback = Math.round(bonIbiAhorro ? (coste - (bonIbiAhorro * 3)) / ahorroAnual : coste / ahorroAnual);
+    const co2Evitado = Math.round(produccionAnual * 0.000233 * 1000); 
 
     return {
       profile: p,

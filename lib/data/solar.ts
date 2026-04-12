@@ -98,7 +98,7 @@ export async function getNearbyMunicipiosEnergiaByProvince(provincia: string, li
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("municipios_energia")
-    .select("slug, municipio, provincia, ahorro_estimado, irradiacion_solar, bonificacion_ibi")
+    .select("slug, municipio, provincia, habitantes, ahorro_estimado, irradiacion_solar, bonificacion_ibi")
     .eq("provincia", provincia)
     .order("habitantes", { ascending: false, nullsFirst: false })
     .limit(limit);
