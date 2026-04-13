@@ -5,6 +5,7 @@ import { LocationSearchBar } from "@/components/ui/LocationSearchBar";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { cachePolicy } from "@/lib/cache/policy";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -338,6 +339,10 @@ export default async function HomePage() {
                 const muni = row.municipio || "";
                 const prov = row.provincia || "";
                 
+                // CLEAN SLUG: Eliminate internal redirects
+                const provSlug = slugify(prov);
+                const cleanSlug = cleanMunicipalitySlug(row.slug, provSlug);
+
                 // Deduplication logic: If muni contains provincial name or vice versa, show only once
                 let displayName = muni;
                 const muniLower = muni.toLowerCase();
@@ -362,7 +367,7 @@ export default async function HomePage() {
                 return (
                   <Link 
                     key={row.slug} 
-                    href={`/placas-solares/${row.slug}`}
+                    href={`/placas-solares/${cleanSlug}`}
                     className="bg-white border border-slate-300 px-4 py-2 rounded-full text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                   >
                     {displayName}

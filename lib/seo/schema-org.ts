@@ -1,7 +1,6 @@
 import type { MunicipioPageData } from "@/lib/data/types";
 import { FALLBACK_ES } from "@/lib/data/constants";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+import { BASE_URL } from "./seo-config";
 
 // ---------------------------------------------------------------------------
 // buildOrganizationSchema — E-E-A-T authority signal

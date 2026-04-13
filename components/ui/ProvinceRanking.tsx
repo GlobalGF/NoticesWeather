@@ -6,6 +6,7 @@
  */
 
 import Link from "next/link";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 export type RankingMunicipio = {
     slug: string;
@@ -69,6 +70,11 @@ export function ProvinceRanking({ items, provincia, currentSlug }: ProvinceRanki
                     <tbody className="divide-y divide-slate-100">
                         {sorted.map((m, index) => {
                             const isCurrent = m.slug === currentSlug;
+                            
+                            // CLEAN SLUG LOGIC: Eliminate internal redirects
+                            const provSlug = slugify(provincia);
+                            const cleanMuniSlug = cleanMunicipalitySlug(m.slug, provSlug);
+
                             return (
                                 <tr
                                     key={m.slug}
@@ -96,7 +102,7 @@ export function ProvinceRanking({ items, provincia, currentSlug }: ProvinceRanki
                                             <span className="font-bold text-blue-700">{m.municipio} <span className="text-amber-500">★</span></span>
                                         ) : (
                                             <Link
-                                                href={`/placas-solares/${m.slug}`}
+                                                href={`/placas-solares/${cleanMuniSlug}`}
                                                 className="font-semibold text-slate-700 hover:text-blue-600 hover:underline"
                                             >
                                                 {m.municipio}

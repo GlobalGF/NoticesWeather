@@ -12,11 +12,11 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { BASE_URL as CENTRAL_BASE_URL } from "@/lib/seo/seo-config";
 
 export const revalidate = 21600; // 6 hours
 
-const SITE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+const SITE_URL = CENTRAL_BASE_URL;
 
 type Params = {
     params: { comunidad: string };

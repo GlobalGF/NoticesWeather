@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AdSenseDeferred } from "@/components/ui/AdSenseDeferred";
+import { BASE_URL } from "@/lib/seo/seo-config";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | SolaryEco",
   },
   description: "Portal de datos de autoconsumo solar: tarifa de la luz hoy, rendimiento fotovoltaico, subvenciones y precios de instalación para más de 8.000 municipios españoles.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://solaryeco.es"),
+  metadataBase: new URL(BASE_URL),
   verification: {
     google: "IVu8bUUUoiOINKqraPzS1UtF2VRKS1nMdBSujHUN7Ao",
   },

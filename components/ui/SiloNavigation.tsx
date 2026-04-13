@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 type SiloNavigationProps = {
     currentSilo: "placas-solares" | "baterias-solares" | "precio-luz" | "subvenciones-solares";
@@ -13,17 +13,20 @@ export function SiloNavigation({ currentSilo, municipioName, municipioSlug, prov
     const comSlug = comunidadName ? slugify(comunidadName) : null;
     const provSlug = provinciaName ? slugify(provinciaName) : null;
 
+    // CLEAN SLUG: Eliminate internal redirects
+    const cleanSlug = provSlug ? cleanMunicipalitySlug(municipioSlug, provSlug) : municipioSlug;
+
     const links = [
         {
             silo: "placas-solares",
             title: "Instalación de Placas Solares",
-            href: `/placas-solares/${municipioSlug}`,
+            href: `/placas-solares/${cleanSlug}`,
             icon: "☀️"
         },
         {
             silo: "baterias-solares",
             title: "Baterías y Almacenamiento",
-            href: `/baterias-solares/${municipioSlug}`,
+            href: `/baterias-solares/${cleanSlug}`,
             icon: "🔋"
         },
         {
@@ -39,7 +42,7 @@ export function SiloNavigation({ currentSilo, municipioName, municipioSlug, prov
         links.push({
             silo: "subvenciones-solares",
             title: "Subvenciones y Ayudas NEXTGEN",
-            href: `/subvenciones-solares/${comSlug}/${provSlug}/${municipioSlug}`,
+            href: `/subvenciones-solares/${comSlug}/${provSlug}/${cleanSlug}`,
             icon: "🇪🇺"
         });
     }

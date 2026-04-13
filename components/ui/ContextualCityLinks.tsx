@@ -8,6 +8,7 @@
  */
 
 import Link from "next/link";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 type NearbyCity = {
   slug: string;
@@ -91,10 +92,15 @@ export function ContextualCityLinks({
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {nearby.map((city, i) => {
               const anchorFn = NEARBY_ANCHORS[(h + i) % NEARBY_ANCHORS.length];
+              
+              // CLEAN SLUG: Eliminate internal redirects
+              const cityProvSlug = city.provincia ? slugify(city.provincia) : provinciaSlug;
+              const cleanCitySlug = cleanMunicipalitySlug(city.slug, cityProvSlug);
+
               return (
                 <li key={city.slug}>
                   <Link
-                    href={`/placas-solares/${city.slug}`}
+                    href={`/placas-solares/${cleanCitySlug}`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 group-hover:bg-blue-600 transition-colors" />
@@ -119,63 +125,69 @@ export function ContextualCityLinks({
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
             Análisis detallado para {muniClean}
           </h3>
-          <ul className="space-y-2">
-            <li>
-              <Link
-                href={`/placas-solares/${slug}/precio`}
-                className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-600 text-xs shrink-0">💶</span>
-                <span className="text-sm text-slate-700 group-hover:text-blue-700 font-medium">
-                  Precio placas solares en {muniClean} ({yearNow})
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/placas-solares/${slug}/subvenciones`}
-                className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-100 text-emerald-600 text-xs shrink-0">🇪🇺</span>
-                <span className="text-sm text-slate-700 group-hover:text-emerald-700 font-medium">
-                  Subvenciones y ayudas solares en {muniClean}
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/placas-solares/${slug}/ahorro`}
-                className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-amber-200 hover:bg-amber-50/50 transition-colors"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-amber-100 text-amber-600 text-xs shrink-0">💰</span>
-                <span className="text-sm text-slate-700 group-hover:text-amber-700 font-medium">
-                  Ahorro con placas solares en {muniClean}
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/calculadoras/placas-solares/${slug}`}
-                className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-indigo-100 text-indigo-600 text-xs shrink-0">🔢</span>
-                <span className="text-sm text-slate-700 group-hover:text-indigo-700 font-medium">
-                  Calculadora solar para {muniClean}
-                </span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${slug}`}
-                className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
-                <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
-                  Informe de subvenciones en {muniClean} ({cleanName(provincia)})
-                </span>
-              </Link>
-            </li>
-          </ul>
+          {/* Ensure current city slug is also cleaned to point to canonical version */}
+          {(() => {
+            const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
+            return (
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href={`/placas-solares/${cleanMainSlug}/precio`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-600 text-xs shrink-0">💶</span>
+                    <span className="text-sm text-slate-700 group-hover:text-blue-700 font-medium">
+                      Precio placas solares en {muniClean} ({yearNow})
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={`/placas-solares/${cleanMainSlug}/subvenciones`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-100 text-emerald-600 text-xs shrink-0">🇪🇺</span>
+                    <span className="text-sm text-slate-700 group-hover:text-emerald-700 font-medium">
+                      Subvenciones y ayudas solares en {muniClean}
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={`/placas-solares/${cleanMainSlug}/ahorro`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-amber-200 hover:bg-amber-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-amber-100 text-amber-600 text-xs shrink-0">💰</span>
+                    <span className="text-sm text-slate-700 group-hover:text-amber-700 font-medium">
+                      Ahorro con placas solares en {muniClean}
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={`/calculadoras/placas-solares/${cleanMainSlug}`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-indigo-100 text-indigo-600 text-xs shrink-0">🔢</span>
+                    <span className="text-sm text-slate-700 group-hover:text-indigo-700 font-medium">
+                      Calculadora solar para {muniClean}
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
+                    <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
+                      Informe de subvenciones en {muniClean} ({cleanName(provincia)})
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            );
+          })()}
         </div>
       </div>
 

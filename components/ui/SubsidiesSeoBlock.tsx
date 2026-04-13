@@ -1,4 +1,5 @@
 import { type MunicipioPageData } from "@/lib/data/types";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 type SubsidiesSeoBlockProps = {
   municipio: string;
@@ -162,13 +163,18 @@ export function SubsidiesSeoBlock({
           </div>
 
           <div className="mt-10 text-center space-y-6">
-            <a
-              href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${slug}`}
-              className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-base font-black text-white shadow-xl hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
-            >
-              Informe oficial de {municipio}
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-            </a>
+            {(() => {
+              const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
+              return (
+                <a
+                  href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`}
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-base font-black text-white shadow-xl hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
+                >
+                  Informe oficial de {municipio}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                </a>
+              );
+            })()}
             
             <div className="max-w-xl mx-auto">
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 shadow-sm">
@@ -179,12 +185,17 @@ export function SubsidiesSeoBlock({
             {nearby && (
               <p className="text-xs text-slate-400 font-medium italic">
                 Al igual que localidades próximas como{" "}
-                <a
-                  href={`/placas-solares/${nearby.slug}`}
-                  className="text-blue-500 hover:text-blue-600 font-bold underline underline-offset-4 decoration-blue-200"
-                >
-                  {nearby.municipio}
-                </a>
+                {(() => {
+                  const cleanNearbySlug = cleanMunicipalitySlug(nearby.slug, provinciaSlug);
+                  return (
+                    <a
+                      href={`/placas-solares/${cleanNearbySlug}`}
+                      className="text-blue-500 hover:text-blue-600 font-bold underline underline-offset-4 decoration-blue-200"
+                    >
+                      {nearby.municipio}
+                    </a>
+                  );
+                })()}
                 , la normativa en {provincia} favorece la adopción masiva del autoconsumo hoy.
               </p>
             )}

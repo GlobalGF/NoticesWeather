@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cachePolicy } from "@/lib/cache/policy";
 import { getSitemapPageCount, toSitemapIndexXml } from "@/lib/seo/sitemap-builder";
+import { BASE_URL } from "@/lib/seo/seo-config";
 
 export const revalidate = cachePolicy.sitemap.index;
 
@@ -13,7 +14,7 @@ const CCAA_SLUGS = [
 ];
 
 export async function GET() {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+  const base = BASE_URL;
   const pageCount = await getSitemapPageCount();
   const nowIso = new Date().toISOString();
 

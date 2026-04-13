@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cachePolicy } from "@/lib/cache/policy";
 import { getSitemapChunkUrls, getSitemapPageCount, toSitemapXml } from "@/lib/seo/sitemap-builder";
+import { BASE_URL } from "@/lib/seo/seo-config";
 
 export const revalidate = cachePolicy.sitemap.chunk;
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function GET(_request: NextRequest, context?: Params) {
     return new NextResponse("Sitemap page not found", { status: 404 });
   }
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+  const base = BASE_URL;
   const urls = await getSitemapChunkUrls(page, base);
   const xml = toSitemapXml(urls);
 

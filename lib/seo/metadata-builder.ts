@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BASE_URL, SITE_CONFIG } from "./seo-config";
 
 type MetadataInput = {
   title: string;
@@ -7,11 +8,11 @@ type MetadataInput = {
   noIndex?: boolean;
 };
 
-const SITE_NAME = "SolaryEco";
+const SITE_NAME = SITE_CONFIG.name;
 const DEFAULT_OG_IMAGE = "/og-default.png";
 
 export function buildMetadata(input: MetadataInput): Metadata {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://solaryeco.es";
+  const base = BASE_URL;
   const canonical = `${base}${input.pathname}`;
   const ogImageUrl = `${base}${DEFAULT_OG_IMAGE}`;
 
@@ -20,8 +21,8 @@ export function buildMetadata(input: MetadataInput): Metadata {
     description: input.description,
     alternates: { canonical },
     robots: input.noIndex ? { index: false, follow: true } : undefined,
-    authors: [{ name: "SolaryEco", url: base }],
-    publisher: "SolaryEco",
+    authors: [{ name: SITE_NAME, url: base }],
+    publisher: SITE_NAME,
     openGraph: {
       title: input.title,
       description: input.description,
@@ -42,8 +43,8 @@ export function buildMetadata(input: MetadataInput): Metadata {
       card: "summary_large_image",
       title: input.title,
       description: input.description,
-      site: "@solaryeco",
+      site: SITE_CONFIG.twitter,
       images: [ogImageUrl],
     },
   };
-}
+}

@@ -11,10 +11,11 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { slugify, normalizeCcaaSlug, cleanMunicipalitySlug } from "@/lib/utils/slug";
+import { BASE_URL } from "@/lib/seo/seo-config";
 
 export const revalidate = 86400; // 24 hours
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
+const SITE_URL = BASE_URL;
 
 function escapeXml(value: string): string {
   return value

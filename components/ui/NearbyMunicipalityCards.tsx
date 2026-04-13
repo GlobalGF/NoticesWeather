@@ -6,6 +6,7 @@
  */
 
 import Link from "next/link";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 export type NearbyMunicipio = {
     slug: string;
@@ -54,61 +55,67 @@ export function NearbyMunicipalityCards({ items, currentMunicipio }: NearbyMunic
             </p>
 
             <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
-                {items.map((m) => (
-                    <li key={m.slug}>
-                        <article className="group flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all hover:border-blue-300 hover:shadow-md">
-                            {/* Header */}
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="font-bold text-slate-900 group-hover:text-blue-700">
-                                        {m.municipio}
-                                    </p>
-                                    <p className="text-xs uppercase tracking-widest text-slate-500">{m.provincia}</p>
+                {items.map((m) => {
+                    // CLEAN SLUG LOGIC: Eliminate internal redirects
+                    const provSlug = slugify(m.provincia);
+                    const cleanMuniSlug = cleanMunicipalitySlug(m.slug, provSlug);
+
+                    return (
+                        <li key={m.slug}>
+                            <article className="group flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all hover:border-blue-300 hover:shadow-md">
+                                {/* Header */}
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="font-bold text-slate-900 group-hover:text-blue-700">
+                                            {m.municipio}
+                                        </p>
+                                        <p className="text-xs uppercase tracking-widest text-slate-500">{m.provincia}</p>
+                                    </div>
+                                    {m.ahorroEstimado != null && (
+                                        <span className="ml-2 shrink-0 rounded bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800 border border-amber-200">
+                                            {fmt(m.ahorroEstimado)} €/año
+                                        </span>
+                                    )}
                                 </div>
-                                {m.ahorroEstimado != null && (
-                                    <span className="ml-2 shrink-0 rounded bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800 border border-amber-200">
-                                        {fmt(m.ahorroEstimado)} €/año
-                                    </span>
-                                )}
-                            </div>
 
-                            {/* Data badges */}
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                {m.irradiacionSolar != null && (
-                                    <DataBadge label="Irradiación" value={`${fmt(m.irradiacionSolar)} kWh/m²`} />
-                                )}
-                                {m.bonificacionIbi != null && (
-                                    <DataBadge label="Bonif. IBI" value={`${fmt(m.bonificacionIbi)}%`} />
-                                )}
-                            </div>
-
-                            {/* Links */}
-                            <div className="mt-auto flex flex-col gap-2 pt-5">
-                                <Link
-                                    href={`/placas-solares/${m.slug}`}
-                                    className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 shadow-sm"
-                                >
-                                    Placas solares en {m.municipio}
-                                </Link>
-                                <div className="flex gap-2">
-                                    <Link
-                                        href={`/baterias-solares/${m.slug}`}
-                                        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 shadow-sm"
-                                    >
-                                        Baterías en {m.municipio}
-                                    </Link>
-                                    <Link
-                                        href={`/placas-solares/${m.slug}/precio`}
-                                        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 shadow-sm"
-                                    >
-                                        Precio solar
-                                    </Link>
+                                {/* Data badges */}
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    {m.irradiacionSolar != null && (
+                                        <DataBadge label="Irradiación" value={`${fmt(m.irradiacionSolar)} kWh/m²`} />
+                                    )}
+                                    {m.bonificacionIbi != null && (
+                                        <DataBadge label="Bonif. IBI" value={`${fmt(m.bonificacionIbi)}%`} />
+                                    )}
                                 </div>
-                            </div>
 
-                        </article>
-                    </li>
-                ))}
+                                {/* Links */}
+                                <div className="mt-auto flex flex-col gap-2 pt-5">
+                                    <Link
+                                        href={`/placas-solares/${cleanMuniSlug}`}
+                                        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 shadow-sm"
+                                    >
+                                        Placas solares en {m.municipio}
+                                    </Link>
+                                    <div className="flex gap-2">
+                                        <Link
+                                            href={`/baterias-solares/${cleanMuniSlug}`}
+                                            className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 shadow-sm"
+                                        >
+                                            Baterías en {m.municipio}
+                                        </Link>
+                                        <Link
+                                            href={`/placas-solares/${cleanMuniSlug}/precio`}
+                                            className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 shadow-sm"
+                                        >
+                                            Precio solar
+                                        </Link>
+                                    </div>
+                                </div>
+
+                            </article>
+                        </li>
+                    );
+                })}
             </ul>
         </section>
     );
