@@ -1,4 +1,5 @@
 import { parseMarkdown } from "@/lib/utils/text";
+import { generateDynamicText } from "@/lib/pseo/spintax";
 
 type ServerSeoBlockProps = {
   municipio: string;
@@ -44,20 +45,6 @@ function fmt(n: number | null | undefined, d = 0): string {
   }
 }
 
-function getStringHash(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function pick<T>(arr: T[], hash: number, offset: number): T {
-  if (!arr || arr.length === 0) return "" as any;
-  return arr[(hash + offset) % arr.length];
-}
-
 export function ServerSeoBlock({
   municipio,
   provincia,
@@ -75,84 +62,47 @@ export function ServerSeoBlock({
   const ghi = weather?.ghi ?? weather?.short_rad ?? null;
   const weatherBucket = weather ? getWeatherBucket(weather.condition) : "sunny";
   const ghiStr = ghi ? `${Math.round(ghi)} W/m²` : null;
-  const hashId = getStringHash(`${municipio}-${time}-${weatherBucket}`);
-
-  const titles = {
-    morning: [
-      `Potencial de energía solar esta mañana en ${municipio}`,
-      `Rendimiento de cada panel fotovoltaico hoy en ${municipio}`,
-      `Estado del proyecto solar residencial en ${municipio}`,
-      `Generación de luz solar matutina en ${municipio} (Análisis)`,
-      `Cómo rinde un sistema fotovoltaico esta mañana en ${municipio}`,
-    ],
-    afternoon: [
-      `Balance de energía fotovoltaica esta tarde en ${municipio}`,
-      `Producción de cada panel solar hoy en ${municipio}`,
-      `Rendimiento del sistema fotovoltaico en ${municipio} (${provincia})`,
-      `Estado de la generación de luz solar en ${municipio}`,
-      `Análisis técnico: energía solar y ahorro hoy en ${municipio}`,
-    ],
-    night: [
-      `Resumen de energía solar del día en ${municipio}`,
-      `Balance de ahorro y luz fotovoltaica diaria en ${municipio}`,
-      `Resultados del sistema solar instalado en ${municipio}`,
-      `Estudio de economía solar en la vivienda en ${municipio}`,
-      `Datos finales: energía fotovoltaica hoy en ${municipio}`,
-    ],
+  
+  const vars = {
+    MUNICIPIO: municipio,
+    PROVINCIA: provincia,
+    GHI: ghiStr ?? "alta",
+    IRRAD: fmt(irradiacionAnual),
+    HORAS: fmt(horasSol),
+    AH_EUR: fmt(ahorroEstimado),
+    IBI: String(Math.round(bonificacionIbi || 0)),
   };
 
-  const openingsWeather: Record<string, string[]> = {
-    sunny: [
-      `Bajo el cielo despejado de ${municipio}, el rendimiento de cada **panel solar** es óptimo hoy. Nuestra **empresa** analiza la irradiancia actual (${ghiStr ?? "alta"}) para proyectar el ahorro real de cada **cliente**.`,
-      `La calidad de la **luz solar** en la provincia de ${provincia} garantiza que cualquier **sistema fotovoltaico** en ${municipio} opere a pleno rendimiento. El equipo técnico confirma niveles de ${ghiStr ?? "máxima eficiencia"}.`,
-      `Un buen **proyecto solar** en ${municipio} aprovecha cada rayo de luz hoy. La **energía fotovoltaica** inyectada reduce directamente tu gasto eléctrico.`,
-      `Escenario ideal: la producción de **energía solar** en ${municipio} hoy es excelente, lo que mejora la **economía** de la vivienda desde el primer minuto.`,
-    ],
-    cloudy: [
-      `A pesar de las nubes en ${municipio}, el **sistema fotovoltaico** sigue captando energía. La **calidad** de los paneles monocristalinos permite generar luz incluso con radiación difusa (${ghiStr ?? "estable"}).`,
-      `El cielo cubierto en ${provincia} no detiene tu **ahorro solar**. El **equipo** de ingeniería en ${municipio} monitoriza cómo cada **panel** sigue aportando a tu **cuenta de la luz**.`,
-      `Incluso sin sol directo en ${municipio}, la **atención** técnica se centra en el rendimiento basal de la **energía fotovoltaica** ambiental.`,
-      `Día nublado, pero el flujo de **energía solar** en ${municipio} no cesa; tu **empresa** instaladora asegura un funcionamiento continuo del **sistema**.`,
-    ],
-    rainy: [
-      `La lluvia en ${municipio} limpia cada **panel solar** de forma natural, mejorando su **eficiencia** futura mientras siguen captando luz ambiental (${ghiStr ?? "mínima"}).`,
-      `En días de lluvia, la **energía fotovoltaica** en ${municipio} se reduce, pero el **cliente** sigue ahorrando gracias a la sensibilidad de los **sistemas** actuales.`,
-      `Frente lluvioso en ${provincia}: tu **proyecto solar** en ${municipio} sigue operativo, restando cada vatio posible a tu **cuenta de la luz**.`,
-    ],
-    night: [
-      `Con la caída de la noche en ${municipio}, termina el ciclo de generación de la **energía solar**, acumulando el ahorro conseguido para tu **economía** doméstica.`,
-      `Pausa solar nocturna en ${municipio}: el **sistema fotovoltaico** descansa habiendo reducido tu dependencia de la red eléctrica en la provincia de ${provincia}.`,
-    ],
+  const titleSpintax = {
+    morning: "{Potencial de energía solar esta mañana en [MUNICIPIO]|Rendimiento de cada panel fotovoltaico hoy en [MUNICIPIO]|Estado del proyecto solar residencial en [MUNICIPIO]|Generación de luz solar matutina en [MUNICIPIO] (Análisis)|Cómo rinde un sistema fotovoltaico esta mañana en [MUNICIPIO]}",
+    afternoon: "{Balance de energía fotovoltaica esta tarde en [MUNICIPIO]|Producción de cada panel solar hoy en [MUNICIPIO]|Rendimiento del sistema fotovoltaico en [MUNICIPIO] ([PROVINCIA])|Estado de la generación de luz solar en [MUNICIPIO]|Análisis técnico: energía solar y ahorro hoy en [MUNICIPIO]}",
+    night: "{Resumen de energía solar del día en [MUNICIPIO]|Balance de ahorro y luz fotovoltaica diaria en [MUNICIPIO]|Resultados del sistema solar instalado en [MUNICIPIO]|Estudio de economía solar en la vivienda en [MUNICIPIO]|Datos finales: energía fotovoltaica hoy en [MUNICIPIO]}",
   };
 
-  const dataParagraphs: string[] = [];
-  if (irradiacionAnual && horasSol) {
-    dataParagraphs.push(
-      `El **proyecto solar** de cualquier vivienda en ${municipio} se apoya en una irradiación anual de ${fmt(irradiacionAnual)} kWh/m². Con ${fmt(horasSol)} horas de sol, la **empresa** instaladora puede garantizar una **energía fotovoltaica** estable durante todo el año.`
-    );
-  }
+  const weatherSpintaxDetail: Record<string, string> = {
+    sunny: "{Bajo el cielo despejado de [MUNICIPIO], el rendimiento actual de un **panel solar** es excepcionalmente alto|Las condiciones atmosféricas en [PROVINCIA] garantizan que cualquier instalación fotovoltaica en [MUNICIPIO] opere a un altísimo rendimiento hoy|Escenario ideal: la producción de energía renovable en [MUNICIPIO] se prevé excelente para la jornada de hoy}. {Las mediciones actuales ([GHI]) permiten proyectar un importante ahorro para las viviendas locales|Nuestros registros confirman unos niveles de irradiancia de [GHI] que aceleran la amortización residencial desde este preciso instante}.",
+    cloudy: "{A pesar de la nubosidad presente en [MUNICIPIO], el campo fotovoltaico sigue captando valiosa energía difusa|El cielo cubierto en [PROVINCIA] no detiene en absoluto tu transición energética en [MUNICIPIO]|Incluso sin impacto solar directo sobre [MUNICIPIO], la radiación consigue mantener un rendimiento operativo estable}. {La eficiencia de las placas monocristalinas de última generación permite generar electricidad incluso con luz indirecta ([GHI])|El flujo de energía fotovoltaica en [MUNICIPIO] no cesa, evidenciando la resiliencia tecnológica de los módulos actuales}.",
+    rainy: "{Las precipitaciones sobre [MUNICIPIO] contribuyen a limpiar de forma natural la superficie del panel, optimizando su rendimiento a largo plazo|Incluso en días lluviosos, la instalación en [MUNICIPIO] conserva cierta capacidad de producción ayudando a estabilizar el coste mensual|El frente lluvioso actual en [PROVINCIA] no inactiva la generación renovable en [MUNICIPIO]}. {La tecnología fotovoltaica sigue captando un remanente de energía ambiental ([GHI]) para alimentar los consumos básicos de la vivienda|La extraordinaria sensibilidad de los diodos permite rascar cada vatio posible incluso bajo condiciones de lluvia cerrada}.",
+    night: "{Con la llegada de la noche a [MUNICIPIO], se completa el ciclo diario de captación y comienza el uso de excedentes almacenados|Pausa solar nocturna en [MUNICIPIO]: es el momento en que las instalaciones con batería demuestran su máximo valor}. {Finaliza un periodo donde se ha logrado afianzar la independencia de la red eléctrica convencional en [PROVINCIA]|La jornada ha concluido reduciendo drásticamente la huella de carbono y contribuyendo al balance positivo de la vivienda}.",
+  };
 
-  if (ahorroEstimado && ahorroEstimado > 100) {
-    dataParagraphs.push(
-      `Mejorar la **economía** familiar en ${municipio} es posible reduciendo la **cuenta de la luz** hasta en ${fmt(ahorroEstimado)} € anuales. Este ahorro se basa en la instalación de **paneles** de alta **calidad** adaptados al consumo real del **cliente**.`
-    );
-  }
-
-  if (bonificacionIbi != null && bonificacionIbi > 0) {
-    dataParagraphs.push(
-      `Además, la **atención** a las ordenanzas municipales de ${municipio} revela una bonificación del ${Math.round(bonificacionIbi)}% en el IBI, un incentivo clave para cualquier **sistema fotovoltaico** en la zona.`
-    );
-  }
-
-  const closings = [
-    `En conclusión, apostar por la **energía solar** en ${municipio} es una decisión segura para tu **economía** gracias a la robustez de los **sistemas fotovoltaicos** actuales.`,
-    `Si buscas una **atención** técnica veraz en ${municipio}, los datos de irradiancia solar en ${provincia} confirman la viabilidad de tu **proyecto** de autoconsumo.`,
-    `Cuidar la **calidad** de cada **panel** y del montaje asegura que tu inversión en ${municipio} se amortice rápidamente, bajando tu factura de la **luz** para siempre.`,
+  const dataTemplates = [
+    `{Un proyecto de energía solar residencial en [MUNICIPIO] se fundamenta sobre una espectacular irradiación histórica anual de [IRRAD] kWh/m²|Las coordenadas geográficas de [MUNICIPIO] permiten a los tejados aprovechar [IRRAD] kWh/m² de irradiación cada año natural}. {Respaldados por [HORAS] horas de sol directo, se puede configurar una matriz fotovoltaica extremadamente predecible y estable|Gracias al incesante aporte de [HORAS] h de sol registradas, amortizar un sistema energético propio en [PROVINCIA] es una certeza matemática}.`,
+    `{Avanzar hacia la transición energética en [MUNICIPIO] permite atenuar drásticamente tu factura, posibilitando recortes que frecuentan los [AH_EUR] € anuales|El volumen de ahorro estimado de un montaje base en [MUNICIPIO] ronda unos consistentes [AH_EUR] €}. {Esta magnitud de rentabilidad se cimenta al equipar viviendas con módulos monocristalinos de vanguardia|Es una apuesta clara por la sostenibilidad que no sólo eleva el valor del inmueble, sino que se recupera de manera pasiva y acelerada}.`,
+    `{A esto se suman las iniciativas locales: la ordenanza municipal de [MUNICIPIO] regula bonificaciones del [IBI]% en las cuotas del IBI|Existe un aliciente fiscal muy potente del [IBI]% sobre el tributo de bienes inmuebles en [MUNICIPIO] específico para viviendas con autoconsumo}. {Este mecanismo municipal actúa como el catalizador definitivo para la adopción fotovoltaica en la zona|Es, sin duda, una política decisiva promulgada por el Ayuntamiento de [MUNICIPIO] cuyo propósito es abaratar drásticamente el salto tecnológico}.`,
   ];
 
-  const title = pick(titles[time], hashId, 0);
-  const opening = pick(time === "night" ? openingsWeather.night : openingsWeather[weatherBucket], hashId, 1);
-  const closing = pick(closings, hashId, 2);
+  const closingSpintax = "{En resumen, abrazar la producción **fotovoltaica** en [MUNICIPIO] significa apostar sobre seguro y reducir definitivamente tu huella ecológica|A la luz de la información expuesta, los marcadores climatológicos de [PROVINCIA] atestiguan el enorme potencial para electrificar tu vivienda con luz del sol en [MUNICIPIO]|Dimensionar un montaje sólido en [MUNICIPIO] garantiza aislarse contundentemente contra las inevitables fluctuaciones futuras de las tarifas eléctricas convencionales}.";
+
+  const title = generateDynamicText(titleSpintax[time], `${municipio}-title-${time}`, vars);
+  const opening = generateDynamicText(time === "night" ? weatherSpintaxDetail.night : weatherSpintaxDetail[weatherBucket], `${municipio}-open-${time}-${weatherBucket}`, vars);
+  
+  const dataParagraphs: string[] = [];
+  if (irradiacionAnual && horasSol) dataParagraphs.push(generateDynamicText(dataTemplates[0], `${municipio}-data1`, vars));
+  if (ahorroEstimado && ahorroEstimado > 100) dataParagraphs.push(generateDynamicText(dataTemplates[1], `${municipio}-data2`, vars));
+  if (bonificacionIbi != null && bonificacionIbi > 0) dataParagraphs.push(generateDynamicText(dataTemplates[2], `${municipio}-data3`, vars));
+
+  const closing = generateDynamicText(closingSpintax, `${municipio}-close`, vars);
   const bodyParagraphs = [opening, ...dataParagraphs, closing];
 
   return (

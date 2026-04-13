@@ -1,72 +1,5 @@
-/**
- * CityClimateSolarProfile — Server component
- * Renders a climate-zone-specific solar analysis with highly differentiated
- * text per municipality. Uses irradiation + sun hours + population to
- * classify into one of 4 climate buckets, each producing entirely different
- * copy, advice, and technical recommendations.
- *
- * This is the primary differentiator that makes each city page unique.
- */
-
-type Props = {
-  municipio: string;
-  provincia: string;
-  comunidadAutonoma: string;
-  irradiacionSolar: number | null;
-  horasSol: number | null;
-  ahorroEstimado: number | null;
-  bonificacionIbi: number | null;
-  precioLuz: number;
-  habitantes: number | null;
-};
-
-/* ── Helpers ────────────────────────────────────────────────────── */
-
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function pick<T>(arr: T[], h: number, offset = 0): T {
-  return arr[(h + offset) % arr.length];
-}
-
-function fmt(v: number | null | undefined, d = 0): string {
-  if (v == null || isNaN(Number(v))) return "—";
-  return Number(v).toLocaleString("es-ES", { maximumFractionDigits: d });
-}
-
-function cleanName(name: string): string {
-  if (!name) return "";
-  if (name.includes("/")) return (name.split("/")[1] || name.split("/")[0]).trim();
-  return name.trim();
-}
-
-/* ── Classification ─────────────────────────────────────────────── */
-
-type SolarTier = "excepcional" | "alto" | "medio" | "moderado";
-
-function getSolarTier(irrad: number, horas: number): SolarTier {
-  const score = irrad * 0.6 + horas * 0.4;
-  if (score >= 2200) return "excepcional";
-  if (score >= 1800) return "alto";
-  if (score >= 1500) return "medio";
-  return "moderado";
-}
-
-type PopSize = "grande" | "mediana" | "pequena";
-
-function getPopSize(hab: number | null): PopSize {
-  if (!hab || hab >= 50000) return "grande";
-  if (hab >= 5000) return "mediana";
-  return "pequena";
-}
-
-/* ── Content banks ──────────────────────────────────────────────── */
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { cleanName, hash, pick, parseMarkdown, fmt } from "@/lib/utils/text";
 
 const tierConfig = {
   excepcional: {
@@ -74,88 +7,32 @@ const tierConfig = {
     badgeClass: "bg-amber-100 text-amber-800 border-amber-300",
     barWidth: "w-[95%]",
     barColor: "bg-gradient-to-r from-amber-400 to-orange-500",
-    summaryOptions: [
-      (m: string, irr: string, h: string) =>
-        `${m} se sitúa en el tramo más alto de recurso solar de España, con ${irr} kWh/m² de irradiación global anual y ${h} horas de sol. Estas cifras colocan a la localidad por encima del percentil 90 del territorio nacional, lo que convierte la inversión en autoconsumo fotovoltaico en una de las decisiones financieras más rentables para cualquier hogar.`,
-      (m: string, irr: string, h: string) =>
-        `Con ${h} horas de sol al año y una irradiación de ${irr} kWh/m², ${m} disfruta de un potencial fotovoltaico excepcional. Cada kWp instalado en esta localidad produce más energía que la media europea, acortando los plazos de amortización a 5–7 años incluso sin bonificación IBI.`,
-      (m: string, irr: string, h: string) =>
-        `Los datos satelitales de PVGIS (Comisión Europea, 2005–2020) confirman que ${m} recibe ${irr} kWh/m² de irradiación anual y ${h} horas de sol, situándose entre las localizaciones con mayor recurso solar de la Península Ibérica. Una instalación residencial de 5 kWp aquí genera energía suficiente para cubrir entre el 65% y el 80% del consumo medio de un hogar.`,
-    ],
-    techOptions: [
-      (m: string) =>
-        `En localidades con recurso solar excepcional como ${m}, los inversores híbridos con gestión de baterías se están convirtiendo en la configuración estándar. La alta producción permite llenar la batería durante las horas centrales del día y consumir energía almacenada por la noche, alcanzando ratios de autoconsumo superiores al 85%.`,
-      (m: string) =>
-        `Para ${m}, la configuración técnica óptima es un sistema con paneles monocristalinos PERC de alta eficiencia (20–22%) combinados con un inversor de potencia ajustada al consumo. El exceso de producción solar puede compensarse en factura a través del mecanismo de excedentes, generando retornos positivos incluso en los meses de menor demanda.`,
-      (m: string) =>
-        `La combinación de alta irradiación y temperaturas elevadas en ${m} hace recomendable paneles con bajo coeficiente de temperatura (–0,30 %/°C o inferior). Los módulos tipo half-cut o shingled mantienen mejor rendimiento en condiciones de calor extremo, que es precisamente cuando más producción solar se registra.`,
-    ],
+    summarySpintax: "{[MUNICIPIO] se sitúa en el tramo más alto de recurso solar de España|Con [HORAS] horas de sol al año y una irradiación de [IRRAD] kWh/m², [MUNICIPIO] disfruta de un potencial fotovoltaico excepcional|Los datos satelitales de PVGIS confirman que [MUNICIPIO] recibe [IRRAD] kWh/m² de irradiación anual}, {lo que convierte la inversión en autoconsumo fotovoltaico en una de las decisiones financieras más rentables|facilitando plazos de amortización récord de entre 5 y 7 años|posicionando a la localidad en el percentil 90 de rendimiento energético nacional}. {Cada kWp instalado aquí produce más energía que la media europea|Una instalación residencial de 5 kWp en [MUNICIPIO] genera energía suficiente para cubrir hasta el 80% del consumo de un hogar medio}.",
+    techSpintax: "{En localidades con recurso solar excepcional como [MUNICIPIO], los inversores híbridos {con gestión de baterías|preparados para acumulación} se están convirtiendo en el estándar|Para [MUNICIPIO], la configuración técnica óptima es un sistema con paneles {monocristalinos PERC|de alta eficiencia N-Type} de última generación|La combinación de alta irradiación y temperaturas en [MUNICIPIO] hace recomendable usar paneles {con bajo coeficiente térmico|tipo half-cut}}. {Esto permite alcanzar ratios de autoconsumo superiores al 85%|El exceso de producción puede compensarse en factura a través del mecanismo de excedentes simplificado}.",
   },
   alto: {
     badge: "Recurso solar alto",
     badgeClass: "bg-yellow-100 text-yellow-800 border-yellow-300",
     barWidth: "w-[78%]",
     barColor: "bg-gradient-to-r from-yellow-400 to-amber-500",
-    summaryOptions: [
-      (m: string, irr: string, h: string) =>
-        `${m} cuenta con ${irr} kWh/m² de irradiación y ${h} horas de sol anuales, lo que supone un recurso solar por encima de la media española. Estas condiciones garantizan una producción fotovoltaica estable a lo largo del año, con picos especialmente altos de marzo a septiembre.`,
-      (m: string, irr: string, h: string) =>
-        `Con una irradiación global de ${irr} kWh/m² y ${h} horas de sol registradas por PVGIS, ${m} ofrece condiciones solares favorables para autoconsumo residencial e industrial. La producción esperada de un sistema de 5 kWp supera los 7 000 kWh al año.`,
-      (m: string, irr: string, h: string) =>
-        `${m} registra ${h} horas de sol anuales con ${irr} kWh/m² de irradiación, datos que la sitúan en el tramo alto del mapa solar peninsular. La rentabilidad de una instalación fotovoltaica aquí es claramente positiva, con amortizaciones de 6–8 años en la mayoría de perfiles de consumo.`,
-    ],
-    techOptions: [
-      (m: string) =>
-        `En ${m}, las instalaciones de autoconsumo más eficientes combinan paneles de 400–450 W con inversor centralizado y monitorización por app. La relación inversión / producción es muy favorable, y la mayoría de sistemas alcanzan el punto de equilibrio antes del 7.º año.`,
-      (m: string) =>
-        `Para viviendas en ${m}, un sistema de inyección cero (sin verter excedentes) seguido de un redimensionamiento progresivo con batería es la estrategia más recomendada. Permite un desembolso inicial menor y una ampliación cuando los precios de la energía justifiquen el almacenamiento.`,
-      (m: string) =>
-        `La estacionalidad solar en ${m} muestra un diferencial significativo entre verano e invierno. Por ello, los sistemas con orientación este-oeste (split) están ganando popularidad: producen menos pico a mediodía pero más energía total a primeras y últimas horas, coincidiendo con los momentos de mayor consumo.`,
-    ],
+    summarySpintax: "{[MUNICIPIO] cuenta con [IRRAD] kWh/m² de irradiación y [HORAS] horas de sol anuales|Con una irradiación global de [IRRAD] kWh/m² y [HORAS] h de sol, [MUNICIPIO] ofrece condiciones solares muy favorables|Los registros de la zona de [MUNICIPIO] muestran [HORAS] horas de sol con [IRRAD] kWh/m² de irradiación}. {Estas cifras garantizan una producción fotovoltaica estable durante todo el año|Estas condiciones aseguran una rentabilidad positiva con amortizaciones de 6–8 años en la mayoría de perfiles}. {La producción esperada de un sistema de 5 kWp suele superar los 7.000 kWh anuales en esta ubicación}.",
+    techSpintax: "{En [MUNICIPIO], las instalaciones de autoconsumo más eficientes combinan paneles de 400-450W con inversor centralizado|Para viviendas en [MUNICIPIO], un sistema con {monitorización por app|gestión inteligente de vertido} es la estrategia más recomendada|La estacionalidad solar en [MUNICIPIO] favorece sistemas con orientación {perfecta al sur|este-oeste para aplanar la curva de producción}}. {La relación inversión/ahorro es muy favorable en esta zona de [PROVINCIA]|La mayoría de sistemas alcanzan el punto de equilibrio antes del séptimo año}.",
   },
   medio: {
     badge: "Recurso solar medio",
     badgeClass: "bg-sky-100 text-sky-800 border-sky-300",
     barWidth: "w-[60%]",
     barColor: "bg-gradient-to-r from-sky-400 to-blue-500",
-    summaryOptions: [
-      (m: string, irr: string, h: string) =>
-        `${m} registra ${irr} kWh/m² de irradiación y ${h} horas de sol anuales. Aunque estas cifras son inferiores a las del sur peninsular, siguen situando a la localidad por encima de la media centroeuropea (donde la fotovoltaica ya es rentable). Un dimensionamiento adecuado es clave para maximizar el retorno de la inversión.`,
-      (m: string, irr: string, h: string) =>
-        `Con ${h} horas de sol y una irradiación de ${irr} kWh/m², ${m} tiene un recurso solar medio-alto dentro del contexto español. La rentabilidad depende del consumo del hogar: viviendas con facturas superiores a 60 €/mes obtienen amortizaciones de 7–9 años; por debajo de 40 €/mes conviene evaluar con un estudio técnico.`,
-      (m: string, irr: string, h: string) =>
-        `Los datos PVGIS para ${m} muestran ${irr} kWh/m² de irradiación y ${h} horas de sol. El autoconsumo fotovoltaico sigue siendo rentable: un sistema de 4 kWp produce entre 5 000 y 6 000 kWh al año, suficiente para cubrir el 50–65% del consumo medio de un hogar.`,
-    ],
-    techOptions: [
-      (m: string) =>
-        `En zonas con recurso solar medio como ${m}, la clave es ajustar la potencia instalada al consumo real. Sobredimensionar el sistema genera excedentes que solo se compensan a ~0,05 €/kWh, muy por debajo del precio de compra. Un estudio con datos reales de factura es imprescindible.`,
-      (m: string) =>
-        `Para ${m}, los paneles bifaciales suponen una ventaja competitiva: captan radiación difusa por la cara posterior, lo que aumenta la producción en un 5–10% respecto a módulos convencionales, especialmente en días nublados que son más frecuentes en esta zona.`,
-      (m: string) =>
-        `La orientación perfecta al sur con inclinación de 33–35° es especialmente importante en ${m}, donde cada grado de desviación tiene un impacto mayor en la producción anual que en zonas de alta irradiación. Un estudio de sombras 3D con lidar minimiza riesgos.`,
-    ],
+    summarySpintax: "{[MUNICIPIO] registra [IRRAD] kWh/m² de irradiación y [HORAS] horas de sol anuales|Con [HORAS] horas de sol y una irradiación de [IRRAD] kWh/m², [MUNICIPIO] tiene un recurso solar medio-alto|Los datos PVGIS para [MUNICIPIO] muestran [IRRAD] kWh/m² de irradiación}. {Aunque estas cifras son inferiores al sur peninsular, superan ampliamente la media centroeuropea|El autoconsumo sigue siendo muy rentable aquí, cubriendo hasta el 65% del consumo medio de un hogar}. {Un dimensionamiento adecuado es clave en [MUNICIPIO] para maximizar el retorno}.",
+    techSpintax: "{En zonas con recurso solar medio como [MUNICIPIO], la clave es ajustar la potencia instalada al consumo real|Para [MUNICIPIO], los paneles bifaciales suponen una ventaja competitiva al captar radiación difusa|La orientación perfecta al sur con inclinación de 30-35 grados es vital en [MUNICIPIO]}. {Un estudio con datos reales de factura es imprescindible para no sobredimensionar|Esto permite reducir el impacto de la nubosidad ocasional de la zona}.",
   },
   moderado: {
     badge: "Recurso solar moderado",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-300",
     barWidth: "w-[42%]",
     barColor: "bg-gradient-to-r from-slate-400 to-slate-500",
-    summaryOptions: [
-      (m: string, irr: string, h: string) =>
-        `${m} cuenta con ${irr} kWh/m² de irradiación y ${h} horas de sol anuales, valores en el tramo bajo del mapa solar español. No obstante, estas cifras superan ampliamente las de países como Alemania o Países Bajos (900–1 100 kWh/m²), donde la energía solar es una industria consolidada. Con un diseño correcto, la instalación sigue siendo rentable.`,
-      (m: string, irr: string, h: string) =>
-        `Con ${h} horas de sol y ${irr} kWh/m² de irradiación, ${m} presenta un recurso solar más contenido que la media. Sin embargo, los precios actuales de la electricidad (PVPC) y las bonificaciones fiscales locales compensan esta diferencia: la amortización se sitúa en 8–10 años, perfectamente viable para una tecnología con vida útil de 25+ años.`,
-      (m: string, irr: string, h: string) =>
-        `${m} está en la franja de recurso solar moderado (${irr} kWh/m², ${h} h de sol). Aquí, la diferencia entre una instalación rentable y una mediocre la marca el diseño técnico: orientación, inclinación, tecnología de panel y gestión de sombras son los factores decisivos.`,
-    ],
-    techOptions: [
-      (m: string) =>
-        `En ${m}, donde las horas de sol son más limitadas, los paneles de alta eficiencia tipo IBC o HJT (heterounión) rentabilizan cada rayo de sol. Aunque su precio es un 15–20% superior al estándar PERC, el diferencial de producción compensa la inversión adicional en 3–4 años.`,
-      (m: string) =>
-        `Para localidades como ${m} con recurso solar moderado, la recomendación técnica es una instalación conservadora (3–4 kWp) focalizada en cubrir el consumo base (standby, frigorífico, iluminación). Esto maximiza el ratio de autoconsumo (>70%) y minimiza excedentes poco retribuidos.`,
-      (m: string) =>
-        `La nubosidad frecuente en ${m} favorece paneles con buen comportamiento en radiación difusa. Los módulos de capa fina (thin-film) mantienen producción más estable que los cristalinos en condiciones de cielo cubierto, aunque requieren más superficie de cubierta.`,
-    ],
+    summarySpintax: "{[MUNICIPIO] cuenta con [IRRAD] kWh/m² de irradiación y [HORAS] horas de sol anuales|Con [HORAS] h de sol y [IRRAD] kWh/m² de irradiación, [MUNICIPIO] presenta un recurso solar más contenido|A pesar de estar en la franja moderada con [IRRAD] kWh/m², [MUNICIPIO] supera en recurso a países como Alemania}. {Con un diseño técnico correcto, la instalación fotovoltaica sigue siendo rentable aquí|La amortización se sitúa en torno a los 8-10 años, lo cual es excelente para una tecnología de 25 años de vida útil}. {Focalizar el proyecto en el consumo base es la mejor estrategia en [MUNICIPIO]}.",
+    techSpintax: "{En [MUNICIPIO], donde las horas de sol son más limitadas, los paneles de alta eficiencia {tipo IBC|tipo HJT} rentabilizan mejor cada vatio|Para localidades como [MUNICIPIO], recomendamos una instalación conservadora orientada al ahorro directo|La nubosidad frecuente en la zona de [MUNICIPIO] favorece paneles con buen comportamiento en radiación difusa}. {Aunque la inversión inicial es ligeramente superior, el retorno anual en [PROVINCIA] justifica la apuesta técnica|Esto maximiza el ratio de autoconsumo directo por encima del 70%}.",
   },
 };
 
@@ -188,7 +65,35 @@ const popSizeLabels = {
   pequena: "pueblo con mayoría de viviendas unifamiliares aisladas, cubiertas grandes y escasas restricciones de sombreado",
 };
 
+/* ── Helpers ────────────────────────────────────────────────────── */
+
+function getSolarTier(irrad: number, horas: number): "excepcional" | "alto" | "medio" | "moderado" {
+  if (irrad >= 1800 || horas >= 2600) return "excepcional";
+  if (irrad >= 1600 || horas >= 2200) return "alto";
+  if (irrad >= 1400 || horas >= 1800) return "medio";
+  return "moderado";
+}
+
+function getPopSize(habitantes: number | null): "grande" | "mediana" | "pequena" {
+  const h = habitantes ?? 0;
+  if (h >= 50000) return "grande";
+  if (h >= 5000) return "mediana";
+  return "pequena";
+}
+
 /* ── Component ──────────────────────────────────────────────────── */
+
+type CityClimateSolarProfileProps = {
+  municipio: string;
+  provincia: string;
+  comunidadAutonoma: string;
+  irradiacionSolar: number | null;
+  horasSol: number | null;
+  ahorroEstimado?: number | null;
+  bonificacionIbi?: number | null;
+  precioLuz: number;
+  habitantes: number | null;
+};
 
 export function CityClimateSolarProfile({
   municipio,
@@ -200,7 +105,7 @@ export function CityClimateSolarProfile({
   bonificacionIbi,
   precioLuz,
   habitantes,
-}: Props) {
+}: CityClimateSolarProfileProps) {
   const muniClean = cleanName(municipio);
   const provClean = cleanName(provincia);
   const h = hash(municipio);
@@ -211,8 +116,15 @@ export function CityClimateSolarProfile({
   const popSize = getPopSize(habitantes);
   const cfg = tierConfig[tier];
 
-  const summary = pick(cfg.summaryOptions, h, 0)(muniClean, fmt(irrad), fmt(horas));
-  const tech = pick(cfg.techOptions, h, 1)(muniClean);
+  const variables = {
+    MUNICIPIO: muniClean,
+    PROVINCIA: provClean,
+    IRRAD: fmt(irrad),
+    HORAS: fmt(horas),
+  };
+
+  const summary = generateDynamicText(cfg.summarySpintax, `${muniClean}-summary`, variables);
+  const tech = generateDynamicText(cfg.techSpintax, `${muniClean}-tech`, variables);
   const seasonal = pick(seasonalAdvice[tier], h, 2);
 
   const yearNow = new Date().getFullYear();

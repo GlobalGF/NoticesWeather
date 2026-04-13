@@ -23,6 +23,9 @@ function getStringHash(str: string): number {
   return Math.abs(hash);
 }
 
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { parseMarkdown } from "@/lib/utils/text";
+
 export function SubsidiesSeoBlock({
   municipio,
   provincia,
@@ -33,51 +36,26 @@ export function SubsidiesSeoBlock({
   nearbyItems = [],
 }: SubsidiesSeoBlockProps) {
   const hash = getStringHash(slug);
-
   const ibiValue = bonificacionIbi != null && bonificacionIbi > 0 ? Math.round(bonificacionIbi) : null;
+  const ibiDisplay = String(ibiValue ?? 50);
   const nearby = nearbyItems.length > 0 ? nearbyItems[hash % nearbyItems.length] : null;
 
-  // --- Variations for IBI Section ---
-  const ibiDisplay = ibiValue ?? 50;
-  const ibiVariations = [
-    <>
-      Las instalaciones en <strong>{municipio}</strong> pueden mejorar drásticamente la <strong>economía</strong> doméstica. La ordenanza fiscal vigente contempla una bonificación del <strong>{ibiDisplay}%</strong> en el IBI, permitiendo reducir la <strong>cuenta de la luz</strong> indirectamente al amortizar más rápido tu <strong>proyecto fotovoltaico</strong>.
-    </>,
-    <>
-      Cualquier <strong>empresa</strong> instaladora en <strong>{municipio}</strong> destacará este incentivo: un <strong>{ibiDisplay}%</strong> de descuento en el IBI. Esta ayuda es clave para la viabilidad de tu <strong>sistema solar</strong> en {provincia}, ofreciendo una <strong>atención</strong> fiscal directa al <strong>cliente</strong>.
-    </>,
-    <>
-      Si buscas <strong>calidad</strong> y ahorro en <strong>{municipio}</strong>, la bonificación de hasta el <strong>{ibiDisplay}%</strong> en el IBI para viviendas con <strong>paneles fotovoltaicos</strong> es fundamental. Es una de las <strong>ayudas de luz</strong> más robustas de {provincia} para potenciar la <strong>energía solar</strong> local.
-    </>,
-    <>
-      En <strong>{municipio}</strong>, cada <strong>panel</strong> instalado da acceso a una reducción del <strong>{ibiDisplay}%</strong> en el recibo del IBI. Esta ventaja, sumada a la <strong>energía</strong> generada, acelera el retorno de tu <strong>sistema fotovoltaico</strong> sin comprometer tu <strong>economía</strong>.
-    </>,
-    <>
-      Los vecinos de <strong>{municipio}</strong> cuentan con un <strong>equipo</strong> de incentivos sólido: hasta un <strong>{ibiDisplay}%</strong> de rebaja en el IBI por apostar por la <strong>luz solar</strong>, según la normativa actual de {provincia}.
-    </>,
-  ];
+  const vars = {
+    MUNICIPIO: municipio,
+    PROVINCIA: provincia,
+    IBI: ibiDisplay,
+  };
 
-  // --- Variations for IRPF Section ---
-  const irpfVariations = [
-    <>
-      A nivel estatal, puedes deducir el coste de tu <strong>sistema</strong> en la Renta. Esta mejora de <strong>calidad</strong> energética es compatible con las ayudas de <strong>{municipio}</strong>, optimizando la <strong>economía</strong> de tu <strong>proyecto solar</strong> anual.
-    </>,
-    <>
-      La inversión en cada <strong>panel</strong> en <strong>{municipio}</strong> desgrava. Gracias a los incentivos por <strong>energía fotovoltaica</strong>, es posible recuperar gran parte de la factura, un alivio para la <strong>cuenta de la luz</strong> de los hogares.
-    </>,
-    <>
-      Tu <strong>empresa</strong> instaladora debe informarte: las deducciones en el IRPF por <strong>energía solar</strong> en {municipio} permiten desgravar la inversión, reduciendo el precio de tus <strong>placas</strong> de forma honesta y directa.
-    </>,
-    <>
-      La Agencia Tributaria bonifica el <strong>sistema fotovoltaico</strong> en <strong>{municipio}</strong>. Para una <strong>instalación</strong> típica, esto supone un retorno que mejora la <strong>atención</strong> financiera de tu vivienda.
-    </>,
-    <>
-      Cada euro en <strong>luz solar</strong> en {municipio} tiene retorno fiscal: las deducciones por <strong>sistemas</strong> de autoconsumo se aplican directamente, acelerando la recuperación de la inversión sin sorpresas.
-    </>,
-  ];
+  const ibiSpintax = "{El Ayuntamiento de [MUNICIPIO] ofrece incentivos clave para acelerar la amortización de tu instalación de **placas solares**|Aprovechar las ayudas locales es fundamental para rentabilizar tu **inversión fotovoltaica** en [MUNICIPIO]|Tu instalación fotovoltaica en [MUNICIPIO] puede beneficiarse de recortes fiscales a nivel local}. " +
+    "{La ordenanza fiscal actual recoge una bonificación de hasta el **[IBI]%** en el IBI|Esto se traduce en un descuento de hasta el **[IBI]%** en el Impuesto de Bienes Inmuebles|Según el consistorio, percibirás una rebaja de hasta el **[IBI]%** en el recibo del IBI anual}. " +
+    "{Esta reducción directa sobre tus impuestos incrementa enormemente los beneficios netos del sistema|De este modo, se acorta significativamente el periodo de amortización frente al ahorro estándar en la luz|Contar con este apoyo municipal mejora la rentabilidad y resalta el compromiso local con la energía renovable}.";
 
-  const selectedIbi = ibiVariations[hash % ibiVariations.length];
-  const selectedIrpf = irpfVariations[(hash + 1) % irpfVariations.length];
+  const irpfSpintax = "{A nivel estatal, puedes aplicar considerables **deducciones del IRPF** en tu próxima Declaración de la Renta|La inversión orientada a mejorar la eficiencia energética en [MUNICIPIO] es compatible con deducciones estatales en el IRPF|Instalar paneles repercute directamente en tu Declaración, pudiendo desgravar una parte del coste inicial}. " +
+    "{Con la normativa en vigor, podrías deducirte entre el 20% y el 40% del coste total de la instalación en tu vivienda habitual|Este estímulo fiscal estatal es esencial para consolidar la viabilidad financiera de las instalaciones residenciales|Esta ventaja fiscal busca fomentar activamente la transición ecológica y rebaja de golpe la inversión necesaria}. " +
+    "{Para calificar en [PROVINCIA], es preciso disponer del **Certificado de Eficiencia Energética** previo y posterior a la obra|A nivel de trámites en [MUNICIPIO], recomendamos consultar con un instalador acreditado para gestionar la justificación requerida}.";
+
+  const selectedIbi = generateDynamicText(ibiSpintax, `${municipio}-ibi`, vars);
+  const selectedIrpf = generateDynamicText(irpfSpintax, `${municipio}-irpf`, vars);
 
   return (
     <div className="font-manrope">
@@ -142,8 +120,8 @@ export function SubsidiesSeoBlock({
                 </div>
                 <h3 className="font-black text-slate-900 text-xl tracking-tight">Recibo del IBI</h3>
               </div>
-              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium lowercase-first">
-                {selectedIbi}
+              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium">
+                {parseMarkdown(selectedIbi)}
               </div>
             </div>
 
@@ -156,8 +134,8 @@ export function SubsidiesSeoBlock({
                 </div>
                 <h3 className="font-black text-slate-900 text-xl tracking-tight">Deducción IRPF</h3>
               </div>
-              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium lowercase-first">
-                {selectedIrpf}
+              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium">
+                {parseMarkdown(selectedIrpf)}
               </div>
             </div>
           </div>

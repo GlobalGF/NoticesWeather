@@ -1,5 +1,6 @@
 /* ── Types & Constants ────────────────────────────────────────── */
 import { parseMarkdown } from "@/lib/utils/text";
+import { generateDynamicText } from "@/lib/pseo/spintax";
 import { FALLBACK_ES } from "@/lib/data/constants";
 
 type Props = {
@@ -15,19 +16,6 @@ type Props = {
   precioLuz: number;
   slug: string;
 };
-
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function pick<T>(arr: T[], h: number, offset = 0): T {
-  return arr[(h + offset) % arr.length];
-}
 
 function fmt(v: number | null | undefined, d = 0): string {
   if (v == null || isNaN(Number(v))) return "—";
@@ -57,13 +45,6 @@ const SYSTEM_SIZES: SystemSize[] = [
 
 /* ── Content Banks (Spintax) ────────────────────────────────────── */
 
-const introVariants = [
-  (m: string, p: string, eur: string) => `El mercado fotovoltaico en ${m} ha alcanzado un punto de madurez donde el **precio medio de instalación** se sitúa en torno a los **${eur} €/Wp**. En la provincia de ${p}, este coste puede variar según la complejidad del tejado y la tecnología de los paneles, pero la tendencia es claramente a la baja.`,
-  (m: string, p: string, eur: string) => `Si buscas un **presupuesto de placas solares en ${m}**, debes saber que la inversión inicial oscila según el tamaño del sistema. Actualmente, un sistema residencial en ${p} tiene un coste de referencia de **${eur} €/Wp**, lo que permite amortizaciones rápidas gracias a la alta irradiación local.`,
-  (m: string, p: string, eur: string) => `Instalar energía solar en ${m} es hoy más accesible que nunca. Con un precio base de **${eur} €/Wp** en la zona de ${p}, las familias están logrando reducir su factura eléctrica de forma drástica desde el primer mes, aprovechando las ayudas vigentes del ayuntamiento.`,
-  (m: string, p: string, eur: string) => `La **rentabilidad de las placas solares en ${m}** depende directamente del dimensionamiento. Con una referencia de **${eur} €/Wp** para instalaciones en ${p}, el factor clave es ajustar el número de paneles a tu consumo real para maximizar el ahorro anual.`,
-];
-
 export function PricingBreakdownTable({
   municipio,
   provincia,
@@ -73,19 +54,35 @@ export function PricingBreakdownTable({
   irradiacionSolar,
   horasSol,
   precioLuz,
+  slug,
 }: Props) {
   const muniClean = cleanName(municipio);
   const provClean = cleanName(provincia);
-  const hVal = hash(municipio);
   const yearNow = new Date().getFullYear();
   
   // DRIVING LOGIC: Derive real price per watt
   const dbEurWp = eurPorWatio || (precioInstalacionMedio ? precioInstalacionMedio / 5000 : null);
-  const baseEurWp = dbEurWp || 1.45; // Competitive yet realistic fallback (closer to 1.4 than 1.8)
+  const baseEurWp = dbEurWp || 1.45; 
   
   const ibi = bonificacionIbi ?? 0;
   const irrad = Number(irradiacionSolar ?? FALLBACK_ES.irradiacion_kwh_m2);
   const horas = Number(horasSol ?? FALLBACK_ES.horas_sol);
+
+  const vars = {
+    MUNICIPIO: muniClean,
+    PROVINCIA: provClean,
+    PRECIO: fmt(baseEurWp, 2),
+    KW: String(SYSTEM_SIZES[1].kWp),
+    KW_PREMIUM: String(SYSTEM_SIZES[2].kWp),
+  };
+
+  const introSpintax = "{El mercado fotovoltaico en [MUNICIPIO] ha alcanzado un punto de madurez donde el **precio medio de instalación** se sitúa en torno a los **[PRECIO] €/Wp**|Si buscas un **presupuesto de placas solares en [MUNICIPIO]**, la inversión inicial en [PROVINCIA] oscila actualmente sobre los **[PRECIO] €/Wp**|Instalar energía solar en [MUNICIPIO] es hoy más accesible: con un precio base de **[PRECIO] €/Wp** en la zona de [PROVINCIA], el ahorro es inmediato|La **rentabilidad de las placas solares en [MUNICIPIO]** se apoya en un coste técnico de **[PRECIO] €/Wp**, permitiendo amortizaciones rápidas en toda [PROVINCIA]}. " +
+    "{Este coste puede variar según la complejidad del tejado, pero la tendencia en [MUNICIPIO] es claramente a la baja|Esta cifra de referencia en [PROVINCIA] permite a las familias reducir su factura drásticamente desde el primer mes|El factor clave en [MUNICIPIO] es ajustar el número de paneles a tu consumo real para maximizar el ahorro anual verificado}.";
+
+  const footerSpintax = "{Para una vivienda en [MUNICIPIO], el factor decisivo es el autoconsumo nocturno. El sistema de [KW] kWp es el más equilibrado, pero si cuentas con coche eléctrico en [PROVINCIA], el ahorro puede crecer ampliando al rango Premium|En [MUNICIPIO], la configuración de [KW] kWp suele cubrir el 70% de las necesidades de un hogar medio; un sistema superior en [PROVINCIA] es ideal si planeas instalar aerotermia|La idoneidad del sistema en [MUNICIPIO] depende de tu curva de carga. Mientras el equipo de [KW] kWp es el estándar, en [PROVINCIA] recomendamos el kit de [KW_PREMIUM] kWp para máxima independencia energética}.";
+
+  const introText = generateDynamicText(introSpintax, `${slug}-price-intro`, vars);
+  const footerText = generateDynamicText(footerSpintax, `${slug}-price-footer`, vars);
 
   // Calculate data for each system size using the Pricing Curve
   const rows = SYSTEM_SIZES.map((sys) => {
@@ -119,7 +116,6 @@ export function PricingBreakdownTable({
     };
   });
 
-  const introText = pick(introVariants, hVal, 0)(muniClean, provClean, fmt(baseEurWp, 2));
 
   return (
     <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -211,7 +207,7 @@ export function PricingBreakdownTable({
       <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Idoneidad del sistema</h3>
         <p className="text-xs text-slate-600 leading-relaxed">
-          Para una vivienda en {muniClean}, el factor decisivo es el autoconsumo nocturno. El sistema de {rows[1].kWp} kWp es el más equilibrado, pero si cuentas con coche eléctrico o aerotermia, el ahorro anual puede incrementarse significativamente ampliando al rango Premium de {rows[2].kWp} kWp.
+          {footerText}
         </p>
       </div>
 

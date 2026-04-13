@@ -1,109 +1,25 @@
-import React from "react";
-
-type AntiCommercialWarningProps = {
-  municipio: string;
-  irradiacionAnual?: number | null;
-  horasSol?: number | null;
-};
-
-/* ── Helpers ────────────────────────────────────────────────────── */
-
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function pick<T>(arr: T[], h: number, offset = 0): T {
-  return arr[(h + offset) % arr.length];
-}
-
-function cleanName(name: string): string {
-  if (!name) return "";
-  if (name.includes("/")) return (name.split("/")[1] || name.split("/")[0]).trim();
-  return name.trim();
-}
-
-/* ── Classification ─────────────────────────────────────────────── */
-
-type Perfil = "optimo" | "favorable" | "viable" | "limitado";
-
-function getPerfil(horasSol: number | null, irrad: number | null): Perfil {
-  const h = Number(horasSol ?? 1800);
-  const i = Number(irrad ?? 1600);
-  if (h >= 2600 && i >= 1800) return "optimo";
-  if (h >= 2000 && i >= 1500) return "favorable";
-  if (h < 1400 || i < 1300) return "limitado";
-  return "viable";
-}
+import { generateDynamicText } from "@/lib/pseo/spintax";
 
 const perfilConfig = {
   optimo: {
-    title: (m: string) => [
-      `Condiciones excepcionales para autoconsumo en ${m}`,
-      `${m}: perfil ideal para instalar placas solares`,
-      `Tu vivienda en ${m} tiene el mejor escenario solar posible`,
-    ],
-    intro: (m: string) => [
-      `La ubicación de ${m} ofrece un recurso solar de primer nivel en España. Para aprovechar al máximo estas condiciones óptimas, verifica estos puntos clave de tu vivienda:`,
-      `Con las horas de sol que recibe ${m}, el autoconsumo fotovoltaico es especialmente rentable. Antes de solicitar presupuesto, confirma estos requisitos técnicos:`,
-      `${m} se encuentra entre las zonas con mayor potencial solar de la Península. Para que la instalación rinda al máximo, tu vivienda debe cumplir estos criterios:`,
-    ],
-    closing: (m: string) => [
-      `Con el perfil solar de ${m}, la mayoría de viviendas bien orientadas alcanzan amortizaciones de 5–6 años. Solicita un estudio 3D de cubiertas para confirmar el rendimiento exacto.`,
-      `Las condiciones en ${m} permiten generar excedentes significativos incluso en invierno. Un estudio técnico personalizado determinará la configuración óptima para tu cubierta.`,
-    ],
+    title: "{Condiciones excepcionales para autoconsumo en [MUNICIPIO]|El escenario solar perfecto en [MUNICIPIO] para tus placas|Radiación máxima en [MUNICIPIO]: perfil ideal para autoconsumo}",
+    intro: "{La ubicación de [MUNICIPIO] ofrece un recurso solar de primer nivel en España. Antes de instalar, verifica estos puntos clave en tu tejado de [PROVINCIA]:|[MUNICIPIO] es una de las zonas con mayor potencial fotovoltaico de la Península. Para que rindan al máximo, confirma estos criterios en tu vivienda:|El sol en [MUNICIPIO] garantiza una rentabilidad superior. Comprueba estos requisitos técnicos antes de solicitar presupuesto en [PROVINCIA]:}",
+    closing: "{Con el perfil solar de [MUNICIPIO], la mayoría de viviendas bien orientadas amortizan en 5–6 años. Solicita un estudio 3D para confirmar datos.|Las condiciones en [PROVINCIA] permiten generar excedentes significativos. Un dimensionamiento experto en [MUNICIPIO] es clave para el éxito del proyecto.}",
   },
   favorable: {
-    title: (m: string) => [
-      `¿Tu vivienda en ${m} reúne las condiciones para instalar paneles?`,
-      `Requisitos clave antes de instalar placas solares en ${m}`,
-      `Checklist de instalación fotovoltaica para viviendas en ${m}`,
-    ],
-    intro: (m: string) => [
-      `${m} cuenta con un recurso solar favorable para el autoconsumo. Para garantizar que tu inversión rinda al máximo, comprueba que tu vivienda cumple estos requisitos técnicos:`,
-      `La irradiación solar en ${m} supera la media europea y permite amortizaciones rápidas. Antes de contratar, verifica que tu tejado cumple estas condiciones:`,
-      `Instalar placas solares en ${m} es una decisión rentable para la mayoría de viviendas. Te recomendamos revisar estos puntos para asegurar el máximo rendimiento:`,
-    ],
-    closing: (m: string) => [
-      `En ${m}, las instalaciones bien diseñadas se amortizan en 6–8 años. Pide siempre un estudio 3D completo antes de aceptar cualquier presupuesto.`,
-      `La clave en ${m} es el dimensionamiento correcto: ni sobredimensionar (excedentes mal pagados) ni quedarse corto. Un instalador certificado calculará las necesidades exactas.`,
-    ],
+    title: "{¿Tu vivienda en [MUNICIPIO] es apta para instalar paneles?|Requisitos clave para placas solares en [MUNICIPIO]|Checklist de viabilidad fotovoltaica en [MUNICIPIO]}",
+    intro: "{[MUNICIPIO] cuenta con un recurso solar muy favorable para el autoconsumo. Para asegurar que tu inversión rinda al máximo, comprueba estos puntos en [PROVINCIA]:|La irradiación solar en [MUNICIPIO] supera la media y permite retornos rápidos. Verifica que tu tejado en [PROVINCIA] cumple estas condiciones:|Instalar paneles en [MUNICIPIO] es rentable para casi todos. Te recomendamos revisar estos criterios técnicos antes de avanzar:}",
+    closing: "{En [MUNICIPIO], una instalación bien diseñada se amortiza en 6–8 años. Pide siempre simulación 3D antes de decidir.|La clave en [MUNICIPIO] es el dimensionamiento justo: ni sobredimensionar ni quedarse corto. Un técnico en [PROVINCIA] debe validar tu caso.}",
   },
   viable: {
-    title: (m: string) => [
-      `¿Merece la pena instalar placas solares en ${m}? Requisitos a revisar`,
-      `Evaluación técnica: ¿es tu vivienda en ${m} apta para paneles solares?`,
-      `Guía de viabilidad para autoconsumo fotovoltaico en ${m}`,
-    ],
-    intro: (m: string) => [
-      `El recurso solar de ${m} permite instalaciones rentables, pero el diseño técnico marca la diferencia. Es especialmente importante que tu vivienda cumpla estos criterios:`,
-      `En ${m}, la rentabilidad del autoconsumo depende más de la calidad de la instalación que en zonas de alta irradiación. Revisa estos puntos antes de decidir:`,
-      `Aunque ${m} no está en el cinturón de máxima radiación, la subida de la factura eléctrica hace viable el autoconsumo. Confirma estos requisitos previos:`,
-    ],
-    closing: (m: string) => [
-      `Para viviendas en ${m}, recomendamos paneles de alta eficiencia (>21%) y un dimensionamiento conservador ajustado al consumo real. El sobredimensionamiento penaliza en esta zona.`,
-      `En ${m}, un estudio 3D es imprescindible: cada grado de inclinación y cada sombra tienen mayor impacto en la producción que en zonas de alta irradiación.`,
-    ],
+    title: "{¿Merece la pena poner placas en [MUNICIPIO]? Requisitos técnicos|Evaluación de viabilidad solar para tu vivienda en [MUNICIPIO]|Guía honesta de autoconsumo fotovoltaico en [MUNICIPIO]}",
+    intro: "{El recurso solar de [MUNICIPIO] permite sistemas rentables, pero el diseño técnico en [PROVINCIA] marca la diferencia. Revisa estos criterios prioritarios:|En [MUNICIPIO], la rentabilidad depende de la calidad de los materiales y la orientación en [PROVINCIA]. Confirma estos puntos previos:|Aunque [MUNICIPIO] no es zona de radiación extrema, el precio de la luz hace viable el ahorro. Verifica estos requisitos en tu tejado:}",
+    closing: "{Para viviendas en [MUNICIPIO], recomendamos paneles de alta eficiencia y evitar el sobredimensionamiento por excedentes.|En [PROVINCIA], un estudio de sombras detallado es vital: cada grado de inclinación en [MUNICIPIO] cuenta para tu ahorro.}",
   },
   limitado: {
-    title: (m: string) => [
-      `Consideraciones importantes antes de instalar paneles solares en ${m}`,
-      `¿Es rentable el autoconsumo en ${m}? Análisis honesto`,
-      `Lo que debes saber antes de poner placas solares en ${m}`,
-    ],
-    intro: (m: string) => [
-      `El recurso solar en ${m} es más contenido que la media española, pero sigue superando a países como Alemania donde la fotovoltaica es rentable. Para asegurar viabilidad económica, tu vivienda debe cumplir estrictamente estos requisitos:`,
-      `En ${m}, la inversión en autoconsumo requiere un diseño más cuidadoso que en zonas de alta radiación. Es fundamental que tu vivienda cumpla estos criterios antes de decidir:`,
-      `Instalar paneles solares en ${m} puede ser rentable, pero no en todas las viviendas. Una evaluación técnica rigurosa es imprescindible. Revisa estos puntos:`,
-    ],
-    closing: (m: string) => [
-      `Dado el recurso solar de ${m}, confía únicamente en instaladores que ofrezcan estudio 3D con simulación de producción mensual. Desconfía de presupuestos genéricos.`,
-      `En ${m} es especialmente crucial un análisis de sombras detallado y una orientación perfecta. Si tu tejado tiene orientación norte predominante, el autoconsumo puede no ser viable.`,
-    ],
+    title: "{Consideraciones antes de instalar paneles solares en [MUNICIPIO]|¿Es rentable el autoconsumo en [MUNICIPIO]? Análisis técnico|Lo que debes saber antes de contratar placas en [MUNICIPIO]}",
+    intro: "{El recurso solar en [MUNICIPIO] es más moderado, pero con la luz de [PROVINCIA] sigue siendo factible ahorrar. Tu vivienda debe cumplir estos puntos:|En [MUNICIPIO], la inversión solar requiere un diseño muy cuidadoso. Es fundamental que tu inmueble en [PROVINCIA] cumpla estos requisitos estrictos:|Poner placas en [MUNICIPIO] puede ser rentable, pero no en todos los tejados. Realiza esta comprobación técnica antes de pedir presupuesto:}",
+    closing: "{Dado el recurso solar de [PROVINCIA], confía solo en estudios 3D con simulación mensual real para tu casa en [MUNICIPIO].|En [MUNICIPIO] es crucial la orientación perfecta. Si tu cubierta en [PROVINCIA] mira al norte, el proyecto no será viable.}",
   },
 };
 
@@ -134,16 +50,47 @@ const checklistVariations = [
   ],
 ];
 
-export function AntiCommercialWarning({ municipio, irradiacionAnual, horasSol }: AntiCommercialWarningProps) {
+function cleanName(name: string): string {
+  if (!name) return "";
+  if (name.includes("/")) return (name.split("/")[1] || name.split("/")[0]).trim();
+  return name.trim();
+}
+
+type Perfil = "optimo" | "favorable" | "viable" | "limitado";
+
+function getPerfil(horasSol: number | null, irrad: number | null): Perfil {
+  const h = Number(horasSol ?? 1800);
+  const i = Number(irrad ?? 1600);
+  if (h >= 2600 && i >= 1800) return "optimo";
+  if (h >= 2000 && i >= 1500) return "favorable";
+  if (h < 1400 || i < 1300) return "limitado";
+  return "viable";
+}
+
+type AntiCommercialWarningProps = {
+  municipio: string;
+  provincia?: string | null;
+  irradiacionAnual?: number | null;
+  horasSol?: number | null;
+};
+
+export function AntiCommercialWarning({ municipio, provincia, irradiacionAnual, horasSol }: AntiCommercialWarningProps) {
   const muniClean = cleanName(municipio);
-  const h = hash(municipio);
+  const provClean = provincia ? cleanName(provincia) : muniClean;
   const perfil = getPerfil(horasSol ?? null, irradiacionAnual ?? null);
   const cfg = perfilConfig[perfil];
 
-  const title = pick(cfg.title(muniClean), h, 0);
-  const intro = pick(cfg.intro(muniClean), h, 1);
-  const closing = pick(cfg.closing(muniClean), h, 2);
-  const checklist = pick(checklistVariations, h, 3);
+  const vars = {
+    MUNICIPIO: muniClean,
+    PROVINCIA: provClean,
+  };
+
+  const title = generateDynamicText(cfg.title, `${muniClean}-anti-t`, vars);
+  const intro = generateDynamicText(cfg.intro, `${muniClean}-anti-i`, vars);
+  const closing = generateDynamicText(cfg.closing, `${muniClean}-anti-c`, vars);
+
+  const hSeed = muniClean.length + (muniClean.charCodeAt(0) || 0);
+  const checklist = checklistVariations[hSeed % checklistVariations.length];
 
   const cardClasses = "bg-gradient-to-br from-slate-50 to-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-10 mt-10 mb-12 text-left shadow-2xl shadow-slate-200/30 relative overflow-hidden font-manrope";
 

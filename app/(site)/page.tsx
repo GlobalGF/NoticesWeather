@@ -10,7 +10,7 @@ import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 export const revalidate = cachePolicy.page.solarCity;
 
 export const metadata = buildMetadata({
-  title: "Solar y Eco: Luz y placas solares",
+  title: "Placas Solares y Precio de la Luz hoy en España",
   description: "Consulta la tarifa de la luz hoy, rendimiento fotovoltaico, horas de sol y subvenciones para placas solares en más de 8.000 municipios españoles.",
   pathname: "/",
 });

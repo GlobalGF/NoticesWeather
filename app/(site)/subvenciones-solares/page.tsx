@@ -3,12 +3,13 @@ import Link from "next/link";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils/slug";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 
-export const metadata: Metadata = {
-  title: "Subvenciones placas solares",
+export const metadata: Metadata = buildMetadata({
+  title: "Ayudas y Subvenciones Placas Solares · Guía 2026",
   description: "Guía actualizada de subvenciones, deducciones IRPF, bonificaciones de IBI e ICIO para instalar placas solares en España. Busca las ayudas disponibles en tu municipio.",
-  robots: { index: false, follow: true },
-};
+  pathname: "/subvenciones-solares",
+});
 
 const CCAA_SLUGS: Record<string, string> = {
   "Andalucía": "andalucia",

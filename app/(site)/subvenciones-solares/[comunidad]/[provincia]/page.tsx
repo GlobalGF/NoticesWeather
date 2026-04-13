@@ -79,9 +79,9 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     // Fetch province-level stats (radiation, sun hours) from municipios
     const { data: statsRows } = await supabase
         .from("municipios_energia")
-        .select("municipio, irradiacion_solar, horas_sol, bonificacion_ibi")
+        .select("municipio, slug, irradiacion_solar, horas_sol, bonificacion_ibi")
         .ilike("provincia", `%${provName.split(" ")[0]}%`)
-        .limit(200);
+        .limit(1000);
 
     const statsArr = (statsRows as any[]) ?? [];
     const avgRadiation = statsArr.length > 0
@@ -227,6 +227,27 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                         <p className="text-white font-bold text-xl mb-2">Busca tu localidad</p>
                         <p className="text-slate-400 text-sm mb-6">Localiza las ayudas locales de IBI e ICIO exactas de tu ayuntamiento y comprueba cuánto te descuentan.</p>
                         <CitySearchInput placeholder={placeholderText} />
+                    </section>
+
+                    {/* Directory of all municipalities in this province (SEO Internal Linking) */}
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                             <h2 className="text-lg font-bold text-slate-800">Municipios en {provName}</h2>
+                             <span className="text-xs text-slate-400 font-medium">{statsArr.length} localidades</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            {statsArr.map((m: any) => (
+                                <a
+                                    key={m.slug}
+                                    href={`/subvenciones-solares/${comunidad}/${provincia}/${m.slug}`}
+                                    className="group block bg-white rounded-xl border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-md transition-all duration-200"
+                                >
+                                    <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700 transition-colors truncate block">
+                                        {m.municipio}
+                                    </span>
+                                </a>
+                            ))}
+                        </div>
                     </section>
 
                     {/* Info panel about provincial subsidies */}

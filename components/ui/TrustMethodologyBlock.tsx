@@ -40,6 +40,8 @@ function cleanName(name: string): string {
 
 /* ── Component ──────────────────────────────────────────────────── */
 
+import { generateDynamicText } from "@/lib/pseo/spintax";
+
 export function TrustMethodologyBlock({
   municipio,
   provincia,
@@ -54,41 +56,39 @@ export function TrustMethodologyBlock({
   const muniClean = cleanName(municipio);
   const provClean = cleanName(provincia);
   const comClean = cleanName(comunidadAutonoma);
-  const h = hash(municipio);
 
   const irrad = Number(irradiacionSolar ?? 1600);
   const horas = Number(horasSol ?? 1800);
   const ahorro = Number(ahorroEstimado ?? 800);
   const bonIbi = bonificacionIbi != null && bonificacionIbi > 0 ? Math.round(bonificacionIbi) : null;
 
-  // Calculate specific data points for this municipality
+  const vars = {
+    MUNICIPIO: muniClean,
+    PROVINCIA: provClean,
+    AHORRO: fmt(ahorro),
+    IRRAD: fmt(irrad),
+    PRECIO: precioLuz.toFixed(3),
+  };
+
   const prod5kw = Math.round(horas / 365 * 5 * 0.80 * 365);
   const co2Avoided = Math.round(prod5kw * 0.233); 
   const treesEquiv = Math.round(co2Avoided / 22);
 
-  const titles = [
-    `¿Por qué confiar en estos datos para ${muniClean}?`,
-    `Metodología y fuentes oficiales — ${muniClean}`,
-    `Transparencia de datos en ${muniClean}`,
-    `Rigor técnico: análisis solar de ${muniClean}`,
-  ];
+  const titleSpintax = "{¿Por qué confiar en estos datos para [MUNICIPIO]?|Metodología y fuentes oficiales — [MUNICIPIO]|Transparencia de datos en [MUNICIPIO]|Rigor técnico: análisis solar de [MUNICIPIO]}";
+  const title = generateDynamicText(titleSpintax, `${muniClean}-trust-title`, vars);
 
-  const intros = [
-    `Todos los datos de **energía solar** en esta página se calculan mediante un **proyecto** técnico veraz, sin inventar cifras. Cada dato sobre ${muniClean} describe la **economía** real que un **cliente** puede esperar de su **sistema fotovoltaico**.`,
-    `A diferencia de otras webs, nuestra **empresa** utiliza fuentes institucionales. No prometemos ahorros mágicos: mostramos la **calidad** de la **luz solar** en ${muniClean} para que tu **cuenta de la luz** baje de forma honesta.`,
-  ];
-
-  const title = pick(titles, h, 0);
-  const intro = pick(intros, h, 1);
+  const introSpintax = "{Todos los datos de **energía solar** en esta página se calculan mediante un **proyecto** técnico veraz|A diferencia de otras webs, nuestra **empresa** utiliza fuentes institucionales para desglosar la luz solar en [MUNICIPIO]|El rigor técnico es la base de cada cifra sobre [MUNICIPIO] que mostramos aquí}. " +
+    "{Cada dato describe la **economía** real que un **cliente** puede esperar de su **sistema fotovoltaico**|No prometemos ahorros mágicos: mostramos la **calidad** de la irradiación en [PROVINCIA] para que tu **cuenta de la luz** baje de forma honesta}.";
+  const intro = generateDynamicText(introSpintax, `${muniClean}-trust-intro`, vars);
 
   const sources = [
     {
       name: "PVGIS — Comisión Europea",
       tag: "EU",
-      desc: pick([
-        `Irradiación de ${fmt(irrad)} kWh/m² y ${fmt(horas)} horas de sol anuales para ${muniClean}.`,
-        `Datos institucionales de recurso solar (${fmt(irrad)} kWh/m²) validados satelitalmente.`,
-      ], h, 2),
+      desc: generateDynamicText(
+        "{Irradiación de [IRRAD] kWh/m² y [HORAS] horas de sol anuales para [MUNICIPIO]|Datos institucionales de recurso solar ([IRRAD] kWh/m²) validados satelitalmente en [PROVINCIA]}.",
+        `${muniClean}-src-pvgis`, { ...vars, HORAS: String(horas) }
+      ),
     },
     {
       name: "ESIOS/REE — Mercado Eléctrico",
@@ -111,10 +111,8 @@ export function TrustMethodologyBlock({
     { step: "Carga Fiscal", detail: `Inclusión de bonificaciones de ${muniClean} e IRPF estatal.` },
   ];
 
-  const closing = pick([
-    `Los ${fmt(ahorro)} €/año de ahorro para ${muniClean} son el resultado de multiplicar ${fmt(irrad)} kWh/m² × 5 kWp × 0,80 × ${precioLuz.toFixed(3)} €/kWh × 65% de autoconsumo.`,
-    `Cálculo veraz: ${fmt(ahorro)} €/año basados en la irradiación local (${fmt(irrad)} kWh/m²) y precio oficial REE.`,
-  ], h, 5);
+  const closingSpintax = "{Los [AHORRO] €/año de ahorro para [MUNICIPIO] son el resultado de multiplicar [IRRAD] kWh/m² × 5 kWp × 0,80 × [PRECIO] €/kWh × 65% de autoconsumo|Cálculo veraz: [AHORRO] €/año basados en la irradiación local de [MUNICIPIO] ([IRRAD] kWh/m²) y el precio oficial REE de [PRECIO] €|La rentabilidad de tu **sistema fotovoltaico** en [MUNICIPIO] se apoya en estos [AHORRO] € de ahorro anual verificado}.";
+  const finalClosing = generateDynamicText(closingSpintax, `${muniClean}-trust-close`, vars);
 
   return (
     <section className="bg-gradient-to-br from-white to-slate-50/50 rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 overflow-hidden font-manrope mt-10">
@@ -189,7 +187,7 @@ export function TrustMethodologyBlock({
       <div className="px-8 py-6 bg-emerald-600 text-white relative overflow-hidden group">
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         <p className="text-sm leading-relaxed font-bold italic relative z-10 text-emerald-50">
-          {closing}
+          {parseMarkdown(finalClosing)}
         </p>
       </div>
     </section>

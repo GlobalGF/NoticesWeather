@@ -83,10 +83,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!d) return { title: "Baterías Solares" };
 
     const muniClean = cleanLocationName(d.municipio);
-    const provClean = cleanLocationName(d.provincia);
 
     return buildMetadata({
-        title: `Baterías Solares en ${muniClean} (${provClean}) ${new Date().getFullYear()} | Rentabilidad y Precios`,
+        title: `Baterías para Placas Solares en ${muniClean} · Ahorro`,
         description: `Descubra si es rentable instalar baterías solares de litio en ${muniClean}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión.`,
         pathname: `/baterias-solares/${slug}`,
     });

@@ -1,14 +1,17 @@
-/**
- * InstallationProcessTimeline — Server component
- * Step-by-step guide for installing solar panels in a specific municipality.
- * 
- * Steps reference local permitting, provincial regulations, and climate factors.
- * Highly city-differentiated: mentions ayuntamiento, provincia, comunidad, 
- * and adapts technical advice to the local solar tier.
- *
- * This is linkable "reference content" — the kind of authoritative guide
- * that attracts backlinks from forums, blogs, and comparison sites.
- */
+"use client";
+
+import { cleanName, hash, pick } from "@/lib/utils/text";
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { parseMarkdown } from "@/lib/utils/text";
+
+type Step = {
+  number: number;
+  title: string;
+  duration: string;
+  icon: string;
+  detail: string;
+  tip: string | null;
+};
 
 type Props = {
   municipio: string;
@@ -21,48 +24,27 @@ type Props = {
   habitantes: number | null;
 };
 
-/* ── Helpers ────────────────────────────────────────────────────── */
-
-function cleanName(name: string): string {
-  if (!name) return "";
-  if (name.includes("/")) return (name.split("/")[1] || name.split("/")[0]).trim();
-  return name.trim();
-}
-
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function pick<T>(arr: T[], h: number, offset = 0): T {
-  return arr[(h + offset) % arr.length];
-}
-
-/* ── Step definitions ───────────────────────────────────────────── */
-
-type Step = {
-  number: number;
-  title: string;
-  duration: string;
-  icon: string;
-  detail: string;
-  tip: string | null;
-};
-
 function buildSteps(municipio: string, provincia: string, comunidad: string, h: number, bonIbi: number | null, precioMedio: number | null, hab: number | null): { steps: Step[]; urbanContext: string } {
   const habCount = hab ?? 0;
-  const isUrban = habCount >= 20000; // Legacy threshold for durations
+  const isUrban = habCount >= 20000;
   const hasIbi = bonIbi && bonIbi > 0;
 
-  const urbanContext = habCount > 50000 
-    ? `Dada la alta densidad de población en ${municipio}, las instalaciones suelen realizarse en bloques de pisos y comunidades de vecinos que buscan el autoconsumo colectivo.`
-    : habCount < 5000 
-      ? `En ${municipio}, predominan las viviendas unifamiliares, naves agrícolas y tejados despejados, lo que simplifica enormemente el montaje de paneles solares.`
-      : `El tejido residencial de ${municipio} es ideal para el autoconsumo, combinando viviendas pareadas con pequeñas zonas industriales de alta radiación.`;
+  const vars = {
+    MUNICIPIO: municipio,
+    PROVINCIA: provincia,
+    COMUNIDAD: comunidad,
+    IBI: String(bonIbi || 0),
+    PRECIO: precioMedio ? `${precioMedio.toLocaleString("es-ES")} €` : "6.000 €",
+  };
+
+  const urbanContext = generateDynamicText(
+    habCount > 50000 
+      ? "{Dada la alta densidad de población en [MUNICIPIO], las instalaciones suelen realizarse en {bloques de pisos|comunidades de vecinos|edificios residenciales} que buscan el autoconsumo colectivo|En un entorno urbano como [MUNICIPIO], la optimización del espacio en azoteas es la clave para la eficiencia fotovoltaica}."
+      : habCount < 5000 
+        ? "{En [MUNICIPIO], predominan las viviendas unifamiliares, {naves agrícolas|cubiertas amplias} y tejados despejados, lo que {simplifica enormemente|facilita} el montaje|La baja densidad de [MUNICIPIO] permite que los paneles solares rindan al máximo sin interferencia de sombras de edificios colindantes}."
+        : "{El tejido residencial de [MUNICIPIO] es ideal para el autoconsumo, {combinando viviendas pareadas con pequeñas zonas industriales|mezclando adosados con equipamiento local de alta radiación}}.",
+    `${municipio}-urban-ctx`, vars
+  );
 
   const steps: Step[] = [
     {
@@ -70,101 +52,79 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
       title: "Estudio técnico de la vivienda",
       duration: "1–3 días",
       icon: "1",
-      detail: pick([
-        `Un técnico de nuestro **equipo** visita tu vivienda en ${municipio} para realizar el **proyecto** inicial: analiza orientación, superficie y cada **panel** ideal para tu tejado. Este estudio de **calidad** asegura que la **energía solar** se aproveche al máximo.`,
-        `El instalador elabora un **proyecto fotovoltaico** personalizado para tu tejado en ${municipio}: identifica sombras y determina cómo optimizar la **luz** para que tu **empresa** u hogar empiece a ahorrar de forma veraz.`,
-        `El primer paso es un diagnóstico de **calidad** en tu cubierta de ${municipio}. El **equipo** técnico verifica el espacio para el **sistema** y la orientación óptima para que la **energía** generada baje tu **cuenta de la luz**.`,
-      ], h, 10),
-      tip: pick([
-        "Pide siempre un proyecto técnico detallado antes de firmar para asegurar la calidad del equipo.",
-        "Solicita que el presupuesto de tu empresa instaladora deslose cada panel y el modelo de inversor.",
-        "Compara la atención al cliente de varios instaladores en la provincia antes de decidir tu sistema.",
-      ], h, 11),
+      detail: generateDynamicText(
+        "{Un técnico especializado|Un ingeniero de nuestro equipo} visita tu vivienda en [MUNICIPIO] para realizar el proyecto fotovoltaico inicial. {Analiza la orientación y sombras|Verifica la superficie útil y el estado del tejado} para que cada panel instalado sea una inversión de alta calidad.",
+        `${municipio}-step1-detail`, vars
+      ),
+      tip: generateDynamicText(
+        "{Pide siempre un proyecto técnico detallado|Solicita que el presupuesto deslose cada panel y accesorio|Compara la experiencia técnica de los instaladores en la provincia} para asegurar que tu sistema en [MUNICIPIO] sea veraz y duradero.",
+        `${municipio}-step1-tip`, vars
+      ),
     },
     {
       number: 2,
       title: "Diseño y presupuesto personalizado",
       duration: "3–5 días",
       icon: "2",
-      detail: pick([
-        `Con los datos del estudio, el instalador diseña el sistema fotovoltaico: número de paneles, potencia total (kWp), tipo de inversor y cableado. El presupuesto incluye equipos, mano de obra, estructura de soporte y tramitación administrativa. En ${provincia}, el coste medio de una instalación residencial se sitúa en torno a ${precioMedio ? `${precioMedio.toLocaleString("es-ES")} €` : "5 000–8 000 €"} para 4–5 kWp.`,
-        `El proyecto técnico detalla: esquema unifilar, plano de cubierta con ubicación de paneles, cálculo de producción anual y análisis financiero (ahorro, amortización, TIR). Un buen presupuesto en ${provincia} desglosa cada partida: paneles (~40%), inversor (~20%), estructura (~15%), instalación eléctrica y mano de obra (~25%).`,
-        `Se elabora una memoria técnica que incluye el dimensionamiento del sistema, la curva de producción mensual estimada para las coordenadas de ${municipio} y el análisis de viabilidad económica. El presupuesto debe incluir todos los conceptos: equipos, montaje, legalización y conexión a red.`,
-      ], h, 20),
-      tip: null,
+      detail: generateDynamicText(
+        "{El instalador diseña el sistema fotovoltaico para [MUNICIPIO]|Se elabora una memoria técnica que incluye el dimensionamiento|Se proyecta el esquema energético basado en tu consumo real}. El presupuesto final en [PROVINCIA] suele situarse en torno a los [PRECIO] para una instalación equilibrada.",
+        `${municipio}-step2-detail`, vars
+      ),
+      tip: "{Exige que el estudio técnico de [MUNICIPIO] incluya un cálculo de ROI y amortización real|Verifica que los equipos propuestos tengan al menos 15 años de garantía de producto}.",
     },
     {
       number: 3,
-      title: `Permisos y licencias en ${cleanName(municipio)}`,
+      title: "Permisos y licencias municipales",
       duration: isUrban ? "15–30 días" : "7–15 días",
       icon: "3",
-      detail: pick([
-        `Antes de instalar, es necesario tramitar la licencia de obra menor (o declaración responsable, según la ordenanza del Ayuntamiento de ${municipio}). ${isUrban ? "En municipios urbanos como este, el plazo habitual de tramitación es de 15–30 días hábiles." : "En localidades más pequeñas, la tramitación suele ser más ágil (7–15 días)."}${hasIbi ? ` Además, debes solicitar la bonificación del ${bonIbi}% sobre el IBI por instalación de autoconsumo — se presenta en el mismo acto o en un plazo máximo de 3 meses tras la legalización.` : ""}`,
-        `En ${comunidad}, la tramitación administrativa incluye: declaración responsable de obra menor ante el Ayuntamiento de ${municipio}, certificado de instalación eléctrica (CIE) y registro en el REBT de Industria de ${provincia}. ${hasIbi ? `No olvides solicitar la bonificación IBI (${bonIbi}%) — es un trámite separado que se gestiona en la Oficina de Tributos municipal.` : "La mayoría de instaladores homologados gestionan toda la documentación como parte del servicio."}`,
-        `La normativa en ${comunidad} exige licencia de obra menor o declaración responsable para instalaciones fotovoltaicas residenciales. En ${municipio}, el proceso se realiza ante la Concejalía de Urbanismo o la Oficina de Atención al Ciudadano. ${isUrban ? "El plazo medio en municipios urbanos es de 20 días hábiles." : "En municipios pequeños es frecuente obtener la autorización en 10 días."}`,
-      ], h, 30),
+      detail: generateDynamicText(
+        "{Es necesario tramitar la licencia de obra menor o declaración responsable ante el Ayuntamiento de [MUNICIPIO]|La normativa local requiere la validación administrativa del proyecto fotovoltaico en [MUNICIPIO]|Se debe presentar la documentación técnica requerida por los servicios urbanísticos de [MUNICIPIO]}. {En zonas urbanas el plazo es superior|En municipios de [PROVINCIA] la tramitación suele ser ágil}. " + 
+        (hasIbi ? "{No olvides solicitar la bonificación del [IBI]% en el IBI de [MUNICIPIO]|Recuerda que tienes derecho a un descuento del [IBI]% en tu impuesto de bienes inmuebles}." : ""),
+        `${municipio}-step3-detail`, vars
+      ),
       tip: hasIbi
-        ? `Importante: la bonificación del ${bonIbi}% en el IBI debe solicitarse expresamente — no se aplica automáticamente. Tu instalador puede gestionar el trámite.`
-        : "Consulta en el Ayuntamiento si existe bonificación en el ICIO (Impuesto de Construcciones) para instalaciones renovables.",
+        ? generateDynamicText("{Importante: la bonificación del [IBI]% en el IBI de [MUNICIPIO] debe solicitarse expresamente|La ayuda local en [MUNICIPIO] no es automática, requiere presentar el CIE legalizado}.", `${municipio}-step3-tip`, vars)
+        : "{Consulta si el Ayuntamiento de [MUNICIPIO] aplica el 95% de bonificación en el ICIO para proyectos de energía renovable}.",
     },
     {
       number: 4,
       title: "Instalación y montaje",
       duration: "1–3 días",
       icon: "4",
-      detail: pick([
-        `El **equipo** de montaje fija la estructura de alta **calidad**, instala cada **panel solar** e integra el inversor en tu vivienda de ${municipio}. Un proceso rápido que busca mejorar tu **economía** reduciendo la **cuenta de la luz** desde el primer día.`,
-        `La instalación física de tu **sistema fotovoltaico** en ${municipio} incluye anclajes inoxidables y cableado de **calidad**. Nuestra **empresa** asegura que el montaje cumpla con los estándares de seguridad y eficiencia.`,
-        `El proceso en ${municipio} sigue un protocolo de **atención** técnica estricto: se impermeabiliza la zona y se montan los **paneles** fotovoltaicos para que el flujo de **energía solar** sea constante y duradero.`,
-      ], h, 40),
-      tip: pick([
-        "Asegura que tu empresa instaladora te entregue el certificado de equipo firmado por un técnico.",
-        "Verifica que el panel y la estructura sean de alta calidad para resistir la intemperie en la provincia.",
-        "Exige que el sistema incluya protecciones para la cuenta de la luz ante picos de tensión.",
-      ], h, 41),
+      detail: generateDynamicText(
+        "{El equipo de montaje fija la estructura de alta calidad e instala cada panel solar en tu cubierta de [MUNICIPIO]|Nuestra empresa colaboradora integra el sistema fotovoltaico en tu vivienda cumpliendo los estándares de seguridad en [PROVINCIA]}. Un proceso rápido que busca mejorar tu economía personal.",
+        `${municipio}-step4-detail`, vars
+      ),
+      tip: generateDynamicText(
+        "{Verifica que el panel y la estructura sean resistentes a la intemperie en [PROVINCIA]|Asegura que te entreguen el certificado de equipo firmado por un profesional colegiado}.",
+        `${municipio}-step4-tip`, vars
+      ),
     },
     {
       number: 5,
       title: "Legalización y conexión a red",
       duration: "15–45 días",
       icon: "5",
-      detail: pick([
-        `Tras la instalación, el instalador tramita el Certificado de Instalación Eléctrica (CIE) ante Industria de ${provincia} y la solicitud de conexión ante la distribuidora eléctrica de la zona. El proceso incluye: inscripción en el REBT, alta como autoconsumidor en el RAIPRE y modificación del contrato de suministro para activar la compensación simplificada de excedentes.`,
-        `La legalización en ${provincia} implica tres trámites principales: (1) registro del CIE en la Delegación de Industria, (2) solicitud del CAU (Código de Autoconsumo Unificado) a la distribuidora, y (3) alta en la plataforma de compensación de excedentes. El plazo total oscila entre 15 y 45 días según la carga de trabajo de la distribuidora.`,
-        `El paso final es la legalización administrativa: el instalador registra la instalación ante Industria de ${provincia} y solicita a la distribuidora el cambio de modalidad a autoconsumo con excedentes (RD 244/2019). Una vez activo, cada kWh vertido a la red compensa en tu factura al precio regulado.`,
-      ], h, 50),
-      tip: "Una vez legalizada, descarga la app de tu inversor para monitorizar la producción en tiempo real. Detectarás cualquier anomalía antes de que afecte al ahorro.",
+      detail: generateDynamicText(
+        "{Se tramita el Certificado de Instalación Eléctrica (CIE) ante Industria de [PROVINCIA]|El instalador registra la planta fotovoltaica en el RAIPRE de [COMUNIDAD]|Se formaliza el cambio de modalidad a autoconsumo con excedentes (RD 244/2019)}. Este paso es vital para activar la compensación simplificada de excedentes en tu factura de luz.",
+        `${municipio}-step5-detail`, vars
+      ),
+      tip: "{Una vez legalizada, descarga la app de monitorización para ver el ahorro generado en [MUNICIPIO] en tiempo real}.",
     },
     {
       number: 6,
-      title: "Producción y ahorro desde el primer día",
-      duration: "continuo · 25+ años",
+      title: "Producción y monitorización",
+      duration: "Vida útil 25+ años",
       icon: "6",
-      detail: pick([
-        `Con la instalación conectada, empezarás a generar electricidad desde la primera hora de sol. En ${municipio}, con la irradiación local, un sistema de 5 kWp produce una media de __DAILY_PROD__ kWh al día. La factura de la luz se reduce inmediatamente: la energía que generas y consumes tiene coste cero, y los excedentes se compensan.`,
-        `Tu sistema fotovoltaico en ${municipio} entra en producción automáticamente al amanecer. Los paneles actuales tienen una vida útil garantizada de 25–30 años con una degradación inferior al 0,5% anual. Esto significa que en el año 25, tu instalación seguirá produciendo más del 87% de su capacidad original.`,
-        `Desde el momento de la conexión, tu vivienda en ${municipio} se convierte en una micro-central de generación eléctrica. Cada kWh producido y autoconsumido supone un ahorro directo al precio PVPC. El mantenimiento es mínimo: una limpieza anual y una revisión eléctrica cada 3–5 años son suficientes.`,
-      ], h, 60),
-      tip: null,
+      detail: generateDynamicText(
+        "{Desde el momento de la conexión, tu vivienda en [MUNICIPIO] se convierte en una central de energía limpia|Al amanecer, tu sistema empieza a generar electricidad cubriendo el consumo base de tu hogar en [PROVINCIA]|Cada kWh producido en [MUNICIPIO] supone un ahorro directo al precio actual de la luz}. {El mantenimiento es mínimo y la amortización es segura|Los paneles actuales rinden por encima del 87% incluso tras 25 años}.",
+        `${municipio}-step6-detail`, vars
+      ),
+      tip: "{Recuerda limpiar los paneles una vez al año para mantener la eficiencia máxima en [MUNICIPIO]}.",
     },
   ];
   return { steps, urbanContext };
 }
-
-// Fix the template literal reference
-function fixStep6Detail(detail: string, horasSol: number | null): string {
-  const horas = Number(horasSol ?? 1800);
-  const dailyProd = Math.round(horas / 365 * 5 * 0.80);
-  return detail.replace("__DAILY_PROD__", String(dailyProd));
-}
-
-/* ── Component ──────────────────────────────────────────────────── */
-
-import { parseMarkdown } from "@/lib/utils/text";
-
-// ... (cleanName, hash, pick remain same)
-
-/* ── Component ──────────────────────────────────────────────────── */
 
 export function InstallationProcessTimeline({
   municipio,
@@ -183,23 +143,20 @@ export function InstallationProcessTimeline({
   const bonIbi = bonificacionIbi ? Number(bonificacionIbi) : null;
   const precioMedio = precioInstalacionMedio ? Number(precioInstalacionMedio) : null;
 
-  const { steps: rawSteps, urbanContext } = buildSteps(muniClean, provClean, comClean, h, bonIbi, precioMedio, habitantes ? Number(habitantes) : null);
-  const steps = rawSteps.map((s, i) => i === 5 ? { ...s, detail: fixStep6Detail(s.detail, horasSol) } : s);
+  const { steps, urbanContext } = buildSteps(muniClean, provClean, comClean, h, bonIbi, precioMedio, habitantes ? Number(habitantes) : null);
 
   const totalDays = "30–60 días";
   const yearNow = new Date().getFullYear();
 
-  const title = pick([
-    `Hoja de ruta solar para ${muniClean} — Guía ${yearNow}`,
-    `Cómo instalar placas solares en ${muniClean} paso a paso`,
-    `Tiempos y trámites de instalación en ${muniClean}`,
-  ], h, 1);
+  const title = generateDynamicText(
+    "{Hoja de ruta solar para [MUNICIPIO] — Guía [YEAR]|Cómo instalar placas solares en [MUNICIPIO] paso a paso|Tiempos y trámites de instalación en [MUNICIPIO] ([YEAR])}",
+    `${muniClean}-timeline-title`, { MUNICIPIO: muniClean, YEAR: String(yearNow) }
+  );
 
   return (
     <section className="bg-gradient-to-br from-white to-slate-50/50 rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 font-manrope mt-10 overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
       
-      {/* Header */}
       <div className="px-8 py-10 md:px-12 border-b border-slate-100">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 shadow-inner">
@@ -225,21 +182,17 @@ export function InstallationProcessTimeline({
         </div>
       </div>
 
-      {/* Timeline */}
       <div className="px-8 py-10 md:px-12">
         <div className="relative">
-          {/* Vertical line with gradient */}
           <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-gradient-to-b from-indigo-500 via-blue-400 to-slate-200 rounded-full" aria-hidden />
 
           <div className="space-y-12">
-            {steps.map((step, i) => (
+            {steps.map((step) => (
               <div key={step.number} className="relative flex gap-8 group">
-                {/* Circle with glow */}
                 <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-indigo-500 shadow-xl shadow-indigo-200/50 text-base font-black text-indigo-600 transition-transform group-hover:scale-110 group-hover:rotate-3">
                   {step.number}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.15em]">Fase {step.number}</span>
@@ -252,14 +205,16 @@ export function InstallationProcessTimeline({
                   </div>
 
                   {step.tip && (
-                    <div className="mt-6 rounded-2xl bg-amber-50 border border-amber-100 p-5 relative overflow-hidden group/tip">
-                      <div className="absolute top-0 right-0 p-4 opacity-[0.05] grayscale group-hover/tip:grayscale-0 transition-all">
-                         <svg className="w-12 h-12 text-amber-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10s10-4.477 10-10a10 10 0 0 0-10-10zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2v2h-2v-2zm0 4h2v5h-2v-5z"/></svg>
+                    <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex gap-4 items-start">
+                      <div className="h-6 w-6 shrink-0 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shadow-lg shadow-emerald-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                       </div>
-                      <p className="text-sm font-bold text-amber-900 leading-relaxed relative z-10">
-                        <span className="uppercase tracking-[0.1em] text-[10px] block mb-1 text-amber-600">Consejo Experto</span>
-                        {step.tip}
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Consejo Experto</p>
+                        <p className="text-sm text-emerald-800 font-bold leading-snug">
+                          {generateDynamicText(step.tip, `${municipio}-tip-${step.number}`, { MUNICIPIO: municipio })}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -267,13 +222,6 @@ export function InstallationProcessTimeline({
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="px-8 py-6 bg-slate-100 border-t border-slate-200">
-        <p className="text-[11px] text-slate-400 leading-relaxed font-medium text-center">
-          *Plazos orientativos para instalaciones en {muniClean}. RD 244/2019 · {yearNow} · Ingeniería SolaryEco.
-        </p>
       </div>
     </section>
   );

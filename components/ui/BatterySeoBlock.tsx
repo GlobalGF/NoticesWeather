@@ -34,6 +34,8 @@ function getClimateZone(irrad: number, horas: number): "surCalido" | "mediterran
 
 /* ── Component ──────────────────────────────────────────────────── */
 
+import { generateDynamicText } from "@/lib/pseo/spintax";
+
 export function BatterySeoBlock({
   municipio,
   provincia,
@@ -41,40 +43,48 @@ export function BatterySeoBlock({
   horasSol,
   habitantes,
 }: BatterySeoBlockProps) {
-  const hashId = getStringHash(`${municipio}-battery-seo`);
   const irrad = irradiacionAnual ?? 1650;
   const horas = horasSol ?? 2500;
   const zona = getClimateZone(irrad, horas);
 
-  // ── Introduction variations (Honest Keywords) ──
-  const intros = [
-    `Instalar un sistema de baterías con tu **energía solar** en ${municipio} es clave para mejorar la **economía** del hogar. Con ${horas} horas de sol, el **proyecto fotovoltaico** permite que tu **cuenta de la luz** baje incluso de noche.`,
-    `¿Por qué depender de la red si puedes usar tu **luz** guardada en ${municipio}? La **empresa** técnica recomienda **sistemas** de acumulación para maximizar cada **panel** instalado en la provincia de ${provincia}.`,
-    `En ${municipio}, la **atención** al ahorro energético pasa por el almacenamiento. Un **equipo** especializado puede integrar baterías de **calidad** en tu **proyecto solar** para darte autonomía real como **cliente**.`,
-    `La **energía fotovoltaica** en ${municipio} se optimiza con baterías. El **proyecto** de acumulación asegura que tu **sistema** rinda las 24 horas, protegiendo tu **economía** familiar en ${provincia}.`,
-    `Maximiza tu **energía** limpia en ${municipio}. Almacenar el sol en un **equipo** de baterías de **calidad** es la forma más honesta de reducir tu **cuenta de la luz** hoy mismo.`,
-  ];
+  const vars = {
+    MUNICIPIO: municipio,
+    PROVINCIA: provincia,
+    HORAS: String(horas),
+    IRRAD: String(irrad),
+  };
 
-  // ── Expert Climate Advice (Honest/Factual) ──
-  const climateAdvice = {
-    surCalido: `Al ser una zona de alta **energía solar** como ${municipio}, tu **empresa** debe instalar la batería en un lugar fresco. La **calidad** de los **sistemas** de litio se mantiene mejor si el **equipo** está protegido del calor extremo de ${provincia}.`,
-    mediterraneo: `El clima de ${municipio} es ideal para la **energía fotovoltaica**, pero cada **panel** y batería requiere **atención** térmica. Recomendamos que el **proyecto** prevea una ubicación sombreada para no afectar a tu **economía** por degradación.`,
-    atlantico: `En ${municipio}, la **luz** ambiental es constante. El **equipo** técnico debe asegurar que el **sistema fotovoltaico** y sus baterías tengan protección contra la humedad de ${provincia} para mantener la **calidad** del servicio.`,
-    continental: `Los contrastes de ${provincia} exigen que el **proyecto solar** en ${municipio} use baterías con un BMS de alta **calidad**, garantizando que el **cliente** ahorre en su **cuenta de la luz** tanto en invierno como en verano.`,
+  const introSpintax = "{Instalar un sistema de baterías fotovoltaicas en [MUNICIPIO] es clave para maximizar el grado de autoconsumo en tu hogar|¿Por qué depender de la red eléctrica si puedes utilizar tu propia energía almacenada en [MUNICIPIO]?|La clave del ahorro energético total en [MUNICIPIO] pasa por un almacenamiento eficiente}. " +
+    "{Con [HORAS] horas de sol, la acumulación permite que tu consumo se reduzca drásticamente incluso durante la noche|Los expertos recomiendan incluir baterías virtuales o físicas para exprimir cada kilovatio generado en la provincia de [PROVINCIA]|Integrar baterías de litio en tu instalación fotovoltaica garantiza una autonomía real insuperable}.";
+
+  const climateAdviceSpintax = {
+    surCalido: "{Al tratarse de una zona de alta irradiación como [MUNICIPIO], es vital instalar la batería en un lugar fresco y protegido|En el clima cálido de [PROVINCIA], los equipos de baterías requieren una ubicación bien ventilada para mantener su máxima capacidad}. {La vida útil de los sistemas de litio se preserva mejor si están resguardados del calor extremo de [MUNICIPIO]|Garantizar una disipación térmica adecuada es esencial en esta región para no comprometer el rendimiento}.",
+    mediterraneo: "{El clima de [MUNICIPIO] es ideal para generar energía, pero las baterías requieren precaución técnica extra|Para proyectos residenciales en [MUNICIPIO], aconsejamos encarecidamente una ubicación sombreada que mantenga el entorno del acumulador estable}. {Evitar la radiación solar directa sobre la envolvente del equipo es vital a largo plazo|La humedad costera predominante en [PROVINCIA] también impone el uso de anclajes con protección IP65}.",
+    atlantico: "{En [MUNICIPIO], la radiación difusa es frecuente y la elevada humedad de [PROVINCIA] es el verdadero reto técnico|Asegurar que el sistema de almacenamiento cuente con estanqueidad total es primordial en [MUNICIPIO]}. {Mantener el funcionamiento ininterrumpido requiere proteger la tecnología frente a la corrosión ambiental|Un montaje robusto adaptado al clima del norte garantiza que no se produzcan mermas de capacidad por fallos estructurales}.",
+    continental: "{Los fuertes contrastes térmicos de [PROVINCIA] exigen emplear baterías con un amplio rango de temperatura operativa en [MUNICIPIO]|En zonas del interior, contar con energía de reserva es vital para las frías noches de invierno en [MUNICIPIO]}. {Un control térmico adecuado garantiza un funcionamiento sin sobresaltos tanto en las olas de calor como en episodios de frío gélido|Proteger el recinto de acumulación de posibles heladas es el factor determinante para la durabilidad de las celdas}.",
   };
 
   const habCount = habitantes || 0;
-  const urbanContext = habCount > 50000
-    ? `En ciudades como ${municipio}, un **sistema** de baterías compacto es la solución de **empresa** más buscada para optimizar la **economía** en pisos y comunidades.`
-    : habCount < 5000
-      ? `En zonas rurales de ${municipio}, el **equipo** de acumulación permite una independencia casi total, haciendo que tu **proyecto fotovoltaico** sea el pilar de tu **energía** diaria.`
-      : `El crecimiento de la **energía solar** en ${municipio} favorece los **sistemas** híbridos. Un **cliente** con batería ve cómo su **cuenta de la luz** se reduce drásticamente con una instalación de **calidad**.`;
+  const urbanContext = generateDynamicText(
+    habCount > 50000
+      ? "{En grandes ciudades como [MUNICIPIO], un banco de baterías compacto es la solución ideal para optimizar el autoconsumo en entornos residenciales de alta densidad|En un entorno urbano densamente poblado como [MUNICIPIO], el almacenamiento físico permite solventar los desajustes tarifarios con total efectividad}."
+      : habCount < 5000
+        ? "{En zonas rurales ubicadas en [MUNICIPIO], la acumulación en baterías facilita una independencia energética excepcional del suministro convencional|Potenciar tu autonomía ante cortes de red en [MUNICIPIO] es altamente viable integrando equipos de litio en tu tejado}."
+        : "{El auge del autoconsumo en [MUNICIPIO] está propiciando la transición masiva hacia instalaciones híbridas de nueva generación|Invertir en almacenamiento local en [MUNICIPIO] elimina drásticamente tu exposición a la volatilidad diaria de los precios eléctricos}.",
+    `${municipio}-urban-battery`, vars
+  );
 
-  const dataText = `Con una irradiación de ${irrad} kWh/m² en ${municipio}, cada **panel** fotovoltaico es una fuente de **luz** inagotable. Sin batería, tu **sistema** desperdiciaría excedentes que son vitales para tu **economía**.`;
+  const dataText = generateDynamicText(
+    "{Considerando una radiación de [IRRAD] kWh/m², una vivienda unifamiliar en [MUNICIPIO] es capaz de recargar un módulo de 5kWh en apenas unas horas|Los registros solares de la provincia de [PROVINCIA] corroboran que existen ventanas de irradiación más que amplias para completar ciclos diarios|La rentabilidad estructural escala significativamente si se almacena el excedente diurno en lugar de volcarlo a la red a precio regulado}.",
+    `${municipio}-battery-data`, vars
+  );
 
-  const intro = pick(intros, hashId, 0);
-  const expertAdvice = climateAdvice[zona];
-  const closing = `Si buscas un **proyecto** serio, dimensionar tu **sistema** en ${municipio} con **atención** profesional es el mejor camino para tu **cuenta de la luz**.`;
+  const intro = generateDynamicText(introSpintax, `${municipio}-battery-intro`, vars);
+  const expertAdvice = generateDynamicText(climateAdviceSpintax[zona] || climateAdviceSpintax.continental, `${municipio}-battery-expert`, vars);
+  const closing = generateDynamicText(
+    "{Si te planteas dar el paso hacia el almacenamiento total en [MUNICIPIO], te sugerimos dimensionar el banco de litio con precisión milimétrica|Mejora tu resiliencia ante cortes y cambios de tarifa en [PROVINCIA] optando por esquemas híbridos de última generación}.",
+    `${municipio}-battery-closing`, vars
+  );
 
   return (
     <div className="space-y-6">

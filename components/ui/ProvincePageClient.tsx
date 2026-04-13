@@ -28,6 +28,7 @@ interface Props {
     avgSavings: number;
     avgIBI: number;
   };
+  initialList?: React.ReactNode; // SSR list for SEO
 }
 
 export default function ProvincePageClient({
@@ -38,6 +39,7 @@ export default function ProvincePageClient({
   municipios,
   allProvinces,
   stats,
+  initialList,
 }: Props) {
   const [search, setSearch] = useState("");
   const [provDropdownOpen, setProvDropdownOpen] = useState(false);
@@ -59,7 +61,7 @@ export default function ProvincePageClient({
 
   // Instant client-side filtering
   const filteredMunicipios = useMemo(() => {
-    if (!search.trim()) return municipios; // All municipalities, already sorted alphabetically
+    if (!search.trim()) return []; // We rely on initialList when search is empty
     const q = search.toLowerCase().trim();
     return municipios.filter((m) =>
       m.municipio.toLowerCase().includes(q)
@@ -232,7 +234,9 @@ export default function ProvincePageClient({
           )}
         </div>
 
-        {filteredMunicipios.length === 0 ? (
+        {!search ? (
+           initialList
+        ) : filteredMunicipios.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
               <svg className="text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -242,7 +246,7 @@ export default function ProvincePageClient({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
-            {filteredMunicipios.slice(0, 100).map((m) => (
+            {filteredMunicipios.map((m) => (
               <Link
                 key={m.slug}
                 href={`${baseRoute}/${m.slug}`}
@@ -256,11 +260,6 @@ export default function ProvincePageClient({
                 </div>
               </Link>
             ))}
-            {filteredMunicipios.length > 100 && (
-              <div className="col-span-full py-6 text-center">
-                <p className="text-sm text-slate-400">Mostrando los primeros 100 municipios. Usa el buscador para filtrar.</p>
-              </div>
-            )}
           </div>
         )}
       </div>

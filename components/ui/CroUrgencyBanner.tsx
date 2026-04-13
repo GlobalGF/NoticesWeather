@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWeather } from "@/components/providers/WeatherProvider";
+import { generateDynamicText } from "@/lib/pseo/spintax";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -58,45 +59,53 @@ export function CroUrgencyBanner({
     try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch { /* ok */ }
   }
 
+
   // ── Message logic ────────────────────────────────────────────
-  let headline: string;
-  let body: string;
+  let headlineTemplate: string;
+  let bodyTemplate: string;
   let badgeText: string | null = null;
   let bgClass: string;
 
+  const vars = {
+    MUNICIPIO: municipio,
+    EUR: moneyPerHour.toFixed(2),
+    KWH: currentProductionKwh.toFixed(1),
+    GHI: String(Math.round(ghi ?? 0)),
+  };
+
   if (!isDay) {
-    headline = `Mañana, tus paneles en ${municipio} volverán a generar energía gratis`;
-    body = hour >= 20
-      ? "Solicita tu estudio gratuito esta noche y recíbelo mañana a primera hora."
-      : "Al amanecer, la producción solar se reanuda automáticamente.";
+    headlineTemplate = "{Mañana, tus paneles en [MUNICIPIO] volverán a generar energía gratis|El sol volverá a [MUNICIPIO] mañana: prepárate para ahorrar|Tu sistema solar en [MUNICIPIO] se reactivará con la primera luz del día}";
+    bodyTemplate = hour >= 20
+      ? "{Solicita tu estudio gratuito esta noche y recíbelo mañana a primera hora|Aprovecha el descanso nocturno para planificar tu ahorro en [MUNICIPIO]|Gana tiempo: pide tu presupuesto solar ahora y lo tendrás listo al amanecer}"
+      : "{Al amanecer, la producción solar en [MUNICIPIO] se reanuda automáticamente|La energía fotovoltaica en [MUNICIPIO] volverá a reducir tu factura en unas horas|Pausa nocturna: el sistema está listo para captar luz en cuanto salga el sol}";
     bgClass = "from-indigo-900 to-slate-900 text-white";
   } else if (ghi != null && ghi > 500) {
-    headline = `Ahora mismo en ${municipio} se desperdician ${moneyPerHour.toFixed(2)}€/hora de energía solar`;
-    body = `Con una irradiancia de ${Math.round(ghi)} W/m², una instalación de ${PANEL_SYSTEM_KW}kW produciría ${currentProductionKwh.toFixed(1)} kWh cada hora. Ese dinero sale de tu bolsillo.`;
+    headlineTemplate = "{Ahora mismo en [MUNICIPIO] se desperdician [EUR]€/hora de energía solar|Estás perdiendo [EUR]€ de ahorro solar cada hora en [MUNICIPIO]|Pico de sol en [MUNICIPIO]: dejas de ahorrar [EUR]€ por hora sin paneles}";
+    bodyTemplate = "{Con una irradiancia de [GHI] W/m², una instalación de 5kW produciría [KWH] kWh cada hora|Máxima eficiencia ahora en [MUNICIPIO]: podrías generar [KWH] kWh/h gratis con el sol actual|Ese dinero ([EUR]€) sale de tu bolsillo cada hora que pasas sin energía fotovoltaica}";
     bgClass = "from-amber-500 to-orange-500 text-slate-900";
     if (data.uv > 8) badgeText = "UV extremo · máxima producción";
   } else if (ghi != null && ghi > 200) {
-    headline = `Con esta irradiancia en ${municipio}, estarías generando ${currentProductionKwh.toFixed(1)} kWh/h gratis`;
-    body = `Producción moderada (${Math.round(ghi)} W/m²) — los paneles siguen siendo rentables incluso sin sol directo.`;
+    headlineTemplate = "{Con esta irradiancia en [MUNICIPIO], estarías generando [KWH] kWh/h gratis|Luz solar aprovechable ahora en [MUNICIPIO]: produce [KWH] kWh cada hora|Oportunidad de ahorro real en [MUNICIPIO]: genera [KWH] kWh/h con luz ambiental}";
+    bodyTemplate = "{Producción moderada ([GHI] W/m²) — los paneles siguen siendo rentables incluso sin sol directo|Incluso con nubes parciales en [MUNICIPIO], tu sistema fotovoltaico restaría euros a tu factura|La tecnología actual capta energía residual de [GHI] W/m² para alimentar tu hogar}";
     bgClass = "from-blue-500 to-sky-500 text-white";
   } else {
     const pct = ghi != null ? Math.round((ghi / 1000) * 100) : 15;
-    headline = `Incluso hoy, los paneles en ${municipio} producen un ${pct}% de su capacidad`;
-    body = `Los paneles solares modernos generan energía incluso con cielos nublados. El ahorro se acumula día tras día.`;
+    headlineTemplate = `{Incluso hoy, los paneles en [MUNICIPIO] producen un ${pct}% de su capacidad|Cielo cubierto en [MUNICIPIO] pero ahorro activo: generas energía al ${pct}%|No subestimes las nubes: tus placas en [MUNICIPIO] rinden al ${pct}% hoy}`;
+    bodyTemplate = "{Los paneles solares modernos generan energía incluso con cielos nublados|El equipo fotovoltaico de calidad capta radiación difusa para que el ahorro no se detenga|Día gris en [MUNICIPIO] pero tu cuenta de la luz sigue bajando gracias a la luz ambiental}";
     bgClass = "from-slate-600 to-slate-700 text-white";
   }
 
-  // Time-of-day CTA twist
-  let ctaText: string;
-  if (hour >= 6 && hour < 10) {
-    ctaText = "Aprovecha las horas pico — Pide presupuesto";
-  } else if (hour >= 10 && hour < 16) {
-    ctaText = "Máxima producción ahora — Solicita estudio gratis";
-  } else if (hour >= 16 && hour < 20) {
-    ctaText = "Empieza a ahorrar mañana — Presupuesto gratuito";
-  } else {
-    ctaText = "Solicita tu estudio gratuito esta noche";
-  }
+  const ctaTemplate = hour >= 6 && hour < 10
+    ? "{Aprovecha las horas pico — Pide presupuesto|Empieza el día ahorrando — Consulta gratis|Sol matutino: solicita tu estudio ahora}"
+    : hour >= 10 && hour < 16
+      ? "{Máxima producción ahora — Solicita estudio gratis|No pierdas más vatios — Pide tu presupuesto|La mejor hora para pasarte al autoconsumo — Infórmate}"
+      : hour >= 16 && hour < 20
+        ? "{Empieza a ahorrar mañana — Presupuesto gratuito|Prepara tu tejado para el sol de mañana|Calcula tu ahorro vespertino ahora mismo}"
+        : "{Solicita tu estudio gratuito esta noche|No esperes a la factura: pide presupuesto hoy|Tu ahorro de mañana empieza con este clic}";
+
+  const headline = generateDynamicText(headlineTemplate, `${municipio}-cro-h`, vars);
+  const body = generateDynamicText(bodyTemplate, `${municipio}-cro-b`, vars);
+  const ctaText = generateDynamicText(ctaTemplate, `${municipio}-cro-cta`, vars);
 
   return (
     <div

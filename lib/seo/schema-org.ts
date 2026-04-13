@@ -87,6 +87,8 @@ export function buildFaqSchema(faqs: FaqItem[]) {
 // Dynamic FAQs generated from real municipality data
 // ---------------------------------------------------------------------------
 
+import { generateDynamicText } from "@/lib/pseo/spintax";
+
 export function buildMunicipioFaqs(data: Pick<
   MunicipioPageData,
   "municipio" | "provincia" | "ahorroEstimado" | "irradiacionSolar" | "bonificacionIbi" | "subvencionAutoconsumo" | "precioInstalacionMedio"
@@ -97,58 +99,129 @@ export function buildMunicipioFaqs(data: Pick<
   const eurWp = precio > 0 ? (precio / 5000).toFixed(2) : "1.15";
   const payback = ahorro > 0 ? Math.round(precio / ahorro) : 7;
 
+  const radMsg = radiacion >= 1700 ? "la radiación en [MUNICIPIO] es excepcional" : "el recurso solar en [MUNICIPIO] es más que suficiente";
+
+  const vars = {
+    MUNICIPIO: data.municipio || "Localidad",
+    PROVINCIA: data.provincia || "",
+    AHORRO: String(ahorro),
+    IRRAD: String(radiacion),
+    PRECIO: precio.toLocaleString("es-ES"),
+    EURWP: eurWp,
+    PAYBACK: String(payback),
+    IBI: String(Math.round(data.bonificacionIbi || 50)),
+    SUBV: String(Math.round(data.subvencionAutoconsumo || 40)),
+    RAD_MSG: radMsg,
+  };
+
+  const spin = (template: string, key: string) => generateDynamicText(template, `${data.municipio}-${key}`, vars);
+
   const faqs: FaqItem[] = [
     {
       question: `¿Cuánto puedo ahorrar instalando placas solares en ${data.municipio}?`,
-      answer: `Con una instalación fotovoltaica bien dimensionada en ${data.municipio}, el ahorro estimado es de hasta ${ahorro} € anuales en la factura eléctrica, gracias a los ${radiacion} kWh/m² de irradiación solar de la zona. Este cálculo considera un ratio de autoconsumo del 65% y compensación de excedentes a 0,05 €/kWh.`,
+      answer: spin(
+        "{Con un sistema fotovoltaico optimizado en [MUNICIPIO], el ahorro puede llegar a los [AHORRO] € anuales|La rentabilidad en [MUNICIPIO] es alta: podrías ahorrar unos [AHORRO] € cada año en tu factura eléctrica|Instalar paneles en [MUNICIPIO] supone un respiro para tu economía, con ahorros de hasta [AHORRO] € al año}. " +
+        "{Esto es posible gracias a los [IRRAD] kWh/m² de irradiación de la zona|La excelente radiación en [PROVINCIA] ([IRRAD] kWh/m²) garantiza este rendimiento|Incluso con un autoconsumo conservador del 65%, los [IRRAD] kWh/m² de [MUNICIPIO] aseguran un ahorro sólido}.",
+        "faq1"
+      ),
     },
     {
       question: `¿Cuánto cuesta instalar placas solares en ${data.municipio}?`,
-      answer: `El precio medio de una instalación solar doméstica de 5 kWp en ${data.provincia} ronda los ${precio.toLocaleString("es-ES")} € (aprox. ${eurWp} €/Wp). Una instalación básica de 3 kWp parte desde ${Math.round(precio * 0.6).toLocaleString("es-ES")} €, y un sistema premium de 8 kWp con optimizadores alcanza los ${Math.round(precio * 1.6).toLocaleString("es-ES")} €. Estos precios incluyen paneles, inversor, estructura, cableado e instalación.`,
+      answer: spin(
+        "{El coste medio de una instalación de 5 kWp en [PROVINCIA] se sitúa cerca de los [PRECIO] €|Para una vivienda estándar en [MUNICIPIO], el presupuesto suele rondar los [PRECIO] € (unos [EURWP] €/Wp)|Invertir en energía solar en [MUNICIPIO] requiere una media de [PRECIO] € para un sistema de calidad}. " +
+        "{Un equipo básico de 3 kWp puede partir desde los [PRECIO] € con materiales certificados|Sistemas premium de mayor potencia en [MUNICIPIO] pueden alcanzar cifras superiores, incluyendo optimizadores y estructuras reforzadas}.",
+        "faq2"
+      ),
     },
     {
       question: `¿Hay bonificación en el IBI por placas solares en ${data.municipio}?`,
       answer: data.bonificacionIbi != null
-        ? `Sí. El ayuntamiento de ${data.municipio} ofrece una bonificación del ${Math.round(data.bonificacionIbi)}% en el IBI para inmuebles con instalación fotovoltaica, aplicable normalmente durante 3 a 5 años. Esto supone un ahorro fiscal adicional que acelera la amortización. Consulta la ordenanza municipal vigente para conocer los requisitos exactos.`
-        : `Consulta con el ayuntamiento de ${data.municipio} para comprobar si existe bonificación del IBI para instalaciones de autoconsumo solar. Muchos municipios de ${data.provincia} ofrecen reducciones del 25% al 50%.`,
+        ? spin(
+            "{Buenas noticias: el Ayuntamiento de [MUNICIPIO] bonifica el IBI con un [IBI]% para quienes instalan autoconsumo|En [MUNICIPIO] existe un descuento del [IBI]% en el IBI que reduce significativamente el plazo de amortización|La normativa de [MUNICIPIO] contempla una rebaja fiscal dell [IBI]% en el impuesto de bienes inmuebles}. " +
+            "{Este incentivo suele durar entre 3 y 5 años según la ordenanza vigente|Es un apoyo directo a la energía solar en [PROVINCIA] que acelera el retorno de tu inversión}.",
+            "faq3"
+          )
+        : spin(
+            "{Te recomendamos consultar directamente con el Ayuntamiento de [MUNICIPIO] para confirmar ayudas locales|Aunque no conste una bonificación fija, muchos pueblos en [PROVINCIA] ofrecen reducciones del 25% al 50% en el IBI|Es vital revisar el boletín oficial de [MUNICIPIO], ya que las ayudas por placas solares cambian anualmente}.",
+            "faq3-alt"
+          ),
     },
     {
       question: `¿Qué subvenciones existen para instalar paneles solares en ${data.municipio}?`,
       answer: data.subvencionAutoconsumo != null
-        ? `La comunidad autónoma ofrece subvenciones de hasta el ${Math.round(data.subvencionAutoconsumo)}% del coste de instalación. Además, puedes deducir hasta un 20% en el IRPF (máximo 5.000 €) si la instalación mejora la eficiencia energética. Combinando ambas ayudas, el coste efectivo de una instalación en ${data.municipio} puede reducirse entre un 30% y un 50%.`
-        : `Existen subvenciones autonómicas y la deducción estatal del IRPF (hasta 20%, máximo 5.000 €) para instalaciones de autoconsumo en ${data.municipio}. Consulta el IDAE y la web de tu comunidad autónoma para las convocatorias vigentes.`,
+        ? spin(
+            "{La comunidad autónoma ofrece ayudas de hasta el [SUBV]% del coste total de tu proyecto en [MUNICIPIO]|En [PROVINCIA] puedes acceder a subvenciones que cubren parte de la inversión (hasta el [SUBV]%)|Existen fondos destinados a fomentar la luz solar en [MUNICIPIO] con ayudas del [SUBV]%}. " +
+            "{Además, el IRPF estatal permite desgravar hasta un 20% adicional si mejoras la eficiencia energética|En total, el coste de tu instalación en [MUNICIPIO] puede verse reducido casi a la mitad combinando ambos incentivos}.",
+            "faq4"
+          )
+        : spin(
+            "{Existen deducciones en el IRPF de hasta el 20% para instalaciones en [MUNICIPIO] que mejoren la eficiencia energética|Consulta las convocatorias activas en la web de tu comunidad autónoma para proyectos en [MUNICIPIO]|Aparte de las ayudas estatales, en [PROVINCIA] suelen lanzarse planes específicos de fomento de las renovables y el autoconsumo}.",
+            "faq4-alt"
+          ),
     },
     {
       question: `¿En cuánto tiempo se amortiza una instalación solar en ${data.municipio}?`,
-      answer: `Con el precio actual de la electricidad y la irradiación de ${radiacion} kWh/m² en ${data.municipio}, una instalación de 5 kWp se amortiza en aproximadamente ${payback} años sin ayudas. Aplicando la bonificación del IBI${data.bonificacionIbi ? ` (${Math.round(data.bonificacionIbi)}%)` : ""} y la deducción del IRPF, el plazo se reduce a ${Math.max(3, payback - 2)}–${Math.max(4, payback - 1)} años. Los paneles tienen una vida útil de 25-30 años, lo que supone más de ${25 - payback} años de energía prácticamente gratuita.`,
+      answer: spin(
+        "{Dada la irradiación de [IRRAD] kWh/m² en [MUNICIPIO], el payback se estima en [PAYBACK] años sin contar ayudas|Un sistema típico en [MUNICIPIO] se paga solo en unos [PAYBACK] años solo con el ahorro en la factura de la luz|La rentabilidad en [PROVINCIA] es muy alta, permitiendo amortizar el equipo en [PAYBACK] años de media}. " +
+        "{Si aplicas la bonificación del IBI ([IBI]%) y el IRPF, este plazo cae por debajo de los 5 años en muchos casos|Teniendo en cuenta que los paneles duran más de 25 años, disfrutarás de dos décadas de energía pura gratis en [MUNICIPIO]}.",
+        "faq5"
+      ),
     },
     {
       question: `¿Cuántos paneles solares necesito para una casa en ${data.municipio}?`,
-      answer: `Depende del consumo del hogar. Para una vivienda media en ${data.municipio} con un consumo de 300-400 kWh/mes, necesitas entre 10 y 12 paneles de 450 W (instalación de 5 kWp), que ocupan unos 24 m² de cubierta. Si tu consumo es bajo (<200 kWh/mes), con 7 paneles (3 kWp) es suficiente. Para viviendas con alto consumo, piscina o coche eléctrico, se recomiendan 18-20 paneles (8 kWp).`,
+      answer: spin(
+        "{Para un consumo doméstico medio en [MUNICIPIO], solemos recomendar entre 10 y 12 paneles de 450W|Una vivienda estándar en [PROVINCIA] requiere unos 5 kWp de potencia, lo que equivale a unos 11 paneles fotovoltaicos|Depende de tu factura, pero en [MUNICIPIO] el estándar son unos 10 paneles para cubrir el 70% del consumo diurno}. " +
+        "{Si tienes coche eléctrico o aerotermia, el equipo técnico en [MUNICIPIO] podría sugerir ampliar hasta las 18 o 20 placas|Para consumos reducidos, un kit de 6-7 paneles puede ser suficiente para empezar a ahorrar}.",
+        "faq6"
+      ),
     },
     {
       question: `¿Merece la pena instalar placas solares en ${data.municipio} con ${radiacion} kWh/m² de irradiación?`,
-      answer: `Sí. ${data.municipio} recibe ${radiacion} kWh/m² de irradiación anual, lo que ${radiacion >= 1800 ? "supera ampliamente" : radiacion >= 1500 ? "está por encima de" : "es comparable con"} la media de países como Alemania (1.050 kWh/m²), donde la energía solar es una industria consolidada y rentable. Con los precios actuales de la electricidad en España, una instalación en ${data.municipio} genera un retorno positivo desde el primer año.`,
+      answer: spin(
+        "{Absolutamente. Los [IRRAD] kWh/m² de [MUNICIPIO] son una cifra envidiable comparada con el norte de Europa|Sin duda, [RAD_MSG] para que el proyecto sea rentable|Es una de las mejores inversiones posibles hoy en [PROVINCIA]: el sol es un recurso gratuito que aquí abunda}. " +
+        "{Países con mucha menos luz son líderes en solar; en [MUNICIPIO] tienes garantizada una producción constante casi todo el año|El retorno de inversión en [MUNICIPIO] es positivo desde el primer mes de funcionamiento}.",
+        "faq7"
+      ),
     },
     {
       question: `¿Necesito licencia de obra para instalar placas solares en ${data.municipio}?`,
-      answer: `En la mayoría de casos, la instalación de paneles solares para autoconsumo en ${data.municipio} requiere una declaración responsable o comunicación previa al ayuntamiento, no una licencia de obra completa. La empresa instaladora se encarga habitualmente de toda la tramitación. Además, necesitarás registrar la instalación en el REBT y tramitar el alta como autoconsumidor ante la distribuidora eléctrica.`,
+      answer: spin(
+        "{Hoy en día, la mayoría de instalaciones en [MUNICIPIO] solo requieren una declaración responsable|El proceso es ágil en [MUNICIPIO]: se suele tramitar vía comunicación previa al ayuntamiento|Ya no hace falta la farragosa licencia de obra mayor en casi ningún punto de [PROVINCIA] para autoconsumo residencial}. " +
+        "{La empresa instaladora suele encargarse de este trámite administrativo en [MUNICIPIO] por ti|Una vez instaladas, solo resta el registro en el REBT y la comunicación a la distribuidora de [PROVINCIA]}.",
+        "faq8"
+      ),
     },
     {
       question: `¿Cuánto tarda la instalación de paneles solares en ${data.municipio}?`,
-      answer: `La instalación física de las placas solares en un tejado residencial en ${data.municipio} se completa habitualmente en 1-3 días laborables. Sin embargo, el proceso completo (estudio técnico, tramitación de permisos, instalación y legalización) suele durar entre 4 y 8 semanas. La fase más lenta es la tramitación administrativa con el ayuntamiento y la distribuidora eléctrica.`,
+      answer: spin(
+        "{La ejecución técnica en el tejado de tu vivienda en [MUNICIPIO] se realiza en apenas 1 o 2 días|Nuestros equipos en [MUNICIPIO] suelen completar el montaje físico en unas 48 horas|Es un proceso rápido: la instalación de paneles en [PROVINCIA] es sencilla y no requiere obras estructurales}. " +
+        "{Eso sí, el proceso administrativo completo (permisos y legalización) puede llevar entre 4 y 6 semanas|La fase de 'papeleo' con el Ayuntamiento de [MUNICIPIO] es lo que más tiempo consume en el proyecto}.",
+        "faq9"
+      ),
     },
     {
       question: `¿Puedo instalar placas solares en un piso en ${data.municipio}?`,
-      answer: `Sí, existen dos opciones para pisos en ${data.municipio}: el autoconsumo colectivo (compartido entre vecinos en la cubierta del edificio) y el autoconsumo individual si tienes acceso exclusivo a parte de la azotea. La Ley 7/2021 y el RD 244/2019 facilitan las instalaciones compartidas. Necesitas el acuerdo de la comunidad de propietarios (mayoría simple) y un estudio de reparto de la energía entre los participantes.`,
+      answer: spin(
+        "{Sí, el autoconsumo compartido en comunidades de vecinos es cada vez más común en [MUNICIPIO]|Es posible mediante el autoconsumo colectivo, repartiendo la energía de la cubierta comunitaria en [MUNICIPIO]|Los pisos de [PROVINCIA] también pueden ahorrar luz con instalaciones en bloques residenciales}. " +
+        "{Solo necesitas el acuerdo de la mayoría simple de la junta de propietarios en [MUNICIPIO]|La ley actual facilita enormemente estos proyectos colectivos para reducir la cuenta de la luz de todo el edificio}.",
+        "faq10"
+      ),
     },
     {
       question: `¿Cuánto cuesta el mantenimiento anual de placas solares en ${data.provincia}?`,
-      answer: `El mantenimiento de una instalación solar residencial en ${data.provincia} es mínimo y económico: entre 100 € y 200 € al año. Consiste básicamente en una limpieza semestral de los paneles (que la lluvia ayuda a realizar) y una revisión anual del inversor y las conexiones. Los paneles tienen garantía de producción de 25 años y el inversor de 5 a 10 años.`,
+      answer: spin(
+        "{El mantenimiento en [PROVINCIA] es casi inexistente, bastando con una limpieza de paneles al año|Es un sistema muy robusto que solo requiere supervisión del inversor y limpieza básica en [MUNICIPIO]|Calcula un coste de unos 100-150 € anuales para una revisión profesional en [MUNICIPIO], si decides contratarla}. " +
+        "{La lluvia en [PROVINCIA] suele encargarse de gran parte de la limpieza superficial de las placas|Al no tener partes móviles, las averías en instalaciones solares de [MUNICIPIO] son muy poco frecuentes}.",
+        "faq11"
+      ),
     },
     {
       question: `¿Merece la pena añadir batería a la instalación solar en ${data.municipio}?`,
-      answer: `Depende de tu patrón de consumo. En ${data.municipio}, si la mayor parte de tu consumo eléctrico es por la noche (cuando no hay producción solar), una batería de litio de 5-10 kWh puede aumentar tu autoconsumo del 60% al 85%. Sin embargo, el coste de la batería (3.000-6.000 €) alarga la amortización 3-5 años. La recomendación técnica es empezar sin batería y añadirla más adelante cuando los precios bajen.`,
+      answer: spin(
+        "{Depende de si consumes mucha energía de noche en tu vivienda de [MUNICIPIO]|Si tu mayor gasto eléctrico es nocturno, una batería de litio en [MUNICIPIO] aumentará tu ahorro drásticamente|Las baterías permiten aprovechar el 90% de la luz generada por tus paneles en [PROVINCIA]}. " +
+        "{Aunque encarecen el proyecto inicial, son vitales para la independencia energética total en [MUNICIPIO]|Nuestra sugerencia en [MUNICIPIO] es dejar el inversor preparado (híbrido) y añadir la batería más adelante si el precio baja}.",
+        "faq12"
+      ),
     },
   ];
 

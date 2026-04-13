@@ -16,15 +16,27 @@ export function buildMetadata(input: MetadataInput): Metadata {
   const canonical = `${base}${input.pathname}`;
   const ogImageUrl = `${base}${DEFAULT_OG_IMAGE}`;
 
+  // SMART SEO TITLE LOGIC: Handle length and branding
+  let finalTitle = input.title;
+  const brandFull = " | SolaryEco";
+  const brandShort = " - S&E";
+
+  if (finalTitle.length <= 48) {
+    finalTitle = `${finalTitle}${brandFull}`;
+  } else if (finalTitle.length <= 54) {
+    finalTitle = `${finalTitle}${brandShort}`;
+  }
+  // If > 54 chars, we keep only the pure keyword title to avoid truncation
+
   return {
-    title: input.title,
+    title: finalTitle,
     description: input.description,
     alternates: { canonical },
     robots: input.noIndex ? { index: false, follow: true } : undefined,
     authors: [{ name: SITE_NAME, url: base }],
     publisher: SITE_NAME,
     openGraph: {
-      title: input.title,
+      title: finalTitle,
       description: input.description,
       url: canonical,
       siteName: SITE_NAME,
@@ -35,13 +47,13 @@ export function buildMetadata(input: MetadataInput): Metadata {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: input.title,
+          alt: finalTitle,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: input.title,
+      title: finalTitle,
       description: input.description,
       site: SITE_CONFIG.twitter,
       images: [ogImageUrl],
