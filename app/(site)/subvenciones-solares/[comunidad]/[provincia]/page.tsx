@@ -266,7 +266,7 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                                 {fechaFin && (
                                     <p className="text-xs text-slate-500">
                                         Vigencia del programa: hasta el{" "}
-                                        <strong className="text-slate-700">{new Date(fechaFin).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</strong>.
+                                        <span className="text-slate-700 font-bold">{new Date(fechaFin).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</span>.
                                         Consulta la sede electrónica de {ccaaName} para confirmar plazos.
                                     </p>
                                 )}

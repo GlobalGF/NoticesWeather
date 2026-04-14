@@ -181,7 +181,7 @@ export function CityClimateSolarProfile({
           <p>{summary}</p>
           <p className="mt-3">{tech}</p>
           <p className="mt-3">
-            <strong>Estacionalidad:</strong> {seasonal}. Este patrón debe tenerse en cuenta al dimensionar 
+            <span className="font-bold">Estacionalidad:</span> {seasonal}. Este patrón debe tenerse en cuenta al dimensionar 
             la instalación y negociar la compensación de excedentes con la distribuidora.
           </p>
         </div>

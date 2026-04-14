@@ -203,7 +203,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         </p>
         {leadValue ? (
           <p className="mt-2 text-sm text-slate-700">
-            Valor potencial estimado del lead: <strong>{leadValue.estimatedLeadValueEur.toLocaleString("es-ES")} EUR</strong>
+            Valor potencial estimado del lead: <span className="font-bold">{leadValue.estimatedLeadValueEur.toLocaleString("es-ES")} EUR</span>
             {" "}
             ({leadValue.leadTier}).
           </p>

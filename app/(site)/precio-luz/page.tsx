@@ -178,10 +178,10 @@ async function GenericPrecioLuzPage() {
             <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px]">PVPC en Tiempo Real · Datos REE</p>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-3">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-3">
             Precio de la Luz Hoy<br className="hidden md:block" />
             <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">Mercado Regulado PVPC</span>
-          </h1>
+          </h2>
           <p className="text-xl md:text-3xl text-amber-200 font-black mb-6 drop-shadow-sm">¿Harto de mirar el reloj para ahorrar unos céntimos?</p>
 
           <p className="text-lg md:text-2xl text-amber-200 font-semibold mb-6 capitalize">{fechaHoy}</p>
@@ -366,10 +366,10 @@ async function GenericPrecioLuzPage() {
               <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Resumen del día</p>
                 <ul className="space-y-1 text-sm text-slate-700">
-                  <li className="flex justify-between"><span>Precio medio</span><strong className="tabular-nums">{fmt(hoy.media)} €/kWh</strong></li>
-                  <li className="flex justify-between"><span>Mínimo</span><strong className="tabular-nums">{hoy.min ? `${fmt(hoy.min.precio_kwh)} € (${String(hoy.min.hora).padStart(2, "0")}:00)` : "–"}</strong></li>
-                  <li className="flex justify-between"><span>Máximo</span><strong className="tabular-nums">{hoy.max ? `${fmt(hoy.max.precio_kwh)} € (${String(hoy.max.hora).padStart(2, "0")}:00)` : "–"}</strong></li>
-                  <li className="flex justify-between"><span>Media 7 días</span><strong className="tabular-nums">{fmt(pvpc.media7d)} €/kWh</strong></li>
+                  <li className="flex justify-between"><span>Precio medio</span><span className="tabular-nums" font-bold>{fmt(hoy.media)} €/kWh</span></li>
+                  <li className="flex justify-between"><span>Mínimo</span><span className="tabular-nums" font-bold>{hoy.min ? `${fmt(hoy.min.precio_kwh)} € (${String(hoy.min.hora).padStart(2, "0")}:00)` : "–"}</span></li>
+                  <li className="flex justify-between"><span>Máximo</span><span className="tabular-nums" font-bold>{hoy.max ? `${fmt(hoy.max.precio_kwh)} € (${String(hoy.max.hora).padStart(2, "0")}:00)` : "–"}</span></li>
+                  <li className="flex justify-between"><span>Media 7 días</span><span className="tabular-nums" font-bold>{fmt(pvpc.media7d)} €/kWh</span></li>
                 </ul>
               </div>
             </div>
@@ -457,20 +457,20 @@ async function GenericPrecioLuzPage() {
           </h2>
           <div className="prose prose-slate max-w-none text-sm leading-relaxed">
             <p>
-              En España existen dos opciones para contratar la electricidad: el <strong>mercado regulado (PVPC)</strong> y
-              el <strong>mercado libre</strong>. El mercado regulado está supervisado por el Gobierno y su precio se
-              fija cada hora según la subasta del mercado mayorista, gestionado por <strong>OMIE</strong> y publicado
-              por <strong>Red Eléctrica de España (REE)</strong> a través de la plataforma ESIOS.
+              En España existen dos opciones para contratar la electricidad: el <span font-bold>mercado regulado (PVPC)</span> y
+              el <span font-bold>mercado libre</span>. El mercado regulado está supervisado por el Gobierno y su precio se
+              fija cada hora según la subasta del mercado mayorista, gestionado por <span font-bold>OMIE</span> y publicado
+              por <span font-bold>Red Eléctrica de España (REE)</span> a través de la plataforma ESIOS.
             </p>
             <p>
               El PVPC (Precio Voluntario para el Pequeño Consumidor) está disponible para consumidores con
-              potencia contratada <strong>≤ 10 kW</strong>. A diferencia de las tarifas del mercado libre, donde
+              potencia contratada <span font-bold>≤ 10 kW</span>. A diferencia de las tarifas del mercado libre, donde
               la comercializadora fija un precio por kWh estable, el PVPC varía las 24 horas del día,
               lo que permite ahorrar concentrando el consumo en las horas más baratas.
             </p>
             <p>
-              Las <strong>comercializadoras de referencia</strong> (COR) son las únicas autorizadas a ofrecer la tarifa
-              PVPC. Según la <strong>CNMC</strong>, aproximadamente el 35% de los hogares españoles se acogen a esta tarifa.
+              Las <span font-bold>comercializadoras de referencia</span> (COR) son las únicas autorizadas a ofrecer la tarifa
+              PVPC. Según la <span font-bold>CNMC</span>, aproximadamente el 35% de los hogares españoles se acogen a esta tarifa.
               La principal ventaja es la transparencia: los precios son públicos y se publican con antelación.
             </p>
           </div>
@@ -483,7 +483,7 @@ async function GenericPrecioLuzPage() {
           </h2>
           <div className="prose prose-slate max-w-none text-sm leading-relaxed">
             <p>
-              Desde junio de 2021, la tarifa regulada 2.0TD aplica <strong>discriminación horaria con tres tramos</strong>:
+              Desde junio de 2021, la tarifa regulada 2.0TD aplica <span font-bold>discriminación horaria con tres tramos</span>:
               punta, llano y valle. Cada tramo tiene un coste de energía diferente, por lo que elegir bien
               cuándo consumir puede suponer un ahorro de hasta el 40% en la factura.
             </p>
@@ -506,9 +506,9 @@ async function GenericPrecioLuzPage() {
               </div>
             </div>
             <p>
-              Con <strong>placas solares en autoconsumo</strong>, produces tu propia electricidad durante
+              Con <span font-bold>placas solares en autoconsumo</span>, produces tu propia electricidad durante
               las horas de sol (punta y llano), que es precisamente cuando la tarifa PVPC es más cara.
-              Esto significa que <strong>evitas comprar kWh al precio más alto</strong> y, si generas excedentes,
+              Esto significa que <span font-bold>evitas comprar kWh al precio más alto</span> y, si generas excedentes,
               los compensas a un precio de mercado (en torno a 0,05 €/kWh), reduciendo aún más tu factura.
             </p>
           </div>
@@ -522,16 +522,16 @@ async function GenericPrecioLuzPage() {
           <div className="prose prose-slate max-w-none text-sm leading-relaxed">
             <p>
               El precio PVPC de cada hora se compone de varios conceptos regulados. El más importante es el
-              <strong> coste de la energía</strong>, que proviene de la subasta diaria del mercado mayorista (OMIE).
+              <span font-bold> coste de la energía</span>, que proviene de la subasta diaria del mercado mayorista (OMIE).
               Cada día, a las 12:00, se celebra la subasta para las 24 horas del día siguiente, donde
               se cruzan las ofertas de generadores (centrales nucleares, renovables, ciclos combinados)
               con la demanda prevista.
             </p>
             <p>
-              Al coste de energía se le suman los <strong>peajes de acceso</strong> (regulados por la CNMC),
-              los <strong>cargos del sistema</strong> (déficit de tarifa, incentivos renovables) y los
-              <strong> pagos por capacidad</strong>. Finalmente, se aplica el <strong>IVA del 21%</strong> y el
-              <strong> Impuesto Especial sobre la Electricidad (IEE)</strong>.
+              Al coste de energía se le suman los <span font-bold>peajes de acceso</span> (regulados por la CNMC),
+              los <span font-bold>cargos del sistema</span> (déficit de tarifa, incentivos renovables) y los
+              <span font-bold> pagos por capacidad</span>. Finalmente, se aplica el <span font-bold>IVA del 21%</span> y el
+              <span font-bold> Impuesto Especial sobre la Electricidad (IEE)</span>.
             </p>
             <p>
               ¿Por qué varía tanto? Porque el mercado mayorista refleja en tiempo real factores como:
@@ -610,7 +610,7 @@ async function GenericPrecioLuzPage() {
                 </h3>
               </summary>
               <p className="mt-2 text-sm text-slate-600 leading-relaxed pl-0">
-                Los sábados, domingos y festivos nacionales son <strong>todo valle durante las 24 horas</strong>.
+                Los sábados, domingos y festivos nacionales son <span font-bold>todo valle durante las 24 horas</span>.
                 No hay distinción entre punta, llano y valle. Aprovecha estos días para las tareas de
                 mayor consumo: horno, secadora, plancha, carga del coche eléctrico, etc.
               </p>
@@ -700,7 +700,7 @@ async function GenericPrecioLuzPage() {
         {/* ── Fuentes ── */}
         <footer className="text-center text-xs text-slate-400 pt-4">
           <p>
-            Datos PVPC publicados por <strong>Red Eléctrica de España (REE)</strong> vía API ESIOS.
+            Datos PVPC publicados por <span font-bold>Red Eléctrica de España (REE)</span> vía API ESIOS.
             Actualización automática cada hora. Última sincronización: {new Date(pvpc.updatedAt).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}.
           </p>
         </footer>

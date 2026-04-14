@@ -74,9 +74,9 @@ export function SubsidiesSeoBlock({
                 <p className="text-emerald-100 font-black uppercase tracking-[0.2em] text-[11px] mb-2 opacity-80">
                   Ayuda Local Garantizada
                 </p>
-                <h3 className="text-white text-2xl md:text-4xl font-black leading-tight tracking-tight">
+                <p className="text-white text-2xl md:text-4xl font-black leading-tight tracking-tight">
                   Ibi al <span className="text-yellow-300">-{ibiValue}%</span> en {municipio}
-                </h3>
+                </p>
                 <p className="text-emerald-50/70 text-sm mt-1 font-medium italic">
                   *Cifra verificada según la ordenanza fiscal vigente
                 </p>

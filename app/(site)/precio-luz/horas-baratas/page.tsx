@@ -275,7 +275,7 @@ export default async function HorasBaratasPage() {
             Calculadora de ahorro por electrodoméstico
           </h2>
           <p className="text-slate-500 text-sm mb-6">
-            Ajusta los usos semanales con los botones <strong>+ / −</strong> y descubre cuánto ahorras al pasar a horas valle.
+            Ajusta los usos semanales con los botones <span font-bold>+ / −</span> y descubre cuánto ahorras al pasar a horas valle.
           </p>
           <ElectrodomesticoCalculator
             precioPunta={mediaPunta}
@@ -309,7 +309,7 @@ export default async function HorasBaratasPage() {
                   ))}
               </div>
               <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-slate-600">Media mañana: <strong className="tabular-nums">{fmt(manana.media)} €/kWh</strong></span>
+                <span className="text-slate-600">Media mañana: <span className="tabular-nums" font-bold>{fmt(manana.media)} €/kWh</span></span>
                 {hoy && (
                   <span className={manana.media > hoy.media ? "text-red-600" : "text-emerald-600"}>
                     {manana.media > hoy.media ? "↑" : "↓"} {Math.abs(((manana.media - hoy.media) / (hoy.media || 1)) * 100).toFixed(0)}% vs hoy
@@ -335,13 +335,13 @@ export default async function HorasBaratasPage() {
           <div className="prose prose-slate max-w-none text-sm leading-relaxed">
             <p>
               El precio de la electricidad en la tarifa PVPC se fija cada hora mediante la subasta diaria del
-              mercado mayorista operado por <strong>OMIE</strong>. Las horas más baratas coinciden con periodos de
+              mercado mayorista operado por <span font-bold>OMIE</span>. Las horas más baratas coinciden con periodos de
               alta generación renovable (eólica y solar) y baja demanda, como las madrugadas y los fines de semana.
             </p>
             <p>
-              La tarifa <strong>2.0TD con discriminación horaria</strong> divide el día en tres tramos: punta (10–14h y 18–22h,
+              La tarifa <span font-bold>2.0TD con discriminación horaria</span> divide el día en tres tramos: punta (10–14h y 18–22h,
               la más cara), llano (8–10h, 14–18h y 22–00h) y valle (00–08h, la más barata). Los sábados, domingos
-              y festivos nacionales <strong>todas las horas son valle</strong>, lo que convierte el fin de semana
+              y festivos nacionales <span font-bold>todas las horas son valle</span>, lo que convierte el fin de semana
               en el mejor momento para concentrar el consumo de electrodomésticos de alto consumo.
             </p>
           </div>
@@ -357,11 +357,11 @@ export default async function HorasBaratasPage() {
               Aquí tienes las estrategias más efectivas, ordenadas por impacto:
             </p>
             <ol>
-              <li><strong>Programa la lavadora y el lavavajillas</strong> con inicio diferido para que funcionen entre las 02:00 y las 06:00.</li>
-              <li><strong>Carga el coche eléctrico de noche</strong> (00:00–08:00). Un ciclo de carga completo consume 7–10 kWh; en valle te ahorras hasta 1,50 € por carga frente a punta.</li>
-              <li><strong>Ajusta el termostato del termo eléctrico</strong> para que caliente el agua a las 06:00–07:00 (final de valle).</li>
-              <li><strong>Pre-enfría o pre-calienta la casa</strong> media hora antes del cambio a punta. La inercia térmica mantiene la temperatura sin consumo en las horas caras.</li>
-              <li><strong>Cocina en fin de semana</strong> cuando todo es valle. Usa el horno y la vitrocerámica para preparar comidas de la semana (batch cooking).</li>
+              <li><span font-bold>Programa la lavadora y el lavavajillas</span> con inicio diferido para que funcionen entre las 02:00 y las 06:00.</li>
+              <li><span font-bold>Carga el coche eléctrico de noche</span> (00:00–08:00). Un ciclo de carga completo consume 7–10 kWh; en valle te ahorras hasta 1,50 € por carga frente a punta.</li>
+              <li><span font-bold>Ajusta el termostato del termo eléctrico</span> para que caliente el agua a las 06:00–07:00 (final de valle).</li>
+              <li><span font-bold>Pre-enfría o pre-calienta la casa</span> media hora antes del cambio a punta. La inercia térmica mantiene la temperatura sin consumo en las horas caras.</li>
+              <li><span font-bold>Cocina en fin de semana</span> cuando todo es valle. Usa el horno y la vitrocerámica para preparar comidas de la semana (batch cooking).</li>
             </ol>
           </div>
         </section>
@@ -532,7 +532,7 @@ export default async function HorasBaratasPage() {
         {/* Sources */}
         <footer className="text-center text-xs text-slate-400">
           <p>
-            Datos PVPC: <strong>Red Eléctrica de España (REE)</strong> / ESIOS. Actualización automática cada hora.
+            Datos PVPC: <span font-bold>Red Eléctrica de España (REE)</span> / ESIOS. Actualización automática cada hora.
             Los precios mostrados corresponden a la tarifa regulada 2.0TD para potencia ≤ 10 kW, sin impuestos.
           </p>
         </footer>

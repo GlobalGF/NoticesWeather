@@ -104,7 +104,7 @@ export function PanelCountCalculator({ municipio, horasSolAnuales }: PanelCountC
                 <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">Base Meteorológica Local</p>
               </div>
               <p className="text-sm text-slate-300 leading-relaxed relative z-10">
-                Utilizando el registro histórico de <strong className="text-white bg-white/10 px-1.5 py-0.5 rounded">{municipio}</strong> con <strong className="text-yellow-400">{horasSolAnuales} horas</strong> de sol al año.
+                Utilizando el registro histórico de <span className="text-white bg-white/10 px-1.5 py-0.5 rounded font-bold">{municipio}</span> con <span className="text-yellow-400 font-bold">{horasSolAnuales} horas</span> de sol al año.
               </p>
             </div>
           </div>

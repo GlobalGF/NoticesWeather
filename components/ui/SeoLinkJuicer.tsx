@@ -115,19 +115,24 @@ export function SeoLinkJuicer({ currentPath }: { currentPath: string }) {
           Instaladores expertos de España y estudios energéticos a tu disposición para proyectos de energía fotovoltaica. Consulta la disponibilidad en otras localidades relevantes:
         </p>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {selectedLinks.map(link => (
-            <li key={link}>
-              <Link 
-                href={link}
-                className="group flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:border-blue-200 hover:bg-blue-50/50 transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <span className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-400 group-hover:scale-150 transition-transform shrink-0" />
-                <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700 leading-snug">
-                  {getAnchorText(link)}
-                </span>
-              </Link>
-            </li>
-          ))}
+          {selectedLinks.map(link => {
+            const currentRouteName = currentPath.split("/").pop() || "localidad";
+            const cleanName = currentRouteName.replace(/-/g, " ");
+            return (
+              <li key={link}>
+                <Link 
+                  href={link}
+                  className="group flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:border-blue-200 hover:bg-blue-50/50 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <span className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-400 group-hover:scale-150 transition-transform shrink-0" />
+                  <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700 leading-snug">
+                    {getAnchorText(link)}
+                    <span className="sr-only"> (comparar con ofertas en {cleanName})</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

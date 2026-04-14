@@ -337,15 +337,15 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             </div>
                             <div className="px-5 py-4 prose prose-sm max-w-none text-slate-600">
                                 <p>
-                                    El <strong>Precio Voluntario para el Pequeño Consumidor (PVPC)</strong> es la tarifa eléctrica regulada
+                                    El <span className="font-bold">Precio Voluntario para el Pequeño Consumidor (PVPC)</span> es la tarifa eléctrica regulada
                                     por el Estado español para suministros con potencia contratada de hasta 10 kW. Está establecido por el{" "}
-                                    <strong>Real Decreto 216/2014</strong> y supervisado por la{" "}
-                                    <strong>Comisión Nacional de Mercados y la Competencia (CNMC)</strong>.
+                                    <span className="font-bold">Real Decreto 216/2014</span> y supervisado por la{" "}
+                                    <span className="font-bold">Comisión Nacional de Mercados y la Competencia (CNMC)</span>.
                                 </p>
                                 <p className="mt-3">
                                     El precio de la luz se calcula cada día a partir de las ofertas del mercado mayorista de electricidad (OMIE),
-                                    expresado en €/MWh. Es <strong>idéntico para toda la España peninsular</strong>, independientemente del municipio.
-                                    Los precios se publican a las <strong>20:30 CET</strong> del día anterior y cambian hora a hora.
+                                    expresado en €/MWh. Es <span className="font-bold">idéntico para toda la España peninsular</span>, independientemente del municipio.
+                                    Los precios se publican a las <span className="font-bold">20:30 CET</span> del día anterior y cambian hora a hora.
                                 </p>
                                 <p className="mt-3">
                                     A diferencia de las tarifas fijas del mercado libre, el PVPC varía cada hora del día según el
@@ -360,7 +360,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                     compensar una mayor parte del consumo eléctrico y reducir el importe de la factura de la luz.
                                 </p>
                                 <p className="mt-3">
-                                    Para <strong>{m.municipio}</strong>, los datos de irradiación solar y horas de sol proceden de la base de datos
+                                    Para <span className="font-bold">{m.municipio}</span>, los datos de irradiación solar y horas de sol proceden de la base de datos
                                     PVGIS de la Comisión Europea (datos satelitales 2005–2020), específicos para las coordenadas de la provincia de{" "}
                                     {m.provincia}.
                                 </p>
@@ -385,26 +385,26 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             </div>
                             <div className="px-5 py-4 prose prose-sm max-w-none text-slate-600">
                                 <p>
-                                    El precio de la luz en la tarifa PVPC 2.0TD se divide en <strong>tres periodos horarios</strong> cada día.
+                                    El precio de la luz en la tarifa PVPC 2.0TD se divide en <span className="font-bold">tres periodos horarios</span> cada día.
                                     Conocer estos tramos permite ajustar el consumo eléctrico a las horas más baratas y reducir la factura de la luz:
                                 </p>
                                 <ul className="mt-3 space-y-2">
                                     <li>
-                                        <strong>Hora valle (00:00–08:00 h):</strong> precio más bajo en €/kWh. Ideal para programar electrodomésticos
+                                        <span className="font-bold">Hora valle (00:00–08:00 h):</span> precio más bajo en €/kWh. Ideal para programar electrodomésticos
                                         de alto consumo como lavadora, lavavajillas o carga de vehículo eléctrico.
                                     </li>
                                     <li>
-                                        <strong>Hora llana (08:00–10:00 h, 14:00–18:00 h, 22:00–00:00 h):</strong> tarifas intermedias.
+                                        <span className="font-bold">Hora llana (08:00–10:00 h, 14:00–18:00 h, 22:00–00:00 h):</span> tarifas intermedias.
                                         Buen momento para el consumo habitual del hogar.
                                     </li>
                                     <li>
-                                        <strong>Hora punta (10:00–14:00 h, 18:00–22:00 h):</strong> precios más altos del día,
+                                        <span className="font-bold">Hora punta (10:00–14:00 h, 18:00–22:00 h):</span> precios más altos del día,
                                         cuando la demanda de potencia en la red es máxima.
                                     </li>
                                 </ul>
                                 <p className="mt-3">
-                                    La factura de la luz tiene dos componentes principales: el <strong>término de consumo</strong> (kWh
-                                    consumidos × precio por hora) y el <strong>término de potencia</strong> (kW contratados × precio fijo al día).
+                                    La factura de la luz tiene dos componentes principales: el <span className="font-bold">término de consumo</span> (kWh
+                                    consumidos × precio por hora) y el <span className="font-bold">término de potencia</span> (kW contratados × precio fijo al día).
                                     Reducir la potencia contratada de 5,75 kW a 4,6 kW puede suponer un ahorro fijo en la factura mensual.
                                 </p>
                                 <p className="mt-3">
@@ -530,7 +530,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                 orientación de cubierta y cambios regulatorios. Consulte siempre con un instalador homologado.
                             </p>
                             <p className="mt-3 leading-relaxed">
-                                Precio PVPC regulado por el <strong>Real Decreto 216/2014</strong> y supervisado por la <strong>CNMC</strong>.
+                                Precio PVPC regulado por el <span className="font-bold">Real Decreto 216/2014</span> y supervisado por la <span className="font-bold">CNMC</span>.
                                 Actualización automática cada hora (ISR).
                             </p>
                         </div>

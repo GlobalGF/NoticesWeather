@@ -132,9 +132,9 @@ async function GenericBateriasSolaresPage() {
             <p className="text-fuchsia-400 font-bold tracking-widest uppercase text-[10px]">Almacenamiento Inteligente</p>
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
             Baterías Solares <br className="hidden md:block" /> por Localidad
-          </h1>
+          </h2>
           
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
             Descubre si te resulta rentable añadir almacenamiento físico a tus placas. Calcula la amortización exacta y las ayudas activas en tu ciudad.

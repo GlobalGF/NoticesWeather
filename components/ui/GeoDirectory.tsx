@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 
 export type GeoLevel = "comunidades" | "provincias" | "municipios";
@@ -108,7 +108,7 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
 
             const { data, error } = await supabase
                 .from("municipios_energia")
-                .select("municipio, slug")
+                .select("municipio, slug, provincia")
                 .ilike("provincia", provincialName)
                 .order("municipio");
 
@@ -121,10 +121,13 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                     items = [];
                 }
             } else {
-                items = (data as any[]).map((d) => ({
-                    name: d.municipio as string,
-                    slug: d.slug as string
-                }));
+                items = (data as any[]).map((d) => {
+                    const cleanSlug = cleanMunicipalitySlug(d.slug as string, slugify(d.provincia as string));
+                    return {
+                        name: d.municipio as string,
+                        slug: cleanSlug
+                    }
+                });
             }
         }
     }

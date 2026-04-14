@@ -183,7 +183,7 @@ export function LeadForm({
                     <div className="mb-8 flex items-center gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-100">
                         <Zap className="w-4 h-4 text-blue-500" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            Recurso Solar: <strong className="text-blue-600">{Math.round(irradiacionSolar)} kWh/m²</strong>
+                            Recurso Solar: <span className="text-blue-600 font-bold">{Math.round(irradiacionSolar)} kWh/m²</span>
                         </span>
                     </div>
                 )}
@@ -388,7 +388,7 @@ export function LeadForm({
 
             <h2 className="text-2xl font-black text-slate-900 mt-4 leading-tight">¡Solicitud VIP<br/>Recibida!</h2>
             <p className="mt-4 text-sm font-medium text-slate-500 leading-relaxed max-w-xs mx-auto">
-                Un técnico certificado en <strong>{provincia}</strong> revisará tu caso y te contactará en menos de 24 horas.
+                Un técnico certificado en <span className="font-bold">{provincia}</span> revisará tu caso y te contactará en menos de 24 horas.
             </p>
             
             {ahorroEstimado && ahorroEstimado > 100 && (

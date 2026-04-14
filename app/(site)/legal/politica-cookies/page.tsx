@@ -33,8 +33,8 @@ export default function PoliticaCookiesPage() {
               Según el plazo de tiempo que permanecen activadas:
             </p>
             <ul className="list-disc pl-5 space-y-2 mt-4 text-slate-600">
-              <li><strong>Cookies de sesión:</strong> Diseñadas para recabar y almacenar datos mientras el usuario accede a nuestra plataforma.</li>
-              <li><strong>Cookies persistentes:</strong> Los datos siguen almacenados en el terminal y pueden ser accedidos durante un periodo definido.</li>
+              <li><span font-bold>Cookies de sesión:</span> Diseñadas para recabar y almacenar datos mientras el usuario accede a nuestra plataforma.</li>
+              <li><span font-bold>Cookies persistentes:</span> Los datos siguen almacenados en el terminal y pueden ser accedidos durante un periodo definido.</li>
             </ul>
 
             <p className="mt-6 mb-2">Según su finalidad (Nivel de intrusión):</p>
@@ -67,10 +67,10 @@ export default function PoliticaCookiesPage() {
               nativa de tu navegador de internet. Cada navegador opera de forma diferente, consulta sus apartados de ayuda oficial:
             </p>
             <ul className="list-disc pl-5 mt-4 space-y-2 text-slate-600">
-              <li><strong>Google Chrome:</strong> Configuración &gt; Privacidad y seguridad &gt; Cookies.</li>
-              <li><strong>Mozilla Firefox:</strong> Ajustes &gt; Privacidad &amp; Seguridad.</li>
-              <li><strong>Safari:</strong> Preferencias &gt; Privacidad.</li>
-              <li><strong>Edge:</strong> Configuración &gt; Permisos del sitio &gt; Cookies.</li>
+              <li><span font-bold>Google Chrome:</span> Configuración &gt; Privacidad y seguridad &gt; Cookies.</li>
+              <li><span font-bold>Mozilla Firefox:</span> Ajustes &gt; Privacidad &amp; Seguridad.</li>
+              <li><span font-bold>Safari:</span> Preferencias &gt; Privacidad.</li>
+              <li><span font-bold>Edge:</span> Configuración &gt; Permisos del sitio &gt; Cookies.</li>
             </ul>
           </section>
 

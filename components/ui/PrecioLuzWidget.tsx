@@ -181,7 +181,7 @@ export function PrecioLuzWidget({ initialPrecio }: { initialPrecio?: number }) {
                         <span className={`rounded border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold ${nivel.cls}`}>
                             {nivel.label}
                         </span>
-                        <span className="text-[10px] sm:text-xs text-slate-400">Media: <strong className="text-slate-600">{fmt(avgPrecio)}€</strong></span>
+                        <span className="text-[10px] sm:text-xs text-slate-400">Media: <span className="text-slate-600 font-bold">{fmt(avgPrecio)}€</span></span>
                     </div>
                 </div>
 

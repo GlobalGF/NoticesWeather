@@ -71,7 +71,7 @@ function AhorroBlock({ data }: { data: any }) {
         <h2>¿Cuánto puedes ahorrar con energía solar en {data.municipio}?</h2>
         <p>
           Una instalación fotovoltaica estándar de 5 kW en {data.municipio} ({data.provincia}) genera un ahorro estimado
-          de <strong>{fmt(ahorro)} € al año</strong>, gracias a las {fmt(horasSol)} horas de sol anuales y una irradiación
+          de <span className="font-bold">{fmt(ahorro)} € al año</span>, gracias a las {fmt(horasSol)} horas de sol anuales y una irradiación
           solar de {fmt(irr)} kWh/m². Este ahorro se calcula considerando el precio medio de la electricidad
           de {precioLuz.toFixed(2)} €/kWh y un ratio de autoconsumo del 65%.
         </p>
@@ -84,10 +84,10 @@ function AhorroBlock({ data }: { data: any }) {
         </p>
         <h3>Factores que influyen en el ahorro</h3>
         <ul>
-          <li><strong>Horas de sol:</strong> {fmt(horasSol)} h/año — {horasSol > 2700 ? "por encima de" : horasSol > 2400 ? "en la media de" : "ligeramente por debajo de"} la media nacional</li>
-          <li><strong>Irradiación solar:</strong> {fmt(irr)} kWh/m²/año</li>
-          <li><strong>Precio de la luz:</strong> {precioLuz.toFixed(2)} €/kWh</li>
-          {data.bonificacion_ibi && <li><strong>Bonificación IBI:</strong> {data.bonificacion_ibi}% de descuento</li>}
+          <li><span className="font-bold">Horas de sol:</span> {fmt(horasSol)} h/año — {horasSol > 2700 ? "por encima de" : horasSol > 2400 ? "en la media de" : "ligeramente por debajo de"} la media nacional</li>
+          <li><span className="font-bold">Irradiación solar:</span> {fmt(irr)} kWh/m²/año</li>
+          <li><span className="font-bold">Precio de la luz:</span> {precioLuz.toFixed(2)} €/kWh</li>
+          {data.bonificacion_ibi && <li><span className="font-bold">Bonificación IBI:</span> {data.bonificacion_ibi}% de descuento</li>}
         </ul>
       </div>
     </section>
@@ -101,9 +101,9 @@ function SubvencionesBlock({ data }: { data: any }) {
       <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-6 shadow-md">
         <h2 className="text-xl font-bold mb-2 text-emerald-800">Subvenciones y ayudas {year}</h2>
         <ul className="list-disc pl-5 text-emerald-900 space-y-1">
-          {data.bonificacion_ibi && <li>Bonificación IBI: <strong>{data.bonificacion_ibi}%</strong></li>}
-          {data.bonificacion_icio && <li>Bonificación ICIO: <strong>{data.bonificacion_icio}%</strong></li>}
-          {data.subvencion_autoconsumo && <li>Subvención autoconsumo: <strong>{fmt(data.subvencion_autoconsumo)} €</strong></li>}
+          {data.bonificacion_ibi && <li>Bonificación IBI: <span className="font-bold">{data.bonificacion_ibi}%</span></li>}
+          {data.bonificacion_icio && <li>Bonificación ICIO: <span className="font-bold">{data.bonificacion_icio}%</span></li>}
+          {data.subvencion_autoconsumo && <li>Subvención autoconsumo: <span className="font-bold">{fmt(data.subvencion_autoconsumo)} €</span></li>}
           {!data.bonificacion_ibi && !data.bonificacion_icio && !data.subvencion_autoconsumo && (
             <li>Consulta las ayudas vigentes en tu comunidad autónoma</li>
           )}
@@ -120,7 +120,7 @@ function SubvencionesBlock({ data }: { data: any }) {
           <>
             <h3>Bonificación del IBI</h3>
             <p>
-              El Ayuntamiento de {data.municipio} aplica una bonificación del <strong>{data.bonificacion_ibi}%</strong> en
+              El Ayuntamiento de {data.municipio} aplica una bonificación del <span className="font-bold">{data.bonificacion_ibi}%</span> en
               el Impuesto sobre Bienes Inmuebles (IBI) para viviendas con instalaciones de autoconsumo fotovoltaico.
               Esta bonificación suele aplicarse durante los primeros 3 a 5 años tras la instalación, lo que supone
               un ahorro adicional importante en la tributación municipal.
@@ -131,7 +131,7 @@ function SubvencionesBlock({ data }: { data: any }) {
           <>
             <h3>Bonificación del ICIO</h3>
             <p>
-              Además, se aplica una bonificación del <strong>{data.bonificacion_icio}%</strong> en el Impuesto sobre
+              Además, se aplica una bonificación del <span className="font-bold">{data.bonificacion_icio}%</span> en el Impuesto sobre
               Construcciones, Instalaciones y Obras (ICIO). Esta deducción se aplica directamente sobre la licencia
               de obra necesaria para la instalación solar.
             </p>
@@ -182,8 +182,8 @@ function PrecioBlock({ data }: { data: any }) {
         <h2>¿Cuánto cuestan las placas solares en {data.municipio}?</h2>
         <p>
           El precio medio de una instalación fotovoltaica en {data.municipio} ({data.provincia}) se sitúa en
-          torno a los <strong>{fmt(precioMedio)} €</strong> para una instalación residencial estándar de 5 kW,
-          lo que equivale a <strong>{fmt(eurW, 2)} €/W</strong>. Este precio incluye los paneles solares,
+          torno a los <span className="font-bold">{fmt(precioMedio)} €</span> para una instalación residencial estándar de 5 kW,
+          lo que equivale a <span className="font-bold">{fmt(eurW, 2)} €/W</span>. Este precio incluye los paneles solares,
           el inversor, la estructura de montaje, el cableado y la mano de obra de instalación.
         </p>
         <h3>Rango de precios</h3>
@@ -199,7 +199,7 @@ function PrecioBlock({ data }: { data: any }) {
             <h3>Retorno de la inversión</h3>
             <p>
               Con un ahorro estimado de {fmt(data.ahorro_estimado)} € anuales, la inversión de {fmt(precioMedio)} €
-              se amortiza en aproximadamente <strong>{payback} años</strong>. Considerando que los paneles solares
+              se amortiza en aproximadamente <span className="font-bold">{payback} años</span>. Considerando que los paneles solares
               tienen una vida útil de 25-30 años, esto representa más de {25 - payback} años de energía
               prácticamente gratuita.
             </p>

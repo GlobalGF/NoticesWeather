@@ -140,7 +140,7 @@ export function LiveSolarCalculator({
           Producción solar en tiempo real
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          Cálculo basado en irradiancia actual de <strong>{Math.round(ghi)} W/m²</strong> y temperatura de <strong>{Math.round(data.temp_c)}°C</strong> en {municipio}.
+          Cálculo basado en irradiancia actual de <span className="font-bold">{Math.round(ghi)} W/m²</span> y temperatura de <span className="font-bold">{Math.round(data.temp_c)}°C</span> en {municipio}.
         </p>
       </div>
 
@@ -171,7 +171,7 @@ export function LiveSolarCalculator({
             </div>
           </div>
           <p className="text-xs text-slate-500 text-center max-w-[120px]">
-            Produciendo <strong className="text-slate-900">{fmt(result.currentOutputW)} W</strong> ahora
+            Produciendo <span className="text-slate-900 font-bold">{fmt(result.currentOutputW)} W</span> ahora
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export function LiveSolarCalculator({
       {/* Temperature derating note */}
       {result.tempDeratingPct > 0 && (
         <div className="mx-6 mb-4 rounded-lg bg-slate-50 border border-slate-100 px-4 py-2.5 text-xs text-slate-500">
-          🌡️ A <strong>{Math.round(data.temp_c)}°C</strong>, la eficiencia de los paneles se reduce un <strong>{result.tempDeratingPct}%</strong> respecto a condiciones estándar (25°C). Este efecto se ha incorporado al cálculo.
+          🌡️ A <span className="font-bold">{Math.round(data.temp_c)}°C</span>, la eficiencia de los paneles se reduce un <span className="font-bold">{result.tempDeratingPct}%</span> respecto a condiciones estándar (25°C). Este efecto se ha incorporado al cálculo.
         </div>
       )}
 

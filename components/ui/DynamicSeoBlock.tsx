@@ -109,7 +109,7 @@ export function DynamicSeoBlock({
         </div>
         <h2 className="text-3xl font-black text-slate-900 mb-6 tracking-tight leading-tight">Rendimiento solar de {municipio}</h2>
         <p className="leading-relaxed text-slate-600 font-medium text-lg">
-          {municipio} registra {annualStr} de irradiación anual, lo que garantiza una <strong className="text-slate-900">energía solar</strong> rentable para tu vivienda. Los datos del <strong className="text-slate-900">sistema fotovoltaico</strong> en tiempo real se cargarán al actualizar la meteorología local.
+          {municipio} registra {annualStr} de irradiación anual, lo que garantiza una <span className="text-slate-900 font-bold">energía solar</span> rentable para tu vivienda. Los datos del <span className="text-slate-900 font-bold">sistema fotovoltaico</span> en tiempo real se cargarán al actualizar la meteorología local.
         </p>
         <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 animate-pulse">Sincronizando con WeatherAPI 2026…</p>
       </section>

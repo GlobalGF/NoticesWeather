@@ -32,7 +32,7 @@ export function SeoLandingTemplate({
       <section className="grid two">
         {highlights.map((item) => (
           <div key={item.label} className="card">
-            <strong>{item.label}</strong>
+            <span className="font-bold">{item.label}</span>
             <p>{item.value}</p>
           </div>
         ))}

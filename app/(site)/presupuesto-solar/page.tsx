@@ -17,7 +17,7 @@ export default function PresupuestoSolarPage() {
             Consigue 3 Presupuestos <br className="hidden md:block" /> de Instaladores Verificados
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Analizamos tu caso y te conectamos con las mejores <strong>empresas de placas solares</strong> en tu provincia. Ahorra tiempo y dinero comparando ofertas reales.
+            Analizamos tu caso y te conectamos con las mejores <span font-bold>empresas de placas solares</span> en tu provincia. Ahorra tiempo y dinero comparando ofertas reales.
           </p>
         </div>
 
@@ -39,15 +39,15 @@ export default function PresupuestoSolarPage() {
                 <ul className="space-y-4">
                     <li className="flex gap-3">
                         <svg className="text-emerald-500 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <p className="text-sm text-slate-600"><strong>Instaladores certificados:</strong> Solo empresas con REBT y experiencia demostrable.</p>
+                        <p className="text-sm text-slate-600"><span font-bold>Instaladores certificados:</span> Solo empresas con REBT y experiencia demostrable.</p>
                     </li>
                     <li className="flex gap-3">
                         <svg className="text-emerald-500 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <p className="text-sm text-slate-600"><strong>Sin compromiso:</strong> El estudio es 100% gratuito. Tú decides si contratas.</p>
+                        <p className="text-sm text-slate-600"><span font-bold>Sin compromiso:</span> El estudio es 100% gratuito. Tú decides si contratas.</p>
                     </li>
                     <li className="flex gap-3">
                         <svg className="text-emerald-500 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <p className="text-sm text-slate-600"><strong>Privacidad total:</strong> Tus datos solo se comparten con los instaladores seleccionados.</p>
+                        <p className="text-sm text-slate-600"><span font-bold>Privacidad total:</span> Tus datos solo se comparten con los instaladores seleccionados.</p>
                     </li>
                 </ul>
             </div>
@@ -56,7 +56,7 @@ export default function PresupuestoSolarPage() {
                 <p className="text-orange-400 font-bold text-xs uppercase tracking-widest mb-2">Dato de Interés</p>
                 <h4 className="text-lg font-bold mb-3">¿Por qué comparar?</h4>
                 <p className="text-slate-300 text-sm leading-relaxed">
-                    Comparar al menos 3 presupuestos suele reducir el coste final de la instalación en un <strong>15-20%</strong>. Además, permite evaluar diferentes marcas de paneles (Tier 1) e inversores (Huawei, Fronius, SMA).
+                    Comparar al menos 3 presupuestos suele reducir el coste final de la instalación en un <span font-bold>15-20%</span>. Además, permite evaluar diferentes marcas de paneles (Tier 1) e inversores (Huawei, Fronius, SMA).
                 </p>
             </div>
           </div>

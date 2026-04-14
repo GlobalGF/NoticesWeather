@@ -222,12 +222,12 @@ export default async function HomePage() {
               El sector del autoconsumo en la Península Ibérica y los Archipiélagos ha sufrido una revolución. Sin embargo, encontrar rentabilidades matemáticas precisas entre el bombardeo publicitario de cientos de instaladoras ha vuelto extremadamente complejo distinguir los hechos de las proyecciones de marketing.
             </p>
             <p>
-              <strong>SolaryEco</strong> ha consolidado la información de 8.131 municipios españoles mediante tres pipelines de análisis independiente:
+              <span font-bold>SolaryEco</span> ha consolidado la información de 8.131 municipios españoles mediante tres pipelines de análisis independiente:
             </p>
             <ul className="text-slate-400 space-y-3">
-              <li><strong className="text-white">Radiometría Oficial:</strong> Usamos los logs algorítmicos del PVGIS y las anomalías climáticas registradas por entidades europeas satelitales para asegurar cuotas en kWh reales.</li>
-              <li><strong className="text-white">Transmisión de Precios ESIOS:</strong> Si el kWh nocturno cotiza hoy en el Mercado Regulado a 0.28€ y las horas pico (sunlight) cotizan en 0.08€, aplicamos asimetrías reales de mercado sobre las amortizaciones calculadas.</li>
-              <li><strong className="text-white">Ingeniería Fiscal Municipal:</strong> Centralizamos las normativas del IBI de cada ayuntamiento, ya que una rebaja del 50% durante 3 años en tu IBI altera severamente todo tu estudio de capital.</li>
+              <li><span className="text-white" font-bold>Radiometría Oficial:</span> Usamos los logs algorítmicos del PVGIS y las anomalías climáticas registradas por entidades europeas satelitales para asegurar cuotas en kWh reales.</li>
+              <li><span className="text-white" font-bold>Transmisión de Precios ESIOS:</span> Si el kWh nocturno cotiza hoy en el Mercado Regulado a 0.28€ y las horas pico (sunlight) cotizan en 0.08€, aplicamos asimetrías reales de mercado sobre las amortizaciones calculadas.</li>
+              <li><span className="text-white" font-bold>Ingeniería Fiscal Municipal:</span> Centralizamos las normativas del IBI de cada ayuntamiento, ya que una rebaja del 50% durante 3 años en tu IBI altera severamente todo tu estudio de capital.</li>
             </ul>
           </div>
 
@@ -279,7 +279,7 @@ export default async function HomePage() {
                 De los datos a la acción: <br className="hidden md:block" /> Encuentra instaladores cualificados
             </h2>
             <p className="text-slate-600 text-lg mb-12 max-w-3xl mx-auto leading-relaxed">
-                Ya conoces el potencial solar de tu tejado. El siguiente paso es hablar con expertos. Colaboramos con <strong>empresas instaladoras de placas solares</strong> verificadas que ofrecen presupuestos competitivos y asesoramiento sobre subvenciones locales.
+                Ya conoces el potencial solar de tu tejado. El siguiente paso es hablar con expertos. Colaboramos con <span font-bold>empresas instaladoras de placas solares</span> verificadas que ofrecen presupuestos competitivos y asesoramiento sobre subvenciones locales.
             </p>
             
             <div className="grid md:grid-cols-3 gap-8 text-left mb-12">

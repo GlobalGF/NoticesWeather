@@ -41,7 +41,7 @@ export default function SobreNosotrosPage() {
             de subvenciones municipales y autonómicas (IBI, ICIO, ayudas directas).
           </p>
           <p className="text-slate-600 leading-relaxed font-semibold mb-10">
-            Nacimos con un único propósito: <strong>Ofrecer total transparencia de datos.</strong>
+            Nacimos con un único propósito: <span font-bold>Ofrecer total transparencia de datos.</span>
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 my-10">
@@ -70,7 +70,7 @@ export default function SobreNosotrosPage() {
 
           <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Nuestra Tecnología (E-E-A-T)</h2>
           <p className="text-slate-600 leading-relaxed mb-6">
-            A diferencia de los portales de marketing puro, SolaryEco es una herramienta <strong>tecnológica de consulta ciudadana</strong>.
+            A diferencia de los portales de marketing puro, SolaryEco es una herramienta <span font-bold>tecnológica de consulta ciudadana</span>.
             Hemos procesado las coordenadas de más de 8.000 municipios en la península para proyectar:
           </p>
           <ul className="list-disc pl-5 mt-4 space-y-2 text-slate-600">
@@ -84,9 +84,9 @@ export default function SobreNosotrosPage() {
             Para cuestiones relacionadas con el tratamiento de bases de datos, homologación de instaladores para integrarse
             en nuestro directorio, prensa o quejas formales:
             <br /><br />
-            <strong>Compañía:</strong> SolaryEco<br/>
-            <strong>Responsable de Contacto:</strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-300 hover:text-white underline">contact@globalgrowthframework.dev</a><br/>
-            <strong>Domicilio Social:</strong> España (En constitución)<br />
+            <span font-bold>Compañía:</span> SolaryEco<br/>
+            <span font-bold>Responsable de Contacto:</span> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-300 hover:text-white underline">contact@globalgrowthframework.dev</a><br/>
+            <span font-bold>Domicilio Social:</span> España (En constitución)<br />
           </p>
 
         </div>

@@ -25,8 +25,8 @@ export default function AvisoLegalPage() {
               se informa que el titular de este sitio web es:
             </p>
             <ul className="list-disc pl-5 space-y-2 mt-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
-              <li><strong>Denominación comercial:</strong> SolaryEco</li>
-              <li><strong>Correo electrónico de contacto:</strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a></li>
+              <li><span font-bold>Denominación comercial:</span> SolaryEco</li>
+              <li><span font-bold>Correo electrónico de contacto:</span> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a></li>
             </ul>
             <p className="mt-3 text-xs text-slate-500">
               El resto de datos identificativos (NIF/CIF, domicilio social) se actualizarán una vez completada la constitución formal de la actividad.
@@ -36,7 +36,7 @@ export default function AvisoLegalPage() {
           <section>
             <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">2. Condiciones de Uso y Acceso</h2>
             <p>
-              El acceso al portal <strong>solaryeco.es</strong> (en adelante, la "Web") atribuye la condición de Usuario e implica 
+              El acceso al portal <span font-bold>solaryeco.es</span> (en adelante, la "Web") atribuye la condición de Usuario e implica 
               la aceptación de todas las condiciones aquí contenidas. El portal tiene un objetivo meramente informativo y de 
               orientación sobre el mercado energético y recursos solares.
             </p>
@@ -51,7 +51,7 @@ export default function AvisoLegalPage() {
             <p>
               SolaryEco se esfuerza en velar por la precisión de la información aquí mostrada (como estimaciones de irradiación 
               procedentes de PVGIS, precios oficiales del PVPC o datos de normativas municipales). Sin embargo, 
-              los contenidos proporcionados son <strong>informativos y no constituyen una asesoría oficial, técnica ni vinculante</strong>.
+              los contenidos proporcionados son <span font-bold>informativos y no constituyen una asesoría oficial, técnica ni vinculante</span>.
             </p>
             <p>
               Las proyecciones de ahorro y estimaciones son simulaciones basadas en promedios geográficos. 

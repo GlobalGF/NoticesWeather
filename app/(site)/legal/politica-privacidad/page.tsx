@@ -20,7 +20,7 @@ export default function PoliticaPrivacidadPage() {
           <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mt-8">
             <h2 className="text-xl font-bold text-slate-900 text-amber-500 mb-4 mt-0">1. Quiénes somos</h2>
             <p>
-              El responsable del tratamiento de los datos personales recogidos en <strong>solaryeco.es</strong> es SolaryEco,
+              El responsable del tratamiento de los datos personales recogidos en <span font-bold>solaryeco.es</span> es SolaryEco,
               con correo electrónico de contacto: <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 font-medium">contact@globalgrowthframework.dev</a>.
             </p>
           </section>
@@ -32,16 +32,16 @@ export default function PoliticaPrivacidadPage() {
               específicamente cuando rellenas de forma voluntaria nuestros formularios de contacto, estimación o solicitud de presupuesto.
             </p>
             <ul className="list-disc pl-5 mt-4 space-y-2 text-slate-600">
-              <li><strong>Datos de contacto básicos:</strong> Nombre, teléfono o email para gestionar tu solicitud.</li>
-              <li><strong>Datos geográficos:</strong> Código Postal, Municipio o Provincia para ofrecerte presupuestos precisos ajustados a tu ubicación solar.</li>
-              <li><strong>Finalidad:</strong> Poner en contacto al usuario con instaladores locales certificados, enviar simulaciones energéticas, responder a tus consultas y enviar comunicaciones comerciales <strong>solo si has otorgado consentimiento explícito</strong>.</li>
+              <li><span font-bold>Datos de contacto básicos:</span> Nombre, teléfono o email para gestionar tu solicitud.</li>
+              <li><span font-bold>Datos geográficos:</span> Código Postal, Municipio o Provincia para ofrecerte presupuestos precisos ajustados a tu ubicación solar.</li>
+              <li><span font-bold>Finalidad:</span> Poner en contacto al usuario con instaladores locales certificados, enviar simulaciones energéticas, responder a tus consultas y enviar comunicaciones comerciales <span font-bold>solo si has otorgado consentimiento explícito</span>.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">3. Cuál es la legitimación para el tratamiento</h2>
             <p>
-              La base legal para el tratamiento de tus datos es principalmente tu <strong>consentimiento expreso</strong>, otorgado
+              La base legal para el tratamiento de tus datos es principalmente tu <span font-bold>consentimiento expreso</span>, otorgado
               al marcar la casilla de aceptación y pulsar el botón de envío en cualquiera de nuestros formularios. 
               También nos legitima la posible ejecución de medidas precontractuales si nos solicitas un presupuesto formativo.
             </p>
@@ -60,7 +60,7 @@ export default function PoliticaPrivacidadPage() {
             <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. A qué destinatarios se comunicarán</h2>
             <p>
               Para cumplir la misión de intermediación de SolaryEco (conseguir presupuestos de instalación), 
-              tus datos <strong>serán compartidos exclusivamente con técnicos o empresas instaladoras homologadas</strong> que prestan
+              tus datos <span font-bold>serán compartidos exclusivamente con técnicos o empresas instaladoras homologadas</span> que prestan
               servicio en la zona geográfica que tú has indicado (Ej: tu provincia o municipio). 
             </p>
             <p>
@@ -78,25 +78,25 @@ export default function PoliticaPrivacidadPage() {
             </p>
             <div className="grid sm:grid-cols-2 gap-4 mt-5">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <strong className="text-slate-800">Derecho de Acceso</strong>
+                <span className="text-slate-800" font-bold>Derecho de Acceso</span>
                 <p className="text-sm mt-1">Conocer qué datos tenemos sobre ti y los detalles del tratamiento.</p>
               </div>
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <strong className="text-slate-800">Rectificación o Supresión</strong>
+                <span className="text-slate-800" font-bold>Rectificación o Supresión</span>
                 <p className="text-sm mt-1">Solicitar modificación de datos inexactos, o pedir que los borremos.</p>
               </div>
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <strong className="text-slate-800">Oposición y Limitación</strong>
+                <span className="text-slate-800" font-bold>Oposición y Limitación</span>
                 <p className="text-sm mt-1">Oponerte a que usemos tus datos para ciertos fines (como publicidad).</p>
               </div>
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <strong className="text-slate-800">Portabilidad</strong>
+                <span className="text-slate-800" font-bold>Portabilidad</span>
                 <p className="text-sm mt-1">Recibir tus datos en un formato estándar para llevarlos a otro lado.</p>
               </div>
             </div>
             <p className="mt-5">
               Para ejercer cualquiera de estos derechos, basta con enviar un email a 
-              <strong> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a> </strong>
+              <span font-bold> <a href="mailto:contact@globalgrowthframework.dev" className="text-blue-600 hover:underline">contact@globalgrowthframework.dev</a> </span>
               adjuntando una copia de tu DNI e indicando el derecho que deseas ejercer.
             </p>
           </section>
