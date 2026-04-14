@@ -16,6 +16,18 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/sitemaps/:page.xml",
+        destination: "/sitemaps/:page",
+      },
+      {
+        source: "/sitemaps/sitemap-:comunidad.xml",
+        destination: "/sitemaps/sitemap-:comunidad",
+      }
+    ];
+  },
 };
 
 export default nextConfig;

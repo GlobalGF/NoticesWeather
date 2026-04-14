@@ -40,10 +40,11 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     const supabase = await createSupabaseServerClient();
 
     // ── URL Validation: Ensure province belongs to the CCAA ──
+    const searchPattern = provincia.replace(/-/g, " ").replace(/[aeiou]/gi, "_");
     const { data: provValidDataRaw } = await supabase
         .from("municipios_energia")
         .select("comunidad_autonoma, provincia")
-        .ilike("provincia", provincia.replace(/-/g, " "))
+        .or(`provincia.ilike.%${searchPattern}%, slug.ilike.%-${provincia}`)
         .limit(1)
         .maybeSingle();
 
@@ -77,10 +78,11 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     const fechaFin = (ccaaRows as any)?.fecha_fin ?? null;
 
     // Fetch province-level stats (radiation, sun hours) from municipios
+    const searchProvPattern = provName.split(" ")[0].replace(/[aeiou]/gi, "_");
     const { data: statsRows } = await supabase
         .from("municipios_energia")
         .select("municipio, slug, irradiacion_solar, horas_sol, bonificacion_ibi")
-        .ilike("provincia", `%${provName.split(" ")[0]}%`)
+        .ilike("provincia", `%${searchProvPattern}%`)
         .limit(1000);
 
     const statsArr = (statsRows as any[]) ?? [];
