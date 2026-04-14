@@ -313,12 +313,13 @@ export async function getNearbyMunicipiosEnergiaByProvince(
 ): Promise<NearbyMunicipioEnergia[]> {
   const safeLimit = Math.max(1, Math.min(limit, 20));
 
-  const cachedQuery = unstable_cache(
+  // Limitamos a un set un poco más grande (p.ej. 25) para tener margen al filtrar 
+  // el municipio excluido y cumplir con el safeLimit exacto.
+  const cachedProvinceQuery = unstable_cache(
     async () => {
       if (!hasSupabaseEnv()) {
         return fallbackRows
-          .filter((row) => slugify(row.provincia) === slugify(provincia) && row.slug !== excludeSlug)
-          .slice(0, safeLimit)
+          .filter((row) => slugify(row.provincia) === slugify(provincia))
           .map((row) => ({
             slug: row.slug,
             municipio: row.municipio,
@@ -333,9 +334,8 @@ export async function getNearbyMunicipiosEnergiaByProvince(
           .from("municipios_energia")
           .select("slug,municipio,provincia,comunidad_autonoma")
           .eq("provincia", provincia)
-          .neq("slug", excludeSlug)
           .order("habitantes", { ascending: false })
-          .limit(safeLimit);
+          .limit(30);
 
         if (error || !data) {
           return [];
@@ -353,9 +353,12 @@ export async function getNearbyMunicipiosEnergiaByProvince(
         return [];
       }
     },
-    [`municipios-energia:nearby:${slugify(provincia)}:${excludeSlug}:${safeLimit}`],
+    [`municipios-energia:nearby-province:${slugify(provincia)}`],
     { revalidate: cachePolicy.data.municipalitiesIndex, tags: [cacheTags.municipiosEnergia] }
   );
 
-  return cachedQuery();
+  const provinceRows = await cachedProvinceQuery();
+  return provinceRows
+    .filter(row => row.slug !== excludeSlug)
+    .slice(0, safeLimit);
 }
