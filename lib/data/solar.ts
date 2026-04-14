@@ -4,35 +4,58 @@ import { unstable_cache } from "next/cache";
 import { cachePolicy } from "@/lib/cache/policy";
 
 export async function getMunicipioBySlug(slug: string): Promise<any | null> {
+    const COLS = "municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo, precio_medio_luz";
+
     const fetchFunc = async (s: string) => {
-        // Original logic here
         if (!s || typeof s !== "string") return null;
         const supabase = await createSupabaseServerClient();
         
-        let { data, error } = await supabase
+        // 1. Try EXACT slug match first (e.g. "madrid-madrid", "onis-asturias")
+        const { data: exactData } = await supabase
             .from("municipios_energia")
-            .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo, precio_medio_luz")
-            .ilike("slug", s.trim())
+            .select(COLS)
+            .eq("slug", s.trim())
             .maybeSingle();
 
-        if (!data && !error && s.includes("-")) {
+        if (exactData) return exactData;
+
+        // 2. Try slug-as-prefix pattern: "madrid" → "madrid-%"
+        //    This catches cases where the URL slug omits the province suffix
+        const { data: prefixRows } = await supabase
+            .from("municipios_energia")
+            .select(COLS)
+            .ilike("slug", `${s.trim()}-%`)
+            .limit(5);
+
+        if (prefixRows && prefixRows.length > 0) {
+            // Prefer the row whose slug starts with our exact input
+            const best = (prefixRows as any[]).find(d => d.slug.startsWith(s + "-")) || prefixRows[0];
+            if (best) return best;
+        }
+
+        // 3. Strict fuzzy: only if slug has multiple parts, require ALL parts to appear
+        if (s.includes("-")) {
             const parts = s.split("-").filter(p => p.length > 2);
-            const mainNames = parts.filter(p => !["coruna", "pontevedra", "lugo", "ourense", "galicia", "a"].includes(p));
-            if (mainNames.length > 0) {
-                const searchPattern = `%${mainNames[0]}%`;
-                const fuzzyResult = await supabase
+            if (parts.length > 0) {
+                // Use the longest distinctive part to narrow the DB search
+                const longestPart = parts.reduce((a, b) => a.length >= b.length ? a : b);
+                const { data: fuzzyRows } = await supabase
                     .from("municipios_energia")
-                    .select("municipio, provincia, comunidad_autonoma, slug, irradiacion_solar, horas_sol, bonificacion_ibi, bonificacion_icio, ahorro_estimado, precio_instalacion_medio_eur, subvencion_autoconsumo, precio_medio_luz")
-                    .ilike("slug", searchPattern)
-                    .limit(10);
-                const fuzzyData = fuzzyResult.data as any[];
-                if (fuzzyData && fuzzyData.length > 0) {
-                    const matching = fuzzyData.find(d => parts.every(p => d.slug.includes(p))) || fuzzyData[0];
-                    if (matching) data = matching;
+                    .select(COLS)
+                    .ilike("slug", `%${longestPart}%`)
+                    .limit(20);
+
+                if (fuzzyRows && fuzzyRows.length > 0) {
+                    // STRICT: require ALL meaningful parts to be present in the slug
+                    const strictMatch = (fuzzyRows as any[]).find(d => 
+                        parts.every(p => d.slug.includes(p))
+                    );
+                    if (strictMatch) return strictMatch;
                 }
             }
         }
-        return data;
+
+        return null;
     };
 
     return unstable_cache(

@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { cachePolicy } from "@/lib/cache/policy";
 import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
+import { SeoLinkJuicer } from "@/components/ui/SeoLinkJuicer";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -387,6 +388,7 @@ export default async function HomePage() {
         </div>
       </div>
       
+      <SeoLinkJuicer currentPath="/" />
     </main>
   );
 }

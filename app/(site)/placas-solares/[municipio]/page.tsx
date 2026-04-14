@@ -34,6 +34,7 @@ const CityClimateSolarProfile = dynamic(() => import("@/components/ui/CityClimat
 const SubsidiesSeoBlock = dynamic(() => import("@/components/ui/SubsidiesSeoBlock").then(mod => mod.SubsidiesSeoBlock));
 const ProvinceRanking = dynamic(() => import("@/components/ui/ProvinceRanking").then(mod => mod.ProvinceRanking));
 const ContextualCityLinks = dynamic(() => import("@/components/ui/ContextualCityLinks").then(mod => mod.ContextualCityLinks));
+const SeoLinkJuicer = dynamic(() => import("@/components/ui/SeoLinkJuicer").then(mod => mod.SeoLinkJuicer));
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs, buildOrganizationSchema } from "@/lib/seo/schema-org";
@@ -482,6 +483,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
                             {/* Related municipalities */}
                             <NearbyMunicipalityCards items={nearbyItems} currentMunicipio={municipio.municipio} />
+
+                            <SeoLinkJuicer currentPath={`/placas-solares/${slug}`} />
 
                             <SiloNavigation
                                 currentSilo="placas-solares"

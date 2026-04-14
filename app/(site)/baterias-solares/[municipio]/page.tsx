@@ -16,6 +16,7 @@ import { LeadForm } from "@/components/ui/LeadForm";
 import { generateDynamicText } from "@/lib/pseo/spintax";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
 import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { getMunicipioBySlug } from "@/lib/data/solar";
 
 export const revalidate = 604800; // 1 semana
 export const dynamicParams = true;
@@ -75,11 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!slug || isBlockedSlug(slug)) notFound();
     if (!hasSupabaseEnv()) return { title: "Baterías Solares" };
 
-    const supabase = await createSupabaseServerClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: raw } = await supabase.from("municipios_energia").select("municipio, provincia").eq("slug", slug).single();
-    
-    const d = raw as any;
+    const d = await getMunicipioBySlug(slug);
     if (!d) return { title: "Baterías Solares" };
 
     const muniClean = cleanLocationName(d.municipio);

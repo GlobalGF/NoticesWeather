@@ -8,6 +8,7 @@ import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
 import { LocalCalculatorCTA } from "@/components/ui/LocalCalculatorCTA";
+import { SeoLinkJuicer } from "@/components/ui/SeoLinkJuicer";
 import { normalizeCcaaSlug, cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
 import { 
   Gift, 
@@ -394,6 +395,8 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
                     </div>
                 </aside>
             </div>
+
+            <SeoLinkJuicer currentPath={`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`} />
         </main>
     );
     } catch (error) {
