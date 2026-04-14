@@ -229,7 +229,7 @@ export function PrecioLuzWidget({ initialPrecio }: { initialPrecio?: number }) {
                                     {String(hoveredBar.hora).padStart(2, "0")}:00
                                 </span>
                                 <span
-                                    className="font-bold"
+                                    className='font-bold'
                                     style={{ color: barColor(hoveredBar, hoveredBar.hora === ahora.hora) }}
                                 >
                                     {fmtFull(hoveredBar.precio_kwh)}

@@ -388,7 +388,7 @@ export function LeadForm({
 
             <h2 className="text-2xl font-black text-slate-900 mt-4 leading-tight">¡Solicitud VIP<br/>Recibida!</h2>
             <p className="mt-4 text-sm font-medium text-slate-500 leading-relaxed max-w-xs mx-auto">
-                Un técnico certificado en <span className="font-bold">{provincia}</span> revisará tu caso y te contactará en menos de 24 horas.
+                Un técnico certificado en <span className='font-bold'>{provincia}</span> revisará tu caso y te contactará en menos de 24 horas.
             </p>
             
             {ahorroEstimado && ahorroEstimado > 100 && (
