@@ -14,7 +14,7 @@ import { SolarWeatherWidget } from "@/components/ui/SolarWeatherWidget";
 import { DynamicSeoBlock } from "@/components/ui/DynamicSeoBlock";
 import { LiveSolarCalculator } from "@/components/ui/LiveSolarCalculator";
 import { LeadForm } from "@/components/ui/LeadForm";
-import { getMunicipioBySlug, getSeoSnapshotBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia } from "@/lib/data/solar";
+import { getMunicipioBySlug, getSeoSnapshotBySlug, getWeatherForLocation, getNearbyMunicipiosEnergiaByProvince, getPrecioLuzHoy, getTopMunicipiosEnergia, getProvinceHubs } from "@/lib/data/solar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
@@ -25,7 +25,8 @@ import dynamic from "next/dynamic";
 
 /* ── Lazy Loaded Components (below the fold) ── */
 const NearbyMunicipalityCards = dynamic(() => import("@/components/ui/NearbyMunicipalityCards").then(mod => mod.NearbyMunicipalityCards));
-const GeoDirectory = dynamic(() => import("@/components/ui/GeoDirectory"));
+const SeoLinkJuicer = dynamic(() => import("@/components/ui/SeoLinkJuicer").then(mod => mod.SeoLinkJuicer));
+const ProvinceHubLinks = dynamic(() => import("@/components/ui/ProvinceHubLinks").then(mod => mod.ProvinceHubLinks));
 const FaqAccordion = dynamic(() => import("@/components/ui/FaqAccordion").then(mod => mod.FaqAccordion));
 const TrustMethodologyBlock = dynamic(() => import("@/components/ui/TrustMethodologyBlock").then(mod => mod.TrustMethodologyBlock));
 const InstallationProcessTimeline = dynamic(() => import("@/components/ui/InstallationProcessTimeline").then(mod => mod.InstallationProcessTimeline));
@@ -34,7 +35,7 @@ const CityClimateSolarProfile = dynamic(() => import("@/components/ui/CityClimat
 const SubsidiesSeoBlock = dynamic(() => import("@/components/ui/SubsidiesSeoBlock").then(mod => mod.SubsidiesSeoBlock));
 const ProvinceRanking = dynamic(() => import("@/components/ui/ProvinceRanking").then(mod => mod.ProvinceRanking));
 const ContextualCityLinks = dynamic(() => import("@/components/ui/ContextualCityLinks").then(mod => mod.ContextualCityLinks));
-const SeoLinkJuicer = dynamic(() => import("@/components/ui/SeoLinkJuicer").then(mod => mod.SeoLinkJuicer));
+const GeoDirectory = dynamic(() => import("@/components/ui/GeoDirectory"));
 
 /* ── SEO: Schema, FAQ, Server SEO Block ── */
 import { buildSolarEnergyPageSchema, buildMunicipioFaqs, buildOrganizationSchema } from "@/lib/seo/schema-org";
@@ -206,11 +207,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
         console.info(`[PlacasSolaresMunicipioPage] 3. PARALLEL FETCH START`);
         
         // PARALLEL FETCH: Independent data sources
-        const [seoSnapshot, weather, nearbyMunicipios, precioLuz] = await Promise.all([
+        const [seoSnapshot, weather, nearbyMunicipios, precioLuz, provinceHubs] = await Promise.all([
             getSeoSnapshotBySlug(municipio.slug),
             getWeatherForLocation(municipio.municipio, municipio.provincia),
             getNearbyMunicipiosEnergiaByProvince(municipio.provincia, 12),
-            getPrecioLuzHoy()
+            getPrecioLuzHoy(),
+            getProvinceHubs(municipio.provincia, 20)
         ]);
 
         if (!weather) {
@@ -444,6 +446,12 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 }))}
                                 provincia={municipio.provincia}
                                 currentSlug={slug}
+                            />
+
+                            <ProvinceHubLinks 
+                                hubs={provinceHubs} 
+                                provincia={municipio.provincia} 
+                                currentSlug={slug} 
                             />
 
                             <CalculatorMunicipalitySwitcher

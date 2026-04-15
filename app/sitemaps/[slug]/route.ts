@@ -60,7 +60,7 @@ async function generateRegionalSitemap(comunidad: string) {
     // We prioritize published entries from the queue for regional drip-feeding
     const { data: items, error } = await supabase
         .from("publish_queue")
-        .select("slug, published_at, municipios_energia(provincia)")
+        .select("slug, published_at, provincia")
         .eq("comunidad", comunidad)
         .eq("status", "published")
         .order("priority_score", { ascending: false })
@@ -87,7 +87,7 @@ async function generateRegionalSitemap(comunidad: string) {
 
     const urls = items.flatMap((item: any) => {
         const lastmod = item.published_at?.split("T")[0] || new Date().toISOString().split("T")[0];
-        const provSlug = slugify(item.municipios_energia?.provincia || "");
+        const provSlug = slugify(item.provincia || "");
         const cleanSlug = cleanMunicipalitySlug(item.slug, provSlug);
 
         return ROUTE_CONFIG.map(config => `
@@ -106,13 +106,13 @@ async function generateSubvencionesSitemap() {
     const supabase = createSupabaseAdminClient();
     const { data: items } = await supabase
         .from("publish_queue")
-        .select("slug, comunidad, municipios_energia(provincia)")
+        .select("slug, comunidad, provincia")
         .eq("status", "published")
         .limit(20000);
 
     const urls = (items || []).map((item: any) => {
         const cSlug = item.comunidad;
-        const pSlug = slugify(item.municipios_energia?.provincia || "");
+        const pSlug = slugify(item.provincia || "");
         const cleanMuni = cleanMunicipalitySlug(item.slug, pSlug);
         const loc = `${BASE_URL}/subvenciones-solares/${cSlug}/${pSlug}/${cleanMuni}`;
         return `<url><loc>${loc}</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>`;

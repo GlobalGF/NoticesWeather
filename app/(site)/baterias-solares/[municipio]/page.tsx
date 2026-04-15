@@ -16,7 +16,8 @@ import { LeadForm } from "@/components/ui/LeadForm";
 import { generateDynamicText } from "@/lib/pseo/spintax";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
 import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
-import { getMunicipioBySlug } from "@/lib/data/solar";
+import { getMunicipioBySlug, getProvinceHubs } from "@/lib/data/solar";
+import { ProvinceHubLinks } from "@/components/ui/ProvinceHubLinks";
 
 export const revalidate = 604800; // 1 semana
 export const dynamicParams = true;
@@ -162,14 +163,17 @@ export default async function BateriasMunicipioPage({ params }: Props) {
             permanentRedirect(`/baterias-solares/${dbMuniSlug}`);
         }
 
-        const { data: bateriasRaw } = await supabase.from("baterias_solares")
-            .select("fabricante, modelo, capacidad_kwh, potencia_descarga_kw, ciclos, profundidad_descarga_pct, garantia_anos, tecnologia, eficiencia_roundtrip_pct, ficha_tecnica_url")
-            .eq("activo", true)
-            .order("capacidad_kwh", { ascending: true })
-            .limit(6);
+        const [bateriasRes, hubs] = await Promise.all([
+            supabase.from("baterias_solares")
+                .select("fabricante, modelo, capacidad_kwh, potencia_descarga_kw, ciclos, profundidad_descarga_pct, garantia_anos, tecnologia, eficiencia_roundtrip_pct, ficha_tecnica_url")
+                .eq("activo", true)
+                .order("capacidad_kwh", { ascending: true })
+                .limit(6),
+            getProvinceHubs(municipio.provincia, 20)
+        ]);
 
         const m = municipio as MunicipioRow;
-        const baterias = (bateriasRaw ?? []) as BateriaRow[];
+        const baterias = (bateriasRes.data ?? []) as BateriaRow[];
 
     // Cálculos estimados genéricos para baterías en este municipio
     const ahorroSolarBase = m.ahorro_estimado ?? 600;
@@ -452,6 +456,15 @@ export default async function BateriasMunicipioPage({ params }: Props) {
 
                     </div>
                 </div>
+            </div>
+
+            <div className="mx-auto max-w-5xl px-4 pb-12">
+                <ProvinceHubLinks 
+                    hubs={hubs} 
+                    provincia={m.provincia} 
+                    currentSlug={slug}
+                    label="Baterías solares en"
+                />
             </div>
 
             {/* ── Footer ────────────────────────────── */}

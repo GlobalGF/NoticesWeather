@@ -14,6 +14,8 @@ import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { PrecioLuzWidget } from "@/components/ui/PrecioLuzWidget";
 import { LeadForm } from "@/components/ui/LeadForm";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
+import { getProvinceHubs } from "@/lib/data/solar";
+import { ProvinceHubLinks } from "@/components/ui/ProvinceHubLinks";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -131,13 +133,19 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
 
     const supabase = await createSupabaseServerClient();
 
-    const [{ data: munRaw }, { data: historial }] = await Promise.all([
+    const [{ data: munRaw }, { data: historial }, hubs] = await Promise.all([
         supabase.from("municipios_energia")
             .select("slug,municipio,provincia,comunidad_autonoma,habitantes,horas_sol,irradiacion_solar,ahorro_estimado,bonificacion_ibi,subvencion_autoconsumo,precio_medio_luz,precio_instalacion_min_eur,precio_instalacion_medio_eur,precio_instalacion_max_eur,eur_por_watio")
             .eq("slug", slug).single(),
         supabase.from("precios_electricidad_es")
             .select("fecha,precio_kwh_media,precio_kwh_min,precio_kwh_max")
             .order("fecha", { ascending: false }).limit(7),
+        (async () => {
+             // Forcing a fresh fetch of province name if not yet available
+             const { data: mData } = await supabase.from("municipios_energia").select("provincia").eq("slug", slug).maybeSingle();
+             const mName = mData as { provincia: string } | null;
+             return getProvinceHubs(mName?.provincia || "", 20);
+        })()
     ]);
 
     if (!munRaw) notFound();
@@ -509,6 +517,15 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="mt-12">
+                    <ProvinceHubLinks 
+                        hubs={hubs} 
+                        provincia={m.provincia} 
+                        currentSlug={m.slug}
+                        label="Precio de la luz hoy en"
+                    />
                 </div>
 
                 {/* ── Formal footer ────────────────────────────────────────── */}

@@ -142,6 +142,30 @@ export async function getPrecioLuzHoy(): Promise<number> {
     )();
 }
 
+/**
+ * Fetch the largest municipalities in a province (Hubs) by population.
+ * Strategic for SEO internal linking.
+ */
+export async function getProvinceHubs(provincia: string, limit = 15): Promise<any[]> {
+    const fetchFunc = async (p: string, l: number) => {
+        if (!p) return [];
+        const supabase = await createSupabaseServerClient();
+        const { data } = await supabase
+            .from("municipios_energia")
+            .select("slug, municipio, provincia, habitantes")
+            .eq("provincia", p)
+            .order("habitantes", { ascending: false, nullsFirst: false })
+            .limit(l);
+        return data || [];
+    };
+
+    return unstable_cache(
+        () => fetchFunc(provincia, limit),
+        [`hubs-muni-${provincia}-${limit}`],
+        { revalidate: cachePolicy.data.municipalityDetail, tags: ["hubs"] }
+    )();
+}
+
 export type NationalStats = {
   avgSunHours: number;
   avgRadiation: number;
