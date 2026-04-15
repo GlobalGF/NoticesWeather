@@ -23,7 +23,12 @@ type Params = {
 };
 
 export async function GET(_req: NextRequest, context?: Params): Promise<Response> {
-    const comunidad = context?.params?.comunidad;
+    let comunidad = context?.params?.comunidad;
+    
+    // Support URLs like /sitemaps/sitemap-andalucia.xml
+    if (comunidad?.endsWith(".xml")) {
+        comunidad = comunidad.slice(0, -4);
+    }
 
     if (!comunidad || !/^[a-z0-9-]+$/.test(comunidad)) {
         return new Response("Not found", { status: 404 });

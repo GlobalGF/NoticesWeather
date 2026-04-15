@@ -200,8 +200,9 @@ export default async function SubvencionesSolaresRootPage() {
                       <Link
                         href={`/subvenciones-solares/${slug}`}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors whitespace-nowrap"
+                        title={`Ver todas las subvenciones para placas solares en ${name}`}
                       >
-                        Ver detalle
+                        Ver subvenciones en {name}
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                       </Link>
                     </td>

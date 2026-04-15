@@ -80,10 +80,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!d) return { title: "Baterías Solares" };
 
     const muniClean = cleanLocationName(d.municipio);
+    const provClean = cleanLocationName(d.provincia);
+    const locationLabel = (muniClean.toLowerCase() === provClean.toLowerCase()) ? muniClean : `${muniClean} (${provClean})`;
 
     return buildMetadata({
-        title: `Baterías Solares en ${muniClean} (${d.provincia}) · Ahorro ${new Date().getFullYear()}`,
-        description: `Descubra si es rentable instalar baterías solares de litio en ${muniClean}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión.`,
+        title: `Baterías Solares en ${locationLabel} · Ahorro ${new Date().getFullYear()}`,
+        description: `Rentabilidad de baterías solares en ${locationLabel}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión en tu localidad.`,
         pathname: `/baterias-solares/${slug}`,
     });
 }

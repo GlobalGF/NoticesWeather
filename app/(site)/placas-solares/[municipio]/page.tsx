@@ -122,10 +122,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
         const muniName = cleanLocationName(data.municipio || "tu localidad");
         const provName = cleanLocationName(data.provincia || "");
+        const locationLabel = (muniName.toLowerCase() === provName.toLowerCase()) ? muniName : `${muniName} (${provName})`;
         
-        // SENIOR SEO TITLE: Transactional & Concise
-        const title = `Instalación Placas Solares en ${muniName} (${provName}) · Guía ${year}`;
-        const description = `Instala paneles solares en ${muniName}${provName && provName !== muniName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
+        // SENIOR SEO TITLE: Transactional, Concise & Deduplicated
+        const title = `Placas Solares en ${locationLabel} · Guía ${year}`;
+        const description = `Instala paneles solares en ${locationLabel}: ${fmt(data.horas_sol)} h de sol, ahorro de ${fmtEur(data.ahorro_estimado)}/año${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% bonificación IBI` : ""}. Rentabilidad y presupuestos.`;
 
         return buildMetadata({
             title,

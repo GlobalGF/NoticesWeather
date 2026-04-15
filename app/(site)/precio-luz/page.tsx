@@ -24,14 +24,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const stats = await getProvinceStats(provincia);
     const name = stats?.provinceName ?? provincia;
     return buildMetadata({
-      title: `Precio de la Luz Hoy en ${name} · Tarifa PVPC`,
-      description: `Precio de la luz hoy en ${name}: tarifa PVPC en €/kWh hora a hora. Compara precios, tarifas de consumo y potencia contratada. Ahorro en factura y compensación de excedentes solares por municipio.`,
+      title: `Precio de la Luz Hoy en ${name} · Tarifa PVPC 24h`,
+      description: `Consulta el precio de la luz hoy en ${name}: tarifa PVPC en €/kWh hora a hora. Ahorro energético y compensación de excedentes solares por municipio.`,
       pathname: `/precio-luz?provincia=${provincia}`,
     });
   }
   return buildMetadata({
-    title: "Precio de la Luz Hoy hora a hora · Tarifa PVPC",
-    description: "Precio de la luz hoy hora a hora con gráfico 24h en vivo. PVPC actualizado de Red Eléctrica: horas baratas, predicción de mañana y cuándo poner la lavadora. Datos REE.",
+    title: "Precio de la Luz Hoy en España · Tarifa PVPC 24h",
+    description: "Precio de la luz hoy en España (PVPC) con gráfico 24h en vivo. Horas baratas, previsión de mañana y comparativa de tarifas de luz actualizada de Red Eléctrica (REE).",
     pathname: "/precio-luz",
   });
 }
