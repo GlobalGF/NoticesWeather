@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/utils/slug";
 
 export const maxDuration = 300; // 5 minutes max duration for this endpoint
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   // Protect the route using CRON_SECRET from env

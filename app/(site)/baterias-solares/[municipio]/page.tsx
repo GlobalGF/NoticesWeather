@@ -83,10 +83,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const provClean = cleanLocationName(d.provincia);
     const locationLabel = (muniClean.toLowerCase() === provClean.toLowerCase()) ? muniClean : `${muniClean} (${provClean})`;
 
+    // Use clean slug for canonical even if hit from dirty slug
+    const cleanSlug = cleanMunicipalitySlug(d.slug, slugify(d.provincia));
+
     return buildMetadata({
         title: `Baterías Solares en ${locationLabel} · Ahorro ${new Date().getFullYear()}`,
         description: `Rentabilidad de baterías solares en ${locationLabel}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión en tu localidad.`,
-        pathname: `/baterias-solares/${slug}`,
+        pathname: `/baterias-solares/${cleanSlug}`,
     });
 }
 

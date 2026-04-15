@@ -10,6 +10,7 @@ import { PrecioLuzWidget } from "@/components/ui/PrecioLuzWidget";
 import { cachePolicy } from "@/lib/cache/policy";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { getPvpcAnalysis } from "@/lib/data/pvpc";
+import { slugify } from "@/lib/utils/slug";
 
 export const revalidate = 3600; // 1h — PVPC updates hourly
 

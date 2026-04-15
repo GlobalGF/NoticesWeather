@@ -29,13 +29,13 @@ export const revalidate = 86400;
 type Props = { params: { comunidad: string; provincia: string; municipio: string } };
 
 const CCAA_NAME_MAP: Record<string, string> = {
-    "andalucia": "Andalucía", "aragon": "Aragón", "principado-de-asturias": "Asturias",
+    "andalucia": "Andalucía", "aragon": "Aragón", "asturias": "Asturias",
     "illes-balears": "Islas Baleares", "canarias": "Canarias", "cantabria": "Cantabria",
     "castilla-y-leon": "Castilla y León", "castilla-la-mancha": "Castilla-La Mancha",
-    "cataluna": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
-    "extremadura": "Extremadura", "galicia": "Galicia", "comunidad-madrid": "Comunidad de Madrid",
-    "region-de-murcia": "Región de Murcia", "comunidad-foral-navarra": "Navarra",
-    "pais-vasco": "País Vasco", "la-rioja": "La Rioja", "ceuta-ceuta": "Ceuta", "melilla-melilla": "Melilla",
+    "catalunya": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
+    "extremadura": "Extremadura", "galicia": "Galicia", "madrid": "Comunidad de Madrid",
+    "region-de-murcia": "Región de Murcia", "navarra": "Navarra",
+    "pais-vasco": "País Vasco", "la-rioja": "La Rioja", "ceuta": "Ceuta", "melilla": "Melilla",
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,19 +43,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase
         .from("municipios_energia")
-        .select("municipio, provincia")
+        .select("municipio, provincia, comunidad_autonoma, slug")
         .eq("slug", municipio)
         .limit(1)
         .maybeSingle();
 
-    const muniName = (data as any)?.municipio || municipio.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
-    const provName = (data as any)?.provincia || provincia.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+    const muniRow = data as any;
+    const muniName = muniRow?.municipio || municipio.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+    const provName = muniRow?.provincia || provincia.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
     const year = new Date().getFullYear();
+
+    // Force clean canonical slugs
+    const dbCcaaSlug = muniRow ? normalizeCcaaSlug(muniRow.comunidad_autonoma) : comunidad;
+    const dbProvSlug = muniRow ? slugify(muniRow.provincia) : provincia;
+    const dbMuniSlug = muniRow ? cleanMunicipalitySlug(muniRow.slug, dbProvSlug) : municipio;
 
     return buildMetadata({
         title: `Ayudas y Subvenciones Placas Solares ${muniName} (${provName}) · ${year}`,
-        description: `Consulta las subvenciones del ${CCAA_NAME_MAP[comunidad] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
-        pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}`,
+        description: `Consulta las subvenciones del ${CCAA_NAME_MAP[dbCcaaSlug] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
+        pathname: `/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`,
     });
 }
 

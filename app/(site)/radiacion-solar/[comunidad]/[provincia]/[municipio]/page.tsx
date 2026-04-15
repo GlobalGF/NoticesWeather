@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
 import { PvgisEstimator } from "@/components/ui/PvgisEstimator";
@@ -6,6 +6,7 @@ import { getTopMunicipiosEnergiaGeoPaths } from "@/data/repositories/municipios-
 import { cachePolicy } from "@/lib/cache/policy";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 import { radiationMetadata } from "@/modules/radiacion-solar/seo";
 import { getRadiationPageData } from "@/modules/radiacion-solar/service";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
@@ -32,9 +33,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!parsedComunidad || !parsedProvincia || !parsedMunicipio) return {};
 
   const data = await getRadiationPageData(parsedComunidad, parsedProvincia, parsedMunicipio);
-  if (!data) return {};
+  if (!data || !data.municipality) return {};
 
-  return radiationMetadata(parsedComunidad, parsedProvincia, parsedMunicipio, data.municipality.municipio);
+  // Forzar canónica en metadata
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
+  return radiationMetadata(dbCcaaSlug, dbProvSlug, dbMuniSlug, data.municipality.municipio);
 }
 
 export default async function RadiationPage({ params }: Props) {
@@ -45,7 +51,16 @@ export default async function RadiationPage({ params }: Props) {
   if (!parsedComunidad || !parsedProvincia || !parsedMunicipio) notFound();
 
   const data = await getRadiationPageData(parsedComunidad, parsedProvincia, parsedMunicipio);
-  if (!data) notFound();
+  if (!data || !data.municipality) notFound();
+
+  // Redirect to canonical
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
+  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+      permanentRedirect(`/radiacion-solar/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
+  }
 
   return (
     <>

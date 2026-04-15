@@ -3,12 +3,13 @@
  * Design: formal energy portal (ESIOS/Bloomberg style)
  */
 
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { tryParseSlug } from "@/lib/utils/params";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { PrecioLuzWidget } from "@/components/ui/PrecioLuzWidget";
 import { LeadForm } from "@/components/ui/LeadForm";
@@ -90,10 +91,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const muniClean = cleanLocationName(d.municipio);
     const provClean = cleanLocationName(d.provincia);
 
+    // Force clean slug in canonical pathname
+    const cleanSlug = cleanMunicipalitySlug(d.slug, slugify(d.provincia));
+
     return buildMetadata({
         title: `Precio Luz hoy en ${muniClean} · Tarifa PVPC`,
         description: `Tarifa de la luz hoy en ${muniClean}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica. Ahorro con autoconsumo solar en ${provClean}.`,
-        pathname: `/precio-luz/${slug}`,
+        pathname: `/precio-luz/${cleanSlug}`,
     });
 }
 
@@ -139,6 +143,12 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
     if (!munRaw) notFound();
 
     const m = munRaw as unknown as MunicipioRow;
+
+    // REDIRECT TO CANONICAL: Ensure the URL is always the clean one
+    const cleanSlug = cleanMunicipalitySlug(m.slug, slugify(m.provincia));
+    if (slug !== cleanSlug) {
+        permanentRedirect(`/precio-luz/${cleanSlug}`);
+    }
     const history = (historial ?? []) as PrecioRow[];
     const precioHoy = history[0]?.precio_kwh_media ?? m.precio_medio_luz ?? 0.15;
     const theme = precioColor(precioHoy);

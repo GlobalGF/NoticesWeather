@@ -124,6 +124,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const provName = cleanLocationName(data.provincia || "");
         const locationLabel = (muniName.toLowerCase() === provName.toLowerCase()) ? muniName : `${muniName} (${provName})`;
         
+        // Use clean slug for canonical even if hit from dirty slug
+        const dbProvSlug = slugify(data.provincia || "");
+        const cleanSlug = cleanMunicipalitySlug(data.slug, dbProvSlug);
+        
         // SENIOR SEO TITLE: Transactional, Concise & Deduplicated
         const title = `Placas Solares en ${locationLabel} · Guía ${year}`;
         const description = `Instala paneles solares en ${locationLabel}: ${fmt(data.horas_sol)} h de sol, ahorro de ${fmtEur(data.ahorro_estimado)}/año${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% bonificación IBI` : ""}. Rentabilidad y presupuestos.`;
@@ -131,7 +135,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return buildMetadata({
             title,
             description,
-            pathname: `/placas-solares/${slug}`,
+            pathname: `/placas-solares/${cleanSlug}`,
         });
     } catch (error) {
         console.error("[generateMetadata] Failed to generate metadata:", error);

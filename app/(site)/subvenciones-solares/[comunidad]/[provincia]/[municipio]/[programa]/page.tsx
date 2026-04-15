@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
 import { getTopMunicipiosEnergiaGeoPaths } from "@/data/repositories/municipios-energia.repo";
@@ -6,6 +6,7 @@ import { getTopSubsidyProgramSlugs } from "@/data/repositories/subsidies.repo";
 import { cachePolicy } from "@/lib/cache/policy";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 import { subsidyMetadata } from "@/modules/subvenciones-solares/seo";
 import { getSubsidyPageData } from "@/modules/subvenciones-solares/service";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
@@ -45,12 +46,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedPrograma) return {};
 
   const data = await getSubsidyPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedPrograma);
-  if (!data) return {};
+  if (!data || !data.municipality) return {};
+
+  // Forzar canónica en metadata
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
 
   return subsidyMetadata(
-    parsedComunidad,
-    parsedProvincia,
-    parsedMunicipio,
+    dbCcaaSlug,
+    dbProvSlug,
+    dbMuniSlug,
     parsedPrograma,
     data.municipality.municipio,
     data.subsidy.programName
@@ -66,7 +72,16 @@ export default async function SubsidyPage({ params }: Props) {
   if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedPrograma) notFound();
 
   const data = await getSubsidyPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedPrograma);
-  if (!data) notFound();
+  if (!data || !data.municipality) notFound();
+
+  // Redirect to canonical
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
+  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+      permanentRedirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}/${parsedPrograma}`);
+  }
 
   return <SeoLandingTemplate {...data} />;
 }
