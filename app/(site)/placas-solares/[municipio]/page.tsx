@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -124,7 +124,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const provName = cleanLocationName(data.provincia || "");
         
         // SENIOR SEO TITLE: Transactional & Concise
-        const title = `Instalación Placas Solares ${muniName} · Guía ${year}`;
+        const title = `Instalación Placas Solares en ${muniName} (${provName}) · Guía ${year}`;
         const description = `Instala paneles solares en ${muniName}${provName && provName !== muniName ? ` (${provName})` : ""}: ${fmt(data.horas_sol)} horas de sol, ahorro estimado de ${fmtEur(data.ahorro_estimado)} al a\u00f1o${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% de bonificaci\u00f3n IBI` : ""}.`;
 
         return buildMetadata({
@@ -195,7 +195,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
 
         // Canonical Redirect
         if (slug !== dbMuniSlug) {
-            redirect(`/placas-solares/${dbMuniSlug}`);
+            permanentRedirect(`/placas-solares/${dbMuniSlug}`);
         }
 
         console.info(`[PlacasSolaresMunicipioPage] 3. PARALLEL FETCH START`);

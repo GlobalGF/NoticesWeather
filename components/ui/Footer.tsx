@@ -24,6 +24,7 @@ export function Footer() {
             <p className="text-white font-semibold mb-3">Portal Energético</p>
             <ul className="space-y-2">
               <li><Link href="/placas-solares" className="hover:text-blue-400 transition-colors">Energía Solar por Municipio</Link></li>
+              <li><Link href="/subvenciones-solares" className="hover:text-blue-400 transition-colors">Subvenciones y Ayudas</Link></li>
               <li><Link href="/precio-luz" className="hover:text-blue-400 transition-colors">Precio de la Luz Hoy (PVPC)</Link></li>
               <li><Link href="/presupuesto-solar" className="hover:text-orange-400 font-bold transition-colors">Solicitar Presupuesto Gratis</Link></li>
               <li><Link href="/calculadoras" className="hover:text-blue-400 transition-colors">Simuladores y Calculadoras</Link></li>

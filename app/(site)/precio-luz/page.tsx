@@ -178,10 +178,10 @@ async function GenericPrecioLuzPage() {
             <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px]">PVPC en Tiempo Real · Datos REE</p>
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-3">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-3">
             Precio de la Luz Hoy<br className="hidden md:block" />
             <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">Mercado Regulado PVPC</span>
-          </h2>
+          </h1>
           <p className="text-xl md:text-3xl text-amber-200 font-black mb-6 drop-shadow-sm">¿Harto de mirar el reloj para ahorrar unos céntimos?</p>
 
           <p className="text-lg md:text-2xl text-amber-200 font-semibold mb-6 capitalize">{fechaHoy}</p>

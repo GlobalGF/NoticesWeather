@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
+import SafeImage from "./SafeImage";
 
 export type GeoLevel = "comunidades" | "provincias" | "municipios";
 
@@ -155,20 +156,19 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
                                 aria-label={`${item.name} — ${meta.description}`}
                             >
                                 <div 
-                                    className="absolute inset-0 bg-slate-800" 
+                                    className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" 
                                     style={{ 
-                                        backgroundImage: `url(${meta.backgroundUrl})`,
+                                        backgroundImage: `url("${meta.backgroundUrl}"), linear-gradient(to bottom right, #1e293b, #0f172a)`,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center'
                                     }}
                                 />
-                                <img
+                                <SafeImage
                                     src={meta.backgroundUrl}
                                     alt={item.name}
                                     width={360}
                                     height={240}
                                     loading="lazy"
-                                    referrerPolicy="no-referrer"
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent opacity-90 transition-opacity" />

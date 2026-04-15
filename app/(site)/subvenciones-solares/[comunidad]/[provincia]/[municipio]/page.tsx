@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import Fallback from "@/components/solar/Fallback";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -48,11 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .limit(1)
         .maybeSingle();
 
-    const muniName = (data as any)?.municipio ?? municipio.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const muniName = (data as any)?.municipio || municipio.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
+    const provName = (data as any)?.provincia || provincia.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
     const year = new Date().getFullYear();
 
     return buildMetadata({
-        title: `Ayudas y Subvenciones Placas Solares ${muniName} (${year})`,
+        title: `Ayudas y Subvenciones Placas Solares ${muniName} (${provName}) · ${year}`,
         description: `Consulta las subvenciones del ${CCAA_NAME_MAP[comunidad] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
         pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}`,
     });
@@ -79,7 +80,7 @@ export default async function SubvencionesSolaresMunicipioPage({ params }: Props
 
     // Redirect to canonical URL if mismatch
     if (comunidad !== dbCcaaSlug || municipio !== dbMuniSlug) {
-        redirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
+        permanentRedirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
     }
 
     const muniName: string = muniRow?.municipio ?? municipio.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());

@@ -16,7 +16,6 @@ const STATIC_PAGES: Array<{ path: string; changefreq: "daily" | "weekly" | "mont
   { path: "/", changefreq: "daily", priority: 1.0 },
   { path: "/placas-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/precio-luz", changefreq: "daily", priority: 0.9 },
-  { path: "/baterias-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/subvenciones-solares", changefreq: "weekly", priority: 0.9 },
   { path: "/calculadoras", changefreq: "monthly", priority: 0.7 },
   { path: "/calculadoras/placas-solares", changefreq: "weekly", priority: 0.8 },

@@ -271,12 +271,25 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
       </section>
 
       {/* ── Buscador ──────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 py-10">
+      <section className="mx-auto max-w-5xl px-4 pt-10 pb-6">
         <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 md:p-8 max-w-2xl mx-auto shadow-xl">
           <p className="text-white font-bold text-xl mb-2">Busca tu municipio</p>
           <p className="text-slate-400 text-sm mb-6">Localiza las ayudas locales de tu ayuntamiento en segundos y comprueba cuánto puedes ahorrar.</p>
           <CitySearchInput placeholder={placeholderText} />
         </div>
+      </section>
+
+      {/* ── Provincial Directory (Internal Linking) ───── */}
+      <section className="mx-auto max-w-5xl px-4 pb-12">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Directorio por provincia en {ccaaName}</h2>
+          <p className="text-slate-500 text-sm">Selecciona una provincia para ver el listado de municipios y sus bonificaciones de IBI e ICIO.</p>
+        </div>
+        <GeoDirectory 
+          level="provincias"
+          parentSlug={parsed}
+          baseRoute={`/subvenciones-solares/${parsed}`}
+        />
       </section>
 
       {/* ── Main Content + Sidebar ─────────────────────────────── */}

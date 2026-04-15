@@ -47,6 +47,6 @@ export const municipiosTop100 = [
   "Marbella",
   "Lleida",
   "Tarragona",
-  "Leon"
+  "León"
   // ...continúa hasta 100
 ];

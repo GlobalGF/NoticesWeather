@@ -165,9 +165,9 @@ async function GenericPlacasSolaresPage() {
             <p className="text-cyan-400 font-bold tracking-widest uppercase text-[10px]">Portal Nacional de Autoconsumo</p>
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
             Placas Solares en España <br className="hidden md:block" /> Rendimiento por Localidad
-          </h2>
+          </h1>
 
           <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
             Encuentra tu municipio y accede al estudio completo de irradiación, precio de instalación fotovoltaica, rentabilidad de paneles solares y bonificaciones fiscales (IBI/ICIO).

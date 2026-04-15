@@ -3,7 +3,7 @@
  * Design: formal energy portal (Bloomberg/ESIOS style)
  */
 
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import Fallback from "@/components/solar/Fallback";
 import { Metadata } from "next";
@@ -82,7 +82,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const muniClean = cleanLocationName(d.municipio);
 
     return buildMetadata({
-        title: `Baterías para Placas Solares en ${muniClean} · Ahorro`,
+        title: `Baterías Solares en ${muniClean} (${d.provincia}) · Ahorro ${new Date().getFullYear()}`,
         description: `Descubra si es rentable instalar baterías solares de litio en ${muniClean}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión.`,
         pathname: `/baterias-solares/${slug}`,
     });
@@ -154,7 +154,7 @@ export default async function BateriasMunicipioPage({ params }: Props) {
 
         // Canonical Redirect
         if (rawMunicipio !== dbMuniSlug) {
-            redirect(`/baterias-solares/${dbMuniSlug}`);
+            permanentRedirect(`/baterias-solares/${dbMuniSlug}`);
         }
 
         const { data: bateriasRaw } = await supabase.from("baterias_solares")

@@ -38,7 +38,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
     },
     "avila": {
         backgroundUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/86/7e/c9/deel-van-het-stadsgezicht.jpg?w=1400&h=1400&s=1",
-        description: "Ciudad amurallada con gran limpieza atmosférica y sol de altura.",
+        description: "Ciudad amurallada con gran limpieza atmosférica and sol de altura.",
         highlights: ["Historia y sol", "Altitud elevada"]
     },
     // B
@@ -94,7 +94,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
         highlights: ["Llanuras infinitas", "Potencial solar"]
     },
     "cordoba": {
-        backgroundUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Mezquita_de_C%C3%B3rdoba_desde_el_aire_%28Córdoba%2C_España%29.jpg/1280px-Mezquita_de_C%C3%B3rdoba_desde_el_aire_%28Córdoba%2C_España%29.jpg",
+        backgroundUrl: "https://www.gestilar.com/uploads/iStock-1088432392_2.jpg",
         description: "Altas temperaturas compensadas por una de las mayores irradiancias de España.",
         highlights: ["Sol andaluz", "Ayudas activas"]
     },
@@ -161,7 +161,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
     },
     "leon": {
         backgroundUrl: "https://www.barcelo.com/guia-turismo/wp-content/uploads/2022/12/leon.jpg",
-        description: "Gran amplitud térmica y sol de calidad en el noroeste.",
+        description: "Gran amplitud térmica y sol de calidad en el noroeste de León.",
         highlights: ["Cielo castellano", "Rendimiento"]
     },
     "lleida": {
@@ -214,7 +214,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
         highlights: ["Cielo limpio", "Sol castellano"]
     },
     "pontevedra": {
-        backgroundUrl: "https://www.barcelo.com/guia-turismo/wp-content/uploads/2023/07/que-visitar-en-pontevdra.jpg",
+        backgroundUrl: "https://images.unsplash.com/photo-1574360533513-33bc71536b15?auto=format&fit=crop&q=80&w=1200",
         description: "Rías Baixas con un potencial solar creciente y clima atlántico suave.",
         highlights: ["Rías Baixas", "Sol oceánico"]
     },
