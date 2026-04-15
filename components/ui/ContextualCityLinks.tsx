@@ -128,11 +128,12 @@ export function ContextualCityLinks({
           {/* Ensure current city slug is also cleaned to point to canonical version */}
           {(() => {
             const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
+            const subPath = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i).join('/');
             return (
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href={`/placas-solares/${cleanMainSlug}/precio`}
+                    href={`/placas-solares/${cleanMainSlug}#precio`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-600 text-xs shrink-0">💶</span>
@@ -143,7 +144,7 @@ export function ContextualCityLinks({
                 </li>
                 <li>
                   <Link
-                    href={`/placas-solares/${cleanMainSlug}/subvenciones`}
+                    href={`/subvenciones-solares/${subPath}`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-100 text-emerald-600 text-xs shrink-0">🇪🇺</span>
@@ -154,7 +155,7 @@ export function ContextualCityLinks({
                 </li>
                 <li>
                   <Link
-                    href={`/placas-solares/${cleanMainSlug}/ahorro`}
+                    href={`/placas-solares/${cleanMainSlug}#ahorro`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-amber-200 hover:bg-amber-50/50 transition-colors"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded bg-amber-100 text-amber-600 text-xs shrink-0">💰</span>
@@ -165,7 +166,7 @@ export function ContextualCityLinks({
                 </li>
                 <li>
                   <Link
-                    href={`/calculadoras/placas-solares/${cleanMainSlug}`}
+                    href={`/calculadoras/${cleanMainSlug}`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded bg-indigo-100 text-indigo-600 text-xs shrink-0">🔢</span>
@@ -175,21 +176,15 @@ export function ContextualCityLinks({
                   </Link>
                 </li>
                 <li>
-                  {(() => {
-                    const pathParts = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i);
-                    const path = pathParts.join('/');
-                    return (
-                      <Link
-                        href={`/subvenciones-solares/${path}`}
-                        className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
-                      >
-                        <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
-                        <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
-                          Informe de subvenciones en {muniClean} ({cleanName(provincia)})
-                        </span>
-                      </Link>
-                    );
-                  })()}
+                  <Link
+                    href={`/subvenciones-solares/${subPath}`}
+                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
+                    <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
+                      Informe de subvenciones en {muniClean} ({cleanName(provincia)})
+                    </span>
+                  </Link>
                 </li>
               </ul>
             );

@@ -6,8 +6,11 @@ import { getNationalStats } from "@/lib/data/solar";
 import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { ProvinceCrossLinks } from "@/components/ui/ProvinceCrossLinks";
 import { cachePolicy } from "@/lib/cache/policy";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { BATTERIES_PROVINCE_SPINTAX } from "@/data/seo/batteries-content";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -123,6 +126,79 @@ export default async function BateriasSolaresRootPage({ searchParams }: Props) {
               ))}
             </div>
           }
+        />
+
+        {/* ── Batteries Provincial SEO Content Block ── */}
+        <section className="mx-auto max-w-5xl px-4 py-12 md:py-20">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 md:p-12">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-10 w-10 bg-fuchsia-100 text-fuchsia-600 rounded-2xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                Baterías solares y almacenamiento energético en {provStats.provinceName}
+              </h2>
+            </div>
+
+            <div className="prose prose-lg max-w-none text-slate-600 leading-relaxed font-medium space-y-8">
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_intro,
+                  `${provStats.provinceSlug}-bat-p1`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Tecnología LFP y seguridad en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_tecnologia,
+                  `${provStats.provinceSlug}-bat-p2`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_dimensionamiento,
+                  `${provStats.provinceSlug}-bat-p3`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Rentabilidad del almacenamiento en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_rentabilidad,
+                  `${provStats.provinceSlug}-bat-p4`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_independencia,
+                  `${provStats.provinceSlug}-bat-p5`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  BATTERIES_PROVINCE_SPINTAX.bloque_cierre,
+                  `${provStats.provinceSlug}-bat-p6`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), AHORRO: String(provStats.avgSavings), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios) }
+                )}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Cross-Silo Provincial Interlinks ── */}
+        <ProvinceCrossLinks
+          provinceName={provStats.provinceName}
+          provinceSlug={provStats.provinceSlug}
+          currentSilo="baterias"
         />
       </main>
     );

@@ -40,6 +40,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dbProvSlug = slugify(data.municipality.provincia);
   const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
 
+  // Canonical Redirect: If any slug segment is non-canonical, redirect immediately
+  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+      permanentRedirect(`/radiacion-solar/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
+  }
+
   return radiationMetadata(dbCcaaSlug, dbProvSlug, dbMuniSlug, data.municipality.municipio);
 }
 

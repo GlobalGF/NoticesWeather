@@ -7,7 +7,9 @@ import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { ProvinceCrossLinks } from "@/components/ui/ProvinceCrossLinks";
 import { cachePolicy } from "@/lib/cache/policy";
+import { generateDynamicText } from "@/lib/pseo/spintax";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -138,6 +140,85 @@ export default async function PlacasSolaresIndexPage({ searchParams }: Props) {
               ))}
             </div>
           }
+        />
+
+        {/* ── Province SEO Content Block (Moved to bottom) ── */}
+        <section className="mx-auto max-w-5xl px-4 py-12 md:py-20">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 md:p-12">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-10 w-10 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                Instalación de paneles solares en la provincia de {provStats.provinceName}
+              </h2>
+            </div>
+
+            <div className="prose prose-lg max-w-none text-slate-600 leading-relaxed font-medium space-y-8">
+              {/* Bloque 1: Introducción y Contexto Regional */}
+              <p>
+                {generateDynamicText(
+                  "{El potencial para instalar placas solares en [PROVINCIA] es uno de los más destacados de España debido a su ubicación privilegiada y su compromiso histórico con las energías renovables.|[PROVINCIA] se ha consolidado en los últimos años como una zona estratégica para la expansión de la energía fotovoltaica, atrayendo inversiones tanto industriales como particulares.|La transición energética en la provincia de [PROVINCIA] ofrece hoy oportunidades únicas para el autoconsumo residencial y comercial, impulsada por un entorno legislativo favorable y una geografía idónea.|Instalar paneles solares en [PROVINCIA] representa actualmente una de las mejores inversiones por su alta rentabilidad y el excelente recurso solar disponible.} {El compromiso de sus instituciones y la creciente red de instaladores locales especializados en [PROVINCIA] facilitan el paso hacia una energía limpia, soberana y de bajo coste.|Gracias al apoyo de los instaladores de la zona y la madurez del mercado en [PROVINCIA], el proceso de cambio a energía solar es más sencillo que nunca.|La infraestructura técnica y profesional en [PROVINCIA] garantiza que cualquier proyecto de autoconsumo se ejecute bajo los más altos estándares de calidad europeos.} {Apostar por paneles solares no solo es una decisión ecológica para los habitantes de [PROVINCIA], sino una de las estrategias de ahorro financiero más sólidas disponibles en el mercado actual para combatir la inflación energética.}",
+                  `${provStats.provinceSlug}-p1-v3`,
+                  { PROVINCIA: provStats.provinceName }
+                )}
+              </p>
+              
+              {/* Bloque 2: Análisis de Radiación y Rendimiento */}
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Recurso solar e ingeniería fotovoltaica en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  "{Con una media de [HORAS] horas de sol al año y una irradiación técnica de [IRRAD] kWh/m², la provincia de [PROVINCIA] supera con creces el recurso solar de la mayoría de países europeos y del norte del continente.|Los datos oficiales de la Comisión Europea a través de PVGIS confirman que [PROVINCIA] recibe una irradiación global horizontal de [IRRAD] kWh/m², lo que garantiza un rendimiento óptimo de los sistemas de autoconsumo instalados en tejados.|Gracias a recibir más de [HORAS] h de sol anuales según los registros meteorológicos históricos, los hogares y empresas de [PROVINCIA] cuentan con un recurso natural inagotable que permite generar excedentes significativos para compensación.|La posición geográfica de [PROVINCIA] le otorga una ventaja técnica innegable, con registros de irradiación de [IRRAD] kWh/m² que aseguran una producción eléctrica constante.} {Esta abundancia de radiación solar directa, combinada con las temperaturas medias de [PROVINCIA], permite que las células de silicio trabajen en rangos de eficiencia muy altos.|Este nivel de insolación permite a los inversores en [PROVINCIA] alcanzar el punto de máxima potencia (MPP) durante gran parte del día.|La excelente relación entre horas de sol ([HORAS]) y temperatura en [PROVINCIA] maximiza el rendimiento y prolonga la vida útil de los componentes electrónicos.}",
+                  `${provStats.provinceSlug}-p2-v3`,
+                  { PROVINCIA: provStats.provinceName, HORAS: provStats.avgSunHours.toLocaleString('es-ES'), IRRAD: provStats.avgRadiation.toLocaleString('es-ES') }
+                )}
+              </p>
+
+              {/* Bloque 3: Amortización y Ahorro */}
+              <p>
+                {generateDynamicText(
+                  "{Desde una perspectiva financiera, estas condiciones climáticas se traducen en un ahorro medio estimado de [AHORRO]€ anuales para una instalación doméstica de 4,5 kWp.|La rentabilidad de la inversión fotovoltaica en [PROVINCIA] es altamente competitiva, con ahorros proyectados que suelen situarse en los [AHORRO]€ anuales una vez amortizado el sistema inicial.|Cualquier propietario en [PROVINCIA] que decida instalar paneles solares puede aspirar a reducir su factura eléctrica en unos [AHORRO]€ de media, protegiéndose de la volatilidad del mercado energético.|El impacto económico en las viviendas de [PROVINCIA] es directo, logrando recortar el gasto eléctrico en una media de [AHORRO]€ al año tras la puesta en marcha.} {Este ahorro directo permite amortizar el capital invertido en tiempos récord, normalmente situados entre los 4 y 7 años.|Al reducir el recibo mensual en [PROVINCIA], el pay-back de la instalación fotovoltaica se acelera dramáticamente, convirtiéndose en un activo que genera dinero desde el primer día.|Incluso sin subvenciones directas, la potencia de ahorro en [PROVINCIA] garantiza que el sistema se pague solo en un periodo muy breve de tiempo.}",
+                  `${provStats.provinceSlug}-p3-v3`,
+                  { PROVINCIA: provStats.provinceName, AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              {/* Bloque 4: Clima y Mantenimiento */}
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Mantenimiento y durabilidad de los paneles en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  "{El clima de [PROVINCIA] es generalmente amable con las estructuras de aluminio y los vidrios templados de los paneles solares, requiriendo un mantenimiento preventivo mínimo.|Dadas las características atmosféricas de [PROVINCIA], una limpieza anual de la superficie de los paneles suele ser suficiente para mantener el rendimiento por encima del 95% de su capacidad nominal.|En la provincia de [PROVINCIA], la durabilidad de los equipos fotovoltaicos actuales está garantizada por más de 25 años, con degradaciones de potencia inferiores al 0,5% anual.|Los sistemas solares montados en [PROVINCIA] están diseñados para resistir las inclemencias locales, desde vientos fuertes hasta variaciones térmicas estaciónales.} {Es recomendable realizar una revisión de las protecciones eléctricas cada 5 años para asegurar que tu sistema en [PROVINCIA] sigue inyectando energía de forma segura.|Mantener los cables y anclajes revisados por un técnico en [PROVINCIA] es vital para prolongar la rentabilidad del sistema por varias décadas.|La resistencia de los materiales ante las condiciones climáticas de [PROVINCIA] asegura que la degradación sea mínima, manteniendo la eficiencia proyectada a largo plazo.}",
+                  `${provStats.provinceSlug}-p5-v3`,
+                  { PROVINCIA: provStats.provinceName }
+                )}
+              </p>
+
+              {/* Bloque 5: Incentivos y Bonificaciones */}
+              <p>
+                {generateDynamicText(
+                  "{Además del ahorro directo, los [TOTAL] municipios que componen la red administrativa de [PROVINCIA] ofrecen potentes incentivos fiscales, destacando las bonificaciones medias del [IBI]% en el IBI.|Nuestro análisis técnico de los [TOTAL] municipios de [PROVINCIA] revela que la mayoría cuenta con ayudas locales activas, donde el descuento en el Impuesto de Bienes Inmuebles suele alcanzar el [IBI]%.|Consultar la normativa específica de los [TOTAL] ayuntamientos de [PROVINCIA] es vital, ya que la bonificación media del [IBI]% en tributos locales puede reducir el coste neto de la instalación en varios miles de euros.|Las políticas locales pro-autoconsumo en los [TOTAL] municipios de [PROVINCIA] incluyen reducciones impositivas críticas, con bonificaciones de hasta el [IBI]% en IBI e ICIO.} {A esto se suman las deducciones legales en el IRPF por mejora de eficiencia energética, muy solicitadas en [PROVINCIA] por su facilidad de trámite.|En [PROVINCIA], la combinación de ayudas de los ayuntamientos y las desgravaciones fiscales estatales crean el escenario perfecto para invertir ahora.|No dejes pasar la oportunidad de descontar parte del coste de tus placas solares en [PROVINCIA] a través de la próxima declaración de la renta.}",
+                  `${provStats.provinceSlug}-p4-v3`,
+                  { PROVINCIA: provStats.provinceName, TOTAL: String(provStats.totalMunicipios), IBI: String(provStats.avgIBI) }
+                )}
+              </p>
+
+              {/* Bloque 6: Visión de Futuro */}
+              <p>
+                {generateDynamicText(
+                  "{En definitiva, [PROVINCIA] se posiciona como una de las mejores regiones para la independencia energética. La combinación de sol, ayudas y tecnología hace del autoconsumo la opción más inteligente para cualquier hogar.|Mirando hacia el futuro, la provincia de [PROVINCIA] seguirá liderando la generación distribuida, transformando miles de tejados en centrales de energía limpia y gratuita para sus ciudadanos.|Elegir energía solar en [PROVINCIA] hoy es asegurar un precio de la luz bajo y estable para las próximas décadas, contribuyendo además a la sostenibilidad medioambiental de toda la provincia.|La apuesta por la fotovoltaica en [PROVINCIA] es un paso firme hacia un modelo energético descentralizado, eficiente y plenamente respetuoso con el entorno natural regional.} {Explora el listado de municipios a continuación para encontrar los datos exactos y las empresas instaladoras autorizadas que operan en tu zona de [PROVINCIA].|Te invitamos a buscar tu localidad de [PROVINCIA] en nuestro buscador para acceder al detalle de ayudas y rentabilidad en tu vivienda.|Comienza hoy tu ahorro consultando las opciones disponibles para tu tejado en cualquiera de los municipios de [PROVINCIA] listados abajo.}",
+                  `${provStats.provinceSlug}-p6-v3`,
+                  { PROVINCIA: provStats.provinceName }
+                )}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Cross-Silo Provincial Interlinks ── */}
+        <ProvinceCrossLinks
+          provinceName={provStats.provinceName}
+          provinceSlug={provStats.provinceSlug}
+          currentSilo="placas"
         />
       </main>
     );

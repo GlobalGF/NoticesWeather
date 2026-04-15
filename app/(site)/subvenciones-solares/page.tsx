@@ -29,8 +29,8 @@ const CCAA_SLUGS: Record<string, string> = {
   "Navarra": "comunidad-foral-navarra",
   "País Vasco": "pais-vasco",
   "La Rioja": "la-rioja",
-  "Ceuta": "ceuta-ceuta",
-  "Melilla": "melilla-melilla",
+  "Ceuta": "ceuta",
+  "Melilla": "melilla",
 };
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {

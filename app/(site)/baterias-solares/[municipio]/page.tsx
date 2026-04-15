@@ -87,6 +87,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Use clean slug for canonical even if hit from dirty slug
     const cleanSlug = cleanMunicipalitySlug(d.slug, slugify(d.provincia));
 
+    // Canonical Redirect
+    if (slug !== cleanSlug) {
+        permanentRedirect(`/baterias-solares/${cleanSlug}`);
+    }
+
     return buildMetadata({
         title: `Baterías Solares en ${locationLabel} · Ahorro ${new Date().getFullYear()}`,
         description: `Rentabilidad de baterías solares en ${locationLabel}. Comparativa de modelos (Huawei, BYD), ciclos de vida y años para recuperar la inversión en tu localidad.`,

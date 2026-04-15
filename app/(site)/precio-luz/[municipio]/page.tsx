@@ -96,6 +96,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Force clean slug in canonical pathname
     const cleanSlug = cleanMunicipalitySlug(d.slug, slugify(d.provincia));
 
+    // Canonical Redirect
+    if (params.municipio !== cleanSlug) {
+        permanentRedirect(`/precio-luz/${cleanSlug}`);
+    }
+
     return buildMetadata({
         title: `Precio Luz hoy en ${muniClean} · Tarifa PVPC`,
         description: `Tarifa de la luz hoy en ${muniClean}: precio PVPC hora a hora actualizado ahora. Datos oficiales de Red Eléctrica. Ahorro con autoconsumo solar en ${provClean}.`,

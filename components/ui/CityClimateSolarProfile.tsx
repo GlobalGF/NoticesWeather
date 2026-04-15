@@ -38,24 +38,24 @@ const tierConfig = {
 
 const seasonalAdvice = {
   excepcional: [
-    "producción muy alta de enero a diciembre con mínimo estacional en noviembre–diciembre",
-    "pico de producción de mayo a septiembre con generación superior a 6 kWh/kWp/día",
-    "incluso en invierno, la producción supera los 3,5 kWh/kWp/día gracias a los cielos despejados",
+    "{producción muy alta de enero a diciembre con mínimo estacional en noviembre–diciembre|rendimiento máximo constante en [MUNICIPIO] durante todo el año|generación eléctrica excepcional en [PROVINCIA] incluso en los meses de invierno}",
+    "{pico de producción de mayo a septiembre con generación superior a 6 kWh/kWp/día|máximo aprovechamiento solar en [MUNICIPIO] durante el semestre estival|curva de generación optimizada para el sol de [PROVINCIA]}",
+    "{incluso en invierno, la producción en [MUNICIPIO] supera los 3,5 kWh/kWp/día|los cielos despejados de [PROVINCIA] garantizan energía limpia en diciembre|buen rendimiento invernal en [MUNICIPIO] gracias a la alta irradiación directa}",
   ],
   alto: [
-    "producción concentrada entre marzo y octubre, con máximo en junio–julio",
-    "estacionalidad moderada: el ratio verano/invierno es de aproximadamente 2,5:1",
-    "los meses de febrero y octubre son clave para el balance anual: buenas horas de sol con temperatura óptima",
+    "{producción concentrada entre marzo y octubre, con máximo en junio–julio|gran rendimiento solar en [MUNICIPIO] durante primavera y verano|el sol de [PROVINCIA] permite cubrir la mayoría del consumo entre marzo y octubre}",
+    "{estacionalidad moderada en [MUNICIPIO]: el ratio verano/invierno es de aproximadamente 2,5:1|equilibrio energético anual en [PROVINCIA] con buena base de generación|variación estacional contenida para los hogares de [MUNICIPIO]}",
+    "{los meses de febrero y octubre son clave para el balance anual en [MUNICIPIO]|condiciones de temperatura óptimas en [PROVINCIA] durante el otoño|buena relación sol/temperatura en [MUNICIPIO] para maximizar la eficiencia}",
   ],
   medio: [
-    "producción significativa de abril a septiembre, con descenso en los meses de lluvias",
-    "la primavera es la estación más productiva: buena irradiación sin las temperaturas extremas del verano",
-    "en invierno, el sistema cubre el consumo base pero no el calefactable, reforzando el caso de la aerotermia",
+    "{producción significativa de abril a septiembre, con descenso en los meses de lluvias en [PROVINCIA]|aprovechamiento solar centrado en el semestre cálido en [MUNICIPIO]|buen ahorro estival compensando los días nublados de [PROVINCIA]}",
+    "{la primavera es la estación más productiva en [MUNICIPIO]: buena irradiación sin calor extremo|eficiencia máxima en [PROVINCIA] antes de los picos térmicos del verano|balance ideal en [MUNICIPIO] durante los meses de abril y mayo}",
+    "{en invierno, el sistema en [MUNICIPIO] cubre el consumo base pero no el calefactable|necesidad de apoyo para calefacción en [PROVINCIA] durante los meses fríos|en [MUNICIPIO] recomendamos optimizar el consumo diurno en invierno}",
   ],
   moderado: [
-    "producción concentrada en verano (mayo–agosto), con fuerte caída en otoño–invierno",
-    "los meses de junio y julio compensan la menor producción invernal: aprovechar excedentes es clave",
-    "combinar fotovoltaica con aerotermia permite reducir la factura total (electricidad + calefacción) un 50–60%",
+    "{producción concentrada en verano (mayo–agosto), con fuerte caída en otoño–invierno en [PROVINCIA]|generación estival intensa para compensar el invierno en [MUNICIPIO]|en [PROVINCIA] es vital maximizar el consumo durante las horas centrales}",
+    "{los meses de junio y julio compensan la menor producción invernal en [MUNICIPIO]|el excedente de verano en [PROVINCIA] es clave para la rentabilidad anual|aprovecha el sol de [MUNICIPIO] en su punto máximo para ahorrar}",
+    "{combinar fotovoltaica con aerotermia en [PROVINCIA] permite reducir la factura total|ahorro integral en [MUNICIPIO] sumando paneles y climatización eficiente|la estrategia ganadora en [PROVINCIA] es la electrificación solar completa}",
   ],
 };
 

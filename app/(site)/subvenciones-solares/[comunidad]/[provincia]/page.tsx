@@ -1,22 +1,63 @@
 import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import GeoDirectory from "@/components/ui/GeoDirectory";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug as getCanonicalSlug } from "@/lib/utils/slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
+import { ProvinceCrossLinks } from "@/components/ui/ProvinceCrossLinks";
 
 export const dynamicParams = true;
 export const revalidate = 86400;
 
 type Props = { params: { comunidad: string; provincia: string } };
 
+/**
+ * CANONICAL SLUG MAPPING: Standardize all synonyms to these official slugs
+ */
+const CANONICAL_CCAA_SLUGS: Record<string, string> = {
+  "valencia": "comunitat-valenciana",
+  "madrid": "comunidad-madrid",
+  "murcia": "region-de-murcia",
+  "asturias": "principado-de-asturias",
+  "islas-baleares": "illes-balears",
+  "catalunya": "cataluna",
+  "euskadi": "pais-vasco",
+  "navarra": "comunidad-foral-navarra",
+  "ceuta-ceuta": "ceuta",
+  "melilla-melilla": "melilla",
+  "castilla-leon": "castilla-y-leon",
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { provincia, comunidad } = params;
+
+    // Canonical Redirect for CCAA synonym
+    const canonicalCcaa = CANONICAL_CCAA_SLUGS[comunidad];
+    if (canonicalCcaa && canonicalCcaa !== comunidad) {
+        permanentRedirect(`/subvenciones-solares/${canonicalCcaa}/${provincia}`);
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    // Self-healing: Check if 'provincia' is actually a 'municipio' to redirect to 3-level route
+    const { data: muniData } = await supabase
+        .from("municipios_energia")
+        .select("slug, provincia, comunidad_autonoma")
+        .eq("slug", provincia)
+        .limit(1)
+        .maybeSingle();
+
+    if (muniData) {
+        const m = muniData as any;
+        const cSlug = getCanonicalSlug(slugify(m.comunidad_autonoma));
+        const pSlug = slugify(m.provincia);
+        permanentRedirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+    }
+
     const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-    const ccaaName = comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     return buildMetadata({
         title: `Ayudas placas solares en ${provName}`,
         description: `Consulta las subvenciones autonómicas y las bonificaciones de IBI e ICIO disponibles en cada municipio de ${provName}. Datos actualizados ${new Date().getFullYear()}.`,
@@ -27,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const CCAA_NAME_MAP: Record<string, string> = {
     "andalucia": "Andalucía", "aragon": "Aragón", "asturias": "Asturias",
     "illes-balears": "Islas Baleares", "canarias": "Canarias", "cantabria": "Cantabria",
-    "castilla-y-leon": "Castilla y León", "castilla-la-mancha": "Castilla-La Mancha",
+    "castilla-y-leon": "Castilla y León", "castilla-leon": "Castilla y León", "castilla-la-mancha": "Castilla-La Mancha",
     "catalunya": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
     "extremadura": "Extremadura", "galicia": "Galicia", "madrid": "Comunidad de Madrid",
     "region-de-murcia": "Región de Murcia", "navarra": "Navarra",
@@ -37,7 +78,28 @@ const CCAA_NAME_MAP: Record<string, string> = {
 export default async function SubvencionesSolaresProvinciaPage({ params }: Props) {
     const { comunidad, provincia } = params;
 
+    // Canonical Redirect for CCAA synonym (Sync with metadata)
+    const canonicalCcaa = CANONICAL_CCAA_SLUGS[comunidad];
+    if (canonicalCcaa && canonicalCcaa !== comunidad) {
+        permanentRedirect(`/subvenciones-solares/${canonicalCcaa}/${provincia}`);
+    }
+
     const supabase = await createSupabaseServerClient();
+
+    // Self-healing Redirect: Check if 'provincia' is actually a 'municipio'
+    const { data: routeMuni } = await supabase
+        .from("municipios_energia")
+        .select("slug, provincia, comunidad_autonoma")
+        .eq("slug", provincia)
+        .limit(1)
+        .maybeSingle();
+
+    if (routeMuni) {
+        const m = routeMuni as any;
+        const cSlug = getCanonicalSlug(slugify(m.comunidad_autonoma));
+        const pSlug = slugify(m.provincia);
+        permanentRedirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+    }
 
     // ── URL Validation: Ensure province belongs to the CCAA ──
     const searchPattern = provincia.replace(/-/g, " ").replace(/[aeiou]/gi, "_");
@@ -60,8 +122,8 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
         redirect(`/subvenciones-solares/${realCcaaSlug}/${slugify(provValidData.provincia)}`);
     }
 
-    const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-    const ccaaName = CCAA_NAME_MAP[comunidad] || comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const provName = provValidData.provincia;
+    const ccaaName = CCAA_NAME_MAP[comunidad] || provValidData.comunidad_autonoma || comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     // Fetch CCAA subsidy data to show in the province page
     const { data: ccaaRows } = await supabase
@@ -364,6 +426,14 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                     </div>
                 </aside>
             </div>
+
+            {/* ── Cross-Silo Provincial Interlinks ── */}
+            <ProvinceCrossLinks
+              provinceName={provName}
+              provinceSlug={provincia}
+              currentSilo="subvenciones"
+              comunidadSlug={comunidad}
+            />
         </main>
     );
 }

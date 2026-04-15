@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { tryParseSlug } from "@/lib/utils/params";
 import { isBlockedSlug } from "@/lib/utils/validate-slug";
@@ -72,8 +72,10 @@ const CCAA_NAME_MAP: Record<string, string> = {
   "canarias": "Canarias",
   "cantabria": "Cantabria",
   "castilla-y-leon": "Castilla y León",
+  "castilla-leon": "Castilla y León",
   "castilla-la-mancha": "Castilla-La Mancha",
   "cataluna": "Cataluña",
+  "catalunya": "Cataluña",
   "comunitat-valenciana": "Comunidad Valenciana",
   "valencia": "Comunidad Valenciana",
   "extremadura": "Extremadura",
@@ -93,6 +95,8 @@ const CCAA_NAME_MAP: Record<string, string> = {
   "melilla-melilla": "Melilla",
 };
 
+import { normalizeCcaaSlug as getCanonicalSlug } from "@/lib/utils/slug";
+
 export async function generateStaticParams() {
   return safeGenerateStaticParams(async () => {
     const rows = await getAllCcaaSubsidies();
@@ -110,6 +114,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
   if (!parsed || isBlockedSlug(parsed)) notFound();
+
+  // Canonical Redirect: Ensure bot/user is on the standard slug
+  const canonical = getCanonicalSlug(parsed);
+  if (canonical && canonical !== parsed) {
+      permanentRedirect(`/subvenciones-solares/${canonical}`);
+  }
+
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
@@ -131,6 +142,12 @@ export default async function SubsidiesCcaaPage({ params }: Props) {
   const { comunidad } = params;
   const parsed = tryParseSlug(comunidad);
   if (!parsed || isBlockedSlug(parsed)) notFound();
+
+  // Canonical Redirect: Sync with generateMetadata to prevent duplicate content
+  const canonical = getCanonicalSlug(parsed);
+  if (canonical && canonical !== parsed) {
+      permanentRedirect(`/subvenciones-solares/${canonical}`);
+  }
 
   // If the slug is NOT a known CCAA, check if it's a municipality to redirect to the deep route
   const isCcaa = !!CCAA_NAME_MAP[parsed];

@@ -49,15 +49,15 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
   const steps: Step[] = [
     {
       number: 1,
-      title: "Estudio técnico de la vivienda",
+      title: "{Estudio técnico de la vivienda|Análisis previo del tejado|Estudio de viabilidad inicial}",
       duration: "1–3 días",
       icon: "1",
       detail: generateDynamicText(
-        "{Un técnico especializado|Un ingeniero de nuestro equipo} visita tu vivienda en [MUNICIPIO] para realizar el proyecto fotovoltaico inicial. {Analiza la orientación y sombras|Verifica la superficie útil y el estado del tejado} para que cada panel instalado sea una inversión de alta calidad.",
+        "{Un técnico especializado|Un ingeniero de nuestro equipo} visita tu vivienda en [MUNICIPIO] para realizar el proyecto fotovoltaico inicial. {Analiza la orientación y sombras|Verifica la superficie útil y el estado del tejado|Realiza un levantamiento técnico de la cubierta} para que cada panel instalado sea una inversión de alta calidad.",
         `${municipio}-step1-detail`, vars
       ),
       tip: generateDynamicText(
-        "{Pide siempre un proyecto técnico detallado|Solicita que el presupuesto deslose cada panel y accesorio|Compara la experiencia técnica de los instaladores en la provincia} para asegurar que tu sistema en [MUNICIPIO] sea veraz y duradero.",
+        "{Pide siempre un proyecto técnico detallado en [MUNICIPIO]|Solicita que el presupuesto deslose cada panel y accesorio|Compara la experiencia técnica de los instaladores locales de [PROVINCIA]} para asegurar que tu sistema en [MUNICIPIO] sea veraz y duradero.",
         `${municipio}-step1-tip`, vars
       ),
     },
@@ -102,25 +102,25 @@ function buildSteps(municipio: string, provincia: string, comunidad: string, h: 
     },
     {
       number: 5,
-      title: "Legalización y conexión a red",
+      title: "{Legalización y conexión a red|Trámites de Industria y puesta en marcha|Conexión al sistema eléctrico}",
       duration: "15–45 días",
       icon: "5",
       detail: generateDynamicText(
-        "{Se tramita el Certificado de Instalación Eléctrica (CIE) ante Industria de [PROVINCIA]|El instalador registra la planta fotovoltaica en el RAIPRE de [COMUNIDAD]|Se formaliza el cambio de modalidad a autoconsumo con excedentes (RD 244/2019)}. Este paso es vital para activar la compensación simplificada de excedentes en tu factura de luz.",
+        "{Se tramita el Certificado de Instalación Eléctrica (CIE) ante Industria de [PROVINCIA]|El instalador registra la planta fotovoltaica en el RAIPRE de [COMUNIDAD]|Se formaliza el cambio de modalidad a autoconsumo con excedentes (RD 244/2019)}. {Este paso es vital para activar la compensación simplificada de excedentes en tu factura de luz de [MUNICIPIO]|Es el trámite final para que tu compañía eléctrica te descuente los vertidos a la red|Sin esta gestión técnica en [PROVINCIA], no podrías ahorrar vendiendo la energía sobrante}.",
         `${municipio}-step5-detail`, vars
       ),
-      tip: "{Una vez legalizada, descarga la app de monitorización para ver el ahorro generado en [MUNICIPIO] en tiempo real}.",
+      tip: "{Una vez legalizada, descarga la app de monitorización para ver el ahorro generado en [MUNICIPIO] en tiempo real|Verifica que tu CUPS aparezca ya con la modalidad de autoconsumo activa en tu distribuidora de [PROVINCIA]}.",
     },
     {
       number: 6,
-      title: "Producción y monitorización",
+      title: "{Producción y monitorización|Ahorro real y mantenimiento|Fase de generación energética}",
       duration: "Vida útil 25+ años",
       icon: "6",
       detail: generateDynamicText(
-        "{Desde el momento de la conexión, tu vivienda en [MUNICIPIO] se convierte en una central de energía limpia|Al amanecer, tu sistema empieza a generar electricidad cubriendo el consumo base de tu hogar en [PROVINCIA]|Cada kWh producido en [MUNICIPIO] supone un ahorro directo al precio actual de la luz}. {El mantenimiento es mínimo y la amortización es segura|Los paneles actuales rinden por encima del 87% incluso tras 25 años}.",
+        "{Desde el momento de la conexión, tu vivienda en [MUNICIPIO] se convierte en una central de energía limpia|Al amanecer, tu sistema empieza a generar electricidad cubriendo el consumo base de tu hogar en [PROVINCIA]|Cada kWh producido en [MUNICIPIO] supone un ahorro directo al precio actual de la luz}. {El mantenimiento es mínimo y la amortización es segura en [MUNICIPIO]|Los paneles actuales rinden por encima del 87% incluso tras 25 años en el clima de [PROVINCIA]|Tu factura eléctrica en [MUNICIPIO] se verá reducida drásticamente desde el primer mes}.",
         `${municipio}-step6-detail`, vars
       ),
-      tip: "{Recuerda limpiar los paneles una vez al año para mantener la eficiencia máxima en [MUNICIPIO]}.",
+      tip: "{Recuerda limpiar los paneles una vez al año para mantener la eficiencia máxima en [MUNICIPIO]|Vigila el rendimiento desde el móvil para detectar cualquier anomalía técnica en tu instalación de [PROVINCIA]}.",
     },
   ];
   return { steps, urbanContext };

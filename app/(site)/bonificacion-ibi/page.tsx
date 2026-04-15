@@ -3,8 +3,11 @@ import GeoDirectory from "@/components/ui/GeoDirectory";
 import { getProvinceStats, getAllProvinces } from "@/lib/data/getProvinceStats";
 import { getProvinceMetadata } from "@/lib/data/provinces-metadata";
 import ProvincePageClient from "@/components/ui/ProvincePageClient";
+import { ProvinceCrossLinks } from "@/components/ui/ProvinceCrossLinks";
 import { cachePolicy } from "@/lib/cache/policy";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { IBI_PROVINCE_SPINTAX } from "@/data/seo/ibi-content";
 
 export const revalidate = cachePolicy.page.solarCity;
 
@@ -102,6 +105,79 @@ export default async function BonificacionIbiRootPage({ searchParams }: Props) {
             avgSavings: provStats.avgSavings,
             avgIBI: provStats.avgIBI,
           }}
+        />
+
+        {/* ── IBI Provincial SEO Content Block ── */}
+        <section className="mx-auto max-w-5xl px-4 py-12 md:py-20">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 md:p-12">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                Bonificación del IBI por placas solares en {provStats.provinceName}
+              </h2>
+            </div>
+
+            <div className="prose prose-lg max-w-none text-slate-600 leading-relaxed font-medium space-y-8">
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_marco_legal,
+                  `${provStats.provinceSlug}-ibi-p1`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Análisis provincial de bonificaciones en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_panorama,
+                  `${provStats.provinceSlug}-ibi-p2`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_recurso_solar,
+                  `${provStats.provinceSlug}-ibi-p3`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-2">Ahorro fiscal acumulativo en {provStats.provinceName}</h3>
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_ahorro,
+                  `${provStats.provinceSlug}-ibi-p4`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_tramite,
+                  `${provStats.provinceSlug}-ibi-p5`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+
+              <p>
+                {generateDynamicText(
+                  IBI_PROVINCE_SPINTAX.bloque_perspectiva,
+                  `${provStats.provinceSlug}-ibi-p6`,
+                  { PROVINCIA: provStats.provinceName, HORAS: String(provStats.avgSunHours), IRRAD: String(provStats.avgRadiation), IBI: String(provStats.avgIBI), TOTAL_MUNICIPIOS: String(provStats.totalMunicipios), AHORRO: String(provStats.avgSavings) }
+                )}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Cross-Silo Provincial Interlinks ── */}
+        <ProvinceCrossLinks
+          provinceName={provStats.provinceName}
+          provinceSlug={provStats.provinceSlug}
+          currentSilo="ibi"
         />
       </main>
     );

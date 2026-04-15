@@ -58,8 +58,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const dbProvSlug = muniRow ? slugify(muniRow.provincia) : provincia;
     const dbMuniSlug = muniRow ? cleanMunicipalitySlug(muniRow.slug, dbProvSlug) : municipio;
 
+    // Canonical Redirect
+    if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+        permanentRedirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
+    }
+
     return buildMetadata({
-        title: `Ayudas y Subvenciones Placas Solares ${muniName} (${provName}) · ${year}`,
+        title: `Subvenciones Placas Solares en ${muniName} ${year} · Ayudas e IBI`,
         description: `Consulta las subvenciones del ${CCAA_NAME_MAP[dbCcaaSlug] ?? comunidad}, la bonificación de IBI y la deducción de IRPF disponibles para instalar placas solares en ${muniName}.`,
         pathname: `/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`,
     });
