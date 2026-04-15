@@ -18,6 +18,7 @@ interface Item {
     slug: string;
     radiation?: number;
     sunHours?: number;
+    provinciaSlug?: string;
 }
 
 /* ── Static Fallbacks for PSEO ───────────────────────────────────── */
@@ -201,20 +202,22 @@ export default async function GeoDirectory({ level, parentSlug, baseRoute, query
         ) : (
             <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mt-6`}>
                 {items.map((item) => {
-                    const href = queryParam
-                        ? `${baseRoute}?${queryParam}=${item.slug}`
-                        : `${baseRoute}/${item.slug}`;
-                    return (
-                        <Link
-                            key={item.slug}
-                            href={href}
-                            className="group block bg-white rounded-lg border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                        >
-                            <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors truncate">
-                                {item.name}
-                            </p>
-                        </Link>
-                    );
+                        const dbProvSlug = item.provinciaSlug || "";
+                        const cleanSlug = dbProvSlug ? cleanMunicipalitySlug(item.slug, dbProvSlug) : item.slug;
+                        const href = queryParam
+                            ? `${baseRoute}?${queryParam}=${cleanSlug}`
+                            : `${baseRoute}/${cleanSlug}`;
+                        return (
+                            <Link
+                                key={item.slug}
+                                href={href}
+                                className="group block bg-white rounded-lg border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            >
+                                <p className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors truncate">
+                                    {item.name}
+                                </p>
+                            </Link>
+                        );
                 })}
             </div>
         )}

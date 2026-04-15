@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import GeoDirectory from "@/components/ui/GeoDirectory";
 import CitySearchInput from "@/components/ui/CitySearchInput";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { parseSpintax, replaceTokens } from "@/lib/pseo/spintax";
 import { SUBVENCIONES_SPINTAX } from "@/data/seo/subsidy-content";
@@ -25,13 +25,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const CCAA_NAME_MAP: Record<string, string> = {
-    "andalucia": "Andalucía", "aragon": "Aragón", "principado-de-asturias": "Asturias",
+    "andalucia": "Andalucía", "aragon": "Aragón", "asturias": "Asturias",
     "illes-balears": "Islas Baleares", "canarias": "Canarias", "cantabria": "Cantabria",
     "castilla-y-leon": "Castilla y León", "castilla-la-mancha": "Castilla-La Mancha",
-    "cataluna": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
-    "extremadura": "Extremadura", "galicia": "Galicia", "comunidad-madrid": "Comunidad de Madrid",
-    "region-de-murcia": "Región de Murcia", "comunidad-foral-navarra": "Navarra",
-    "pais-vasco": "País Vasco", "la-rioja": "La Rioja", "ceuta-ceuta": "Ceuta", "melilla-melilla": "Melilla",
+    "catalunya": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
+    "extremadura": "Extremadura", "galicia": "Galicia", "madrid": "Comunidad de Madrid",
+    "region-de-murcia": "Región de Murcia", "navarra": "Navarra",
+    "pais-vasco": "País Vasco", "la-rioja": "La Rioja", "ceuta": "Ceuta", "melilla": "Melilla",
 };
 
 export default async function SubvencionesSolaresProvinciaPage({ params }: Props) {
@@ -54,7 +54,6 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     }
 
     const realCcaaSlug = slugify(provValidData.comunidad_autonoma);
-    const expectedCcaaSlug = slugify(CCAA_NAME_MAP[comunidad] || comunidad.replace(/-/g, " "));
 
     // Si la CCAA real no coincide con la URL (ej. catalunya/madrid), redirigimos a la correcta (madrid/madrid)
     if (realCcaaSlug !== slugify(comunidad)) {
@@ -238,17 +237,20 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                              <span className="text-xs text-slate-400 font-medium">{statsArr.length} localidades</span>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                            {statsArr.map((m: any) => (
-                                <a
-                                    key={m.slug}
-                                    href={`/subvenciones-solares/${comunidad}/${provincia}/${m.slug}`}
-                                    className="group block bg-white rounded-xl border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-md transition-all duration-200"
-                                >
-                                    <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700 transition-colors truncate block">
-                                        {m.municipio}
-                                    </span>
-                                </a>
-                            ))}
+                    {statsArr.map((m: any) => {
+                                const cleanMuniSlug = cleanMunicipalitySlug(m.slug, slugify(provValidData.provincia));
+                                return (
+                                    <a
+                                        key={m.slug}
+                                        href={`/subvenciones-solares/${comunidad}/${provincia}/${cleanMuniSlug}`}
+                                        className="group block bg-white rounded-xl border border-slate-200 px-3 py-2.5 hover:border-blue-400 hover:shadow-md transition-all duration-200"
+                                    >
+                                        <span className="text-xs font-medium text-slate-700 group-hover:text-blue-700 transition-colors truncate block">
+                                            {m.municipio}
+                                        </span>
+                                    </a>
+                                );
+                            })}
                         </div>
                     </section>
 

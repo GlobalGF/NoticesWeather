@@ -175,15 +175,21 @@ export function ContextualCityLinks({
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`}
-                    className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
-                  >
-                    <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
-                    <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
-                      Informe de subvenciones en {muniClean} ({cleanName(provincia)})
-                    </span>
-                  </Link>
+                  {(() => {
+                    const pathParts = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i);
+                    const path = pathParts.join('/');
+                    return (
+                      <Link
+                        href={`/subvenciones-solares/${path}`}
+                        className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
+                        <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
+                          Informe de subvenciones en {muniClean} ({cleanName(provincia)})
+                        </span>
+                      </Link>
+                    );
+                  })()}
                 </li>
               </ul>
             );

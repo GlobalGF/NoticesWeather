@@ -143,9 +143,13 @@ export function SubsidiesSeoBlock({
           <div className="mt-10 text-center space-y-6">
             {(() => {
               const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
+              // Avoid redundant triple paths if slugs are identical
+              const pathParts = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i);
+              const path = pathParts.length > 0 ? pathParts.join('/') : cleanMainSlug;
+              
               return (
                 <a
-                  href={`/subvenciones-solares/${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`}
+                  href={`/subvenciones-solares/${path}`}
                   className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 py-4 text-base font-black text-white shadow-xl hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
                 >
                   Informe oficial de {municipio}
