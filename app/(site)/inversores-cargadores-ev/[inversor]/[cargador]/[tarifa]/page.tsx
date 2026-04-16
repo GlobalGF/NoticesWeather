@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
 import { getTopCompatibilityCombos } from "@/data/repositories/inverter-ev.repo";
 import { cachePolicy } from "@/lib/cache/policy";

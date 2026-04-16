@@ -66,7 +66,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     /* -- Extract & validate -- */
     const nombre = typeof body.nombre === "string" ? body.nombre : "";
     const rawPhone = typeof body.telefono === "string" ? body.telefono : "";
-    const tipo = (typeof body.tipo_vivienda === "string" ? body.tipo_vivienda : "unifamiliar") as "unifamiliar" | "piso" | "empresa" | null;
+    const tipo = (typeof body.tipo_vivienda === "string" ? body.tipo_vivienda : "unifamiliar") as "unifamiliar" | "piso" | "empresa" | "adosado" | null;
     const consumo = typeof body.consumo_kwh === "number" ? body.consumo_kwh : null;
     const municipio = typeof body.municipio === "string" ? body.municipio : "";
     const slug = typeof body.municipio_slug === "string" ? body.municipio_slug : null;

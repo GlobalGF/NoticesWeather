@@ -1,5 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
 import { PvgisEstimator } from "@/components/ui/PvgisEstimator";
 import { getTopMunicipiosEnergiaGeoPaths } from "@/data/repositories/municipios-energia.repo";

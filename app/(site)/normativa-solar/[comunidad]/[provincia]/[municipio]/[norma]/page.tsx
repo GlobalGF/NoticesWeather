@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
 import { getTopMunicipiosEnergiaGeoPaths } from "@/data/repositories/municipios-energia.repo";
 import { getTopUrbanRuleSlugs } from "@/data/repositories/urban-regulations.repo";
