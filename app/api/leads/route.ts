@@ -106,17 +106,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const { data: existing } = await supabase
         .from("leads")
-        .select("id")
+        .select("id, created_at")
         .eq("telefono", telefono)
         .gte("created_at", windowStart)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-    if (existing && process.env.NODE_ENV === "production") {
-        console.info(`[api/leads] Duplicate lead detected for phone ${telefono}. Skipping notification in production.`);
-        // Silently accept but don't double-insert (good UX, prevents spam)
-        return NextResponse.json({ ok: true, deduplicated: true });
-    } else if (existing) {
-        console.info(`[api/leads] Duplicate phone ${telefono} detected, but allowing for testing in development.`);
+    const isDuplicate = !!existing;
+
+    if (isDuplicate) {
+        console.info(`[api/leads] Duplicate lead detected for phone ${telefono}. Sending 'Repeat' notification.`);
     }
 
     /* -- Read UTM params from Referer or forward from client -- */
@@ -154,24 +154,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         estado: "nuevo",
     };
 
-    const { data: inserted, error: insertError } = (await supabase
-        .from("leads")
-        .insert(leadData)
-        .select("id")
-        .single()) as any;
+    /* -- Insert lead (if not duplicate to avoid DB spam, or always if you prefer) -- */
+    let insertedId = (existing as any)?.id;
+    if (!isDuplicate) {
+        const { data: inserted, error: insertError } = (await supabase
+            .from("leads")
+            .insert(leadData)
+            .select("id")
+            .single()) as any;
 
-    if (insertError || !inserted) {
-        console.error("[api/leads] Insert error:", insertError);
-        return NextResponse.json(
-            { error: "Error al guardar tu solicitud. Inténtalo de nuevo." },
-            { status: 500 }
-        );
+        if (insertError || !inserted) {
+            console.error("[api/leads] Insert error:", insertError);
+            return NextResponse.json(
+                { error: "Error al guardar tu solicitud. Inténtalo de nuevo." },
+                { status: 500 }
+            );
+        }
+        insertedId = inserted.id;
     }
 
 
     /* -- 1. Send Telegram Alert (Native, no n8n) -- */
+    const telegramHeader = isDuplicate ? "⚠️ <b>Lead REPETIDO (24h)</b>" : "🔆 <b>Nuevo Lead Solar</b>";
     const telegramText = `
-🔆 <b>Nuevo Lead Solar</b>
+${telegramHeader}
 <b>Nombre:</b> ${escapeHtml(nombre.trim())}
 <b>Teléfono:</b> ${escapeHtml(telefono)}
 <b>Email:</b> ${escapeHtml(email || "—")}
@@ -189,24 +195,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     sendTelegramMessage(telegramText)
         .then(res => {
-            if (res.success) console.log(`[api/leads] Telegram alert sent for lead ${inserted.id}`);
-            else console.error(`[api/leads] Telegram alert failed for lead ${inserted.id}:`, JSON.stringify(res.error));
+            if (res.success) console.log(`[api/leads] Telegram alert sent for lead ${insertedId}${isDuplicate ? ' (DUPLICATE)' : ''}`);
+            else console.error(`[api/leads] Telegram alert failed for lead ${insertedId}:`, JSON.stringify(res.error));
         })
-        .catch(err => console.error(`[api/leads] Telegram fatal error for lead ${inserted.id}:`, err));
+        .catch(err => console.error(`[api/leads] Telegram fatal error for lead ${insertedId}:`, err));
 
     /* -- Send email notification (non-blocking) -- */
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
         const resend = new Resend(resendKey);
+        const subjectPrefix = isDuplicate ? "[REPETIDO] " : "";
 
         resend.emails.send({
             from: "SolaryEco Leads <onboarding@resend.dev>",
             to: LEAD_NOTIFY_EMAIL,
-            subject: `🔆 Nuevo lead solar: ${nombre.trim()} — ${municipio} (${provincia})`,
+            subject: `${subjectPrefix}🔆 Nuevo lead solar: ${nombre.trim()} — ${municipio} (${provincia})`,
             text: [
-                `Nuevo lead recibido en SolaryEco`,
+                isDuplicate ? "SISTEMA: Este lead ya ha sido enviado en las últimas 24h." : "Nuevo lead recibido en SolaryEco",
                 ``,
-                `ID: ${inserted.id}`,
+                `ID: ${insertedId}`,
                 `Nombre: ${nombre.trim()}`,
                 `Teléfono: ${telefono}`,
                 `Email: ${email || "—"}`,
@@ -224,11 +231,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,
             ].filter(Boolean).join("\n"),
         }).then(res => {
-            console.log(`[api/leads] Resend email attempt for lead ${inserted.id}:`, res);
+            console.log(`[api/leads] Resend email attempt for lead ${insertedId}:`, res);
         }).catch((err) => {
             console.warn("[api/leads] Email notification failed:", err?.message ?? err);
         });
     }
 
-    return NextResponse.json({ ok: true, id: inserted.id }, { status: 200 });
+    return NextResponse.json({ ok: true, id: insertedId, deduplicated: isDuplicate }, { status: 200 });
 }

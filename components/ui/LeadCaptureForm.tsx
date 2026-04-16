@@ -17,6 +17,8 @@ type FormState = {
   telefono: string;
   email: string;
   bateria: string;
+  provincia: string;
+  codigoPostal: string;
 };
 
 const TOTAL_STEPS = 5;
@@ -28,7 +30,9 @@ const initialState: FormState = {
   nombre: "",
   telefono: "",
   email: "",
-  bateria: ""
+  bateria: "",
+  provincia: "",
+  codigoPostal: ""
 };
 
 function isValidEmail(value: string) {
@@ -127,6 +131,14 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         setError("Introduce un email valido.");
         return false;
       }
+      if (!form.provincia.trim()) {
+        setError("Dinos tu provincia.");
+        return false;
+      }
+      if (form.codigoPostal.length !== 5) {
+        setError("Introduce un código postal válido (5 dígitos).");
+        return false;
+      }
     }
 
     return true;
@@ -173,8 +185,9 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
           consumo_mensual: form.consumoMensual,
           tejado: form.tejado,
           bateria: form.bateria,
-          municipio,
-          provincia: provincia ?? "",
+          municipio: municipio,
+          provincia: form.provincia || provincia || "",
+          codigo_postal: form.codigoPostal,
         }),
       });
 
@@ -340,6 +353,29 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
               onChange={(e) => updateField("email", e.target.value)}
               className="rounded-lg border border-slate-300 px-3 py-2"
               placeholder="tu@email.com"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-800">
+            Provincia
+            <input
+              type="text"
+              value={form.provincia}
+              onChange={(e) => updateField("provincia", e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2"
+              placeholder="Ej: Madrid"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-800">
+            Código Postal
+            <input
+              type="text"
+              maxLength={5}
+              value={form.codigoPostal}
+              onChange={(e) => updateField("codigoPostal", e.target.value.replace(/\D/g, ""))}
+              className="rounded-lg border border-slate-300 px-3 py-2"
+              placeholder="28001"
             />
           </label>
         </div>

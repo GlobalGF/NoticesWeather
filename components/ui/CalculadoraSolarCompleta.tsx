@@ -77,7 +77,14 @@ export function CalculadoraSolarCompleta({
 
   // Form states
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ nombre: "", telefono: "", email: "", ciudad: "" });
+  const [formData, setFormData] = useState({ 
+    nombre: "", 
+    telefono: "", 
+    email: "", 
+    ciudad: "",
+    provincia: "",
+    codigo_postal: ""
+  });
   const [formError, setFormError] = useState<string | null>(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -534,11 +541,14 @@ export function CalculadoraSolarCompleta({
                               onSubmit={async (e) => {
                                  e.preventDefault();
                                  setFormError(null);
-                                 const { nombre, telefono, email, ciudad } = formData;
+                                 const { nombre, telefono, email, ciudad, provincia: formProvincia, codigo_postal } = formData;
                                  if (nombre.trim().length < 2) { setFormError("Danos tu nombre"); return; }
                                  const cleanPhone = telefono.replace(/\s/g, "");
                                  if (!/^[6789]\d{8}$/.test(cleanPhone)) { setFormError("Teléfono inválido"); return; }
                                  if (!email.includes("@")) { setFormError("Email inválido"); return; }
+
+                                 if (!provincia && !formProvincia.trim()) { setFormError("Danos tu provincia"); return; }
+                                 if (codigo_postal.length !== 5) { setFormError("Código postal inválido"); return; }
                                  
                                  setFormSubmitting(true);
                                  try {
@@ -551,7 +561,8 @@ export function CalculadoraSolarCompleta({
                                           consumo_kwh: result.consumoAnual,
                                           municipio: municipio ?? ciudad,
                                           municipio_slug: slug ?? "",
-                                          provincia: provincia ?? "",
+                                          provincia: provincia ?? formProvincia,
+                                          codigo_postal: codigo_postal,
                                           bateria: conBaterias ? "Sí" : "No",
                                           kwp: result.kwp,
                                           coste_est: result.costeTotal
@@ -591,6 +602,21 @@ export function CalculadoraSolarCompleta({
                                     value={formData.ciudad} onChange={(e) => setFormData(f => ({ ...f, ciudad: e.target.value }))}
                                  />
                               )}
+
+                              <div className="grid grid-cols-2 gap-4">
+                                 {!provincia && (
+                                    <input 
+                                       type="text" placeholder="Provincia" required
+                                       className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                       value={formData.provincia} onChange={(e) => setFormData(f => ({ ...f, provincia: e.target.value }))}
+                                    />
+                                 )}
+                                 <input 
+                                    type="text" placeholder="C.P." required maxLength={5}
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                    value={formData.codigo_postal} onChange={(e) => setFormData(f => ({ ...f, codigo_postal: e.target.value.replace(/\D/g, "") }))}
+                                 />
+                              </div>
                               
                               {formError && <p className="text-[10px] font-black text-rose-500 uppercase">{formError}</p>}
                               
