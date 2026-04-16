@@ -30,10 +30,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsedComunidad = tryParseSlug(comunidad);
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
-  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio) return {};
+  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/radiacion-solar/${comunidad}/${provincia}/${municipio}`,
+    noIndex: true
+  });
 
   const data = await getRadiationPageData(parsedComunidad, parsedProvincia, parsedMunicipio);
-  if (!data || !data.municipality) return {};
+  if (!data || !data.municipality) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/radiacion-solar/${comunidad}/${provincia}/${municipio}`,
+    noIndex: true
+  });
 
   // Canonical logic: metadata uses clean database slugs, page component handles the redirect
   const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);

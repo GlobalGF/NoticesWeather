@@ -43,10 +43,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
   const parsedPrograma = tryParseSlug(programa);
-  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedPrograma) return {};
+  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedPrograma) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}/${programa}`,
+    noIndex: true
+  });
 
   const data = await getSubsidyPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedPrograma);
-  if (!data || !data.municipality) return {};
+  if (!data || !data.municipality) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}/${programa}`,
+    noIndex: true
+  });
 
   // Forzar canónica en metadata
   const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);

@@ -142,7 +142,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         interes_bateria: bateria,
         tipo_tejado: tejado,
         consumo_mensual: consumoMensual,
-        tipo_vivienda: tipo,
+        tipo_vivienda: tipo === "adosado" ? "unifamiliar" : tipo,
         consumo_kwh: consumo,
         municipio_nombre: municipio,
         municipio_slug: slug,

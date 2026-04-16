@@ -27,9 +27,19 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { municipio } = params;
   const parsed = tryParseSlug(municipio);
-  if (!parsed) return {};
+  if (!parsed) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/bonificacion-ibi/${municipio}`,
+    noIndex: true
+  });
   const data = await getIbiPageData(parsed);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/bonificacion-ibi/${municipio}`,
+    noIndex: true
+  });
   return ibiMetadata(parsed, data.municipality.name);
 }
 

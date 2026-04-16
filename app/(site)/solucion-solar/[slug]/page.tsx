@@ -30,10 +30,20 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
   const parsed = tryParseSlug(slug);
-  if (!parsed) return {};
+  if (!parsed) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/solucion-solar/${slug}`,
+    noIndex: true
+  });
 
   const data = await getPseoSlugBySlug(parsed);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/solucion-solar/${slug}`,
+    noIndex: true
+  });
 
   return buildMetadata({
     title: data.seoTitle ?? `Solucion solar en ${data.municipio}`,

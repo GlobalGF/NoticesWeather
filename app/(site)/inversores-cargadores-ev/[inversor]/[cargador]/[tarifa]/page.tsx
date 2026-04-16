@@ -28,10 +28,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsedInversor = tryParseSlug(inversor);
   const parsedCargador = tryParseSlug(cargador);
   const parsedTarifa = tryParseSlug(tarifa);
-  if (!parsedInversor || !parsedCargador || !parsedTarifa) return {};
+  if (!parsedInversor || !parsedCargador || !parsedTarifa) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/inversores-cargadores-ev/${inversor}/${cargador}/${tarifa}`,
+    noIndex: true
+  });
 
   const data = await getInverterEvPageData(parsedInversor, parsedCargador, parsedTarifa);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/inversores-cargadores-ev/${inversor}/${cargador}/${tarifa}`,
+    noIndex: true
+  });
 
   return inverterEvMetadata(parsedInversor, parsedCargador, parsedTarifa);
 }

@@ -43,10 +43,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
   const parsedModalidad = tryParseSlug(modalidad);
-  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedModalidad) return {};
+  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedModalidad) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/coeficiente-autoconsumo/${comunidad}/${provincia}/${municipio}/${modalidad}`,
+    noIndex: true
+  });
 
   const data = await getSharedCoefficientPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedModalidad);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/coeficiente-autoconsumo/${comunidad}/${provincia}/${municipio}/${modalidad}`,
+    noIndex: true
+  });
 
   return sharedCoefficientMetadata(
     parsedComunidad,

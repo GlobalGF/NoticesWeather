@@ -27,9 +27,19 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { municipio } = params;
   const parsed = tryParseSlug(municipio);
-  if (!parsed) return {};
+  if (!parsed) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/autoconsumo-compartido/${municipio}`,
+    noIndex: true
+  });
   const data = await getSharedSelfConsumptionPageData(parsed);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/autoconsumo-compartido/${municipio}`,
+    noIndex: true
+  });
   return sharedMetadata(parsed, data.municipality.name);
 }
 

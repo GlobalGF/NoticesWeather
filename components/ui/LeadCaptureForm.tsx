@@ -19,6 +19,7 @@ type FormState = {
   bateria: string;
   provincia: string;
   codigoPostal: string;
+  municipio: string;
 };
 
 const TOTAL_STEPS = 5;
@@ -32,7 +33,8 @@ const initialState: FormState = {
   email: "",
   bateria: "",
   provincia: "",
-  codigoPostal: ""
+  codigoPostal: "",
+  municipio: ""
 };
 
 function isValidEmail(value: string) {
@@ -61,7 +63,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
           updateField("municipio_slug" as any, parsed.slug);
           // Simple unslugify as fallback for the display name
           const displayName = parsed.slug.split("-").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
-          updateField("municipio" as any, displayName);
+          updateField("municipio", displayName);
         }
         if (parsed.prov) updateField("provincia", parsed.prov);
       } catch (e) {}
@@ -186,6 +188,10 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         setError("Introduce un email valido.");
         return false;
       }
+      if (!form.municipio.trim() && !municipio) {
+        setError("Dinos tu ciudad/localidad.");
+        return false;
+      }
       if (!form.provincia.trim()) {
         setError("Dinos tu provincia.");
         return false;
@@ -242,7 +248,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
           consumo_mensual: form.consumoMensual,
           tejado: form.tejado,
           bateria: form.bateria,
-          municipio: (form as any).municipio || municipio,
+          municipio: form.municipio || municipio,
           municipio_slug: (form as any).municipio_slug || "",
           provincia: form.provincia || provincia || "",
           codigo_postal: form.codigoPostal,
@@ -269,7 +275,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Solicitud recibida</p>
         <h3 className="mt-1 text-xl font-semibold text-slate-900">Tu estudio gratuito ya esta en marcha</h3>
         <p className="mt-2 text-slate-700">
-          En menos de 24 horas, un asesor local de {(form as any).municipio || municipio} te contactara con ahorro estimado, numero de placas
+          En menos de 24 horas, un asesor local de {form.municipio || municipio} te contactara con ahorro estimado, numero de placas
           recomendado y posibles ayudas activas.
         </p>
         {leadValue ? (
@@ -411,6 +417,17 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
               onChange={(e) => updateField("email", e.target.value)}
               className="rounded-lg border border-slate-300 px-3 py-2"
               placeholder="tu@email.com"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-800">
+            Localidad / Ciudad
+            <input
+              type="text"
+              value={form.municipio}
+              onChange={(e) => updateField("municipio", e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2"
+              placeholder={municipio !== "España" ? municipio : "Ej: Barcelona"}
             />
           </label>
 

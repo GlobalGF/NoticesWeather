@@ -28,7 +28,12 @@ const TEMA_META: Record<string, { titleTpl: (m: string) => string; descTpl: (m: 
 export async function generateMetadata({ params }: { params: { municipio: string; tema: string } }): Promise<Metadata> {
   const slug = tryParseSlug(params.municipio);
   const tema = params.tema;
-  if (!slug || !tema || !TEMA_META[tema]) return {};
+  if (!slug || !tema || !TEMA_META[tema]) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/placas-solares/${params.municipio}/${params.tema}`,
+    noIndex: true
+  });
 
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
@@ -36,7 +41,12 @@ export async function generateMetadata({ params }: { params: { municipio: string
     .select("municipio, provincia")
     .eq("slug", slug)
     .maybeSingle();
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/placas-solares/${params.municipio}/${params.tema}`,
+    noIndex: true
+  });
 
   const row = data as unknown as { municipio: string; provincia: string };
   const meta = TEMA_META[tema];

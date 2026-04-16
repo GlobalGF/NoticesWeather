@@ -42,10 +42,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsedProvincia = tryParseSlug(provincia);
   const parsedMunicipio = tryParseSlug(municipio);
   const parsedNorma = tryParseSlug(norma);
-  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedNorma) return {};
+  if (!parsedComunidad || !parsedProvincia || !parsedMunicipio || !parsedNorma) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/normativa-solar/${comunidad}/${provincia}/${municipio}/${norma}`,
+    noIndex: true
+  });
 
   const data = await getUrbanRegulationPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedNorma);
-  if (!data) return {};
+  if (!data) return buildMetadata({
+    title: "Página no encontrada",
+    description: "404 - Esta página no existe",
+    pathname: `/normativa-solar/${comunidad}/${provincia}/${municipio}/${norma}`,
+    noIndex: true
+  });
 
   return urbanRegulationMetadata(
     parsedComunidad,
