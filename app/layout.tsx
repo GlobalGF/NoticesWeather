@@ -34,11 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <head>
         {/* Google AdSense */}
-        <Script 
+        <script 
           async 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9143435761704783"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
         {/* Google Tag Manager — must be in <head> per Google's spec */}
         <Script id="gtm-script" strategy="beforeInteractive">

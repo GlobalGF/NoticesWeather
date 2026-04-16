@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [mounted, setMounted] = useState(false);
+  const currentYear = mounted ? new Date().getFullYear() : 2026; // Fallback to current year for SSR
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <footer className="bg-slate-900 border-t border-slate-800 py-12 text-sm text-slate-400">
       <div className="mx-auto max-w-6xl px-4 md:px-6">

@@ -93,7 +93,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             { status: 422 }
         );
     }
-    if (!tipo || !["unifamiliar", "piso", "empresa"].includes(tipo)) {
+    if (!tipo || !["unifamiliar", "piso", "empresa", "adosado"].includes(tipo)) {
         return NextResponse.json({ error: "Tipo de vivienda inválido." }, { status: 422 });
     }
 
@@ -154,24 +154,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         estado: "nuevo",
     };
 
-    /* -- Insert lead (if not duplicate to avoid DB spam, or always if you prefer) -- */
-    let insertedId = (existing as any)?.id;
-    if (!isDuplicate) {
-        const { data: inserted, error: insertError } = (await supabase
-            .from("leads")
-            .insert(leadData)
-            .select("id")
-            .single()) as any;
+    /* -- Insert lead (always insert to ensure consistency with notifications) -- */
+    const { data: inserted, error: insertError } = (await supabase
+        .from("leads")
+        .insert(leadData)
+        .select("id")
+        .single()) as any;
 
-        if (insertError || !inserted) {
-            console.error("[api/leads] Insert error:", insertError);
-            return NextResponse.json(
-                { error: "Error al guardar tu solicitud. Inténtalo de nuevo." },
-                { status: 500 }
-            );
-        }
-        insertedId = inserted.id;
+    if (insertError || !inserted) {
+        console.error("[api/leads] Insert error:", insertError);
+        return NextResponse.json(
+            { error: "Error al guardar tu solicitud. Inténtalo de nuevo." },
+            { status: 500 }
+        );
     }
+    const insertedId = inserted.id;
 
 
     /* -- 1. Send Telegram Alert (Native, no n8n) -- */
