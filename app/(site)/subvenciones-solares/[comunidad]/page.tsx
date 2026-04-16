@@ -115,11 +115,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const parsed = tryParseSlug(comunidad);
   if (!parsed || isBlockedSlug(parsed)) notFound();
 
-  // Canonical Redirect: Ensure bot/user is on the standard slug
+  // Canonical logic: Ensure metatags use the standard slug 
+  // Redirects should only happen in the Page component to avoid NEXT_REDIRECT errors in generateMetadata
   const canonical = getCanonicalSlug(parsed);
-  if (canonical && canonical !== parsed) {
-      permanentRedirect(`/subvenciones-solares/${canonical}`);
-  }
+  const metadataSlug = (canonical && canonical !== parsed) ? canonical : parsed;
 
   const normalized = (parsed === "ceuta-ceuta" || parsed === "melilla-melilla") ? parsed.split("-")[0] : parsed;
   const rows = await getCcaaSubsidiesBySlug(normalized);
@@ -133,7 +132,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildMetadata({
     title,
     description,
-    pathname: `/subvenciones-solares/${parsed}`,
+    pathname: `/subvenciones-solares/${metadataSlug}`,
   });
 }
 

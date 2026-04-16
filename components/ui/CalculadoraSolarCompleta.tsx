@@ -75,6 +75,23 @@ export function CalculadoraSolarCompleta({
   const [precioLuz, setPrecioLuz] = useState(precioMedioLuz);
   const [conBaterias, setConBaterias] = useState(false);
 
+  // 1. Persistent Context Hydration
+  useEffect(() => {
+    const saved = sessionStorage.getItem("lastLeadPrefs");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.vivienda && ["piso", "adosado", "unifamiliar"].includes(parsed.vivienda)) {
+          setTipoVivienda(parsed.vivienda);
+        }
+        if (parsed.consumoMensual && inputMode === "kwh") {
+          setConsumoMensual(parsed.consumoMensual);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+
   // Form states
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ 
@@ -91,6 +108,16 @@ export function CalculadoraSolarCompleta({
 
   // Derive kWh from € if needed
   const consumoKwh = inputMode === "eur" ? Math.round(facturaMensual / precioLuz) : consumoMensual;
+
+  // 2. Persist state changes
+  useEffect(() => {
+    const current = JSON.parse(sessionStorage.getItem("lastLeadPrefs") || "{}");
+    sessionStorage.setItem("lastLeadPrefs", JSON.stringify({ 
+      ...current, 
+      vivienda: tipoVivienda,
+      consumoMensual: consumoKwh 
+    }));
+  }, [tipoVivienda, consumoKwh]);
 
   // Auto-compute autoconsumo based on housing type + battery
   const autoconsumoBase = VIVIENDA_CONFIG[tipoVivienda].autoconsumoBase;

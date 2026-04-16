@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { calculateSolarLeadValue, type HousingType } from "@/calculators/lead-value";
 
 type LeadCaptureFormProps = {
@@ -50,6 +50,47 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialState);
 
+  // 1. Persistent Context Hydration
+  useEffect(() => {
+    // 1a. Load city context
+    const savedCity = sessionStorage.getItem("lastCityContext");
+    if (savedCity && (municipio === "España" || !municipio)) {
+      try {
+        const parsed = JSON.parse(savedCity);
+        if (parsed.slug) {
+          updateField("municipio_slug" as any, parsed.slug);
+          // Simple unslugify as fallback for the display name
+          const displayName = parsed.slug.split("-").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+          updateField("municipio" as any, displayName);
+        }
+        if (parsed.prov) updateField("provincia", parsed.prov);
+      } catch (e) {}
+    }
+
+    // 1b. Load previous consumption/housing if session exists
+    const savedState = sessionStorage.getItem("lastLeadPrefs");
+    if (savedState) {
+       try {
+         const parsed = JSON.parse(savedState);
+         if (parsed.vivienda) {
+            const v = parsed.vivienda;
+            if (v === "piso") updateField("vivienda", "Piso");
+            if (v === "unifamiliar") updateField("vivienda", "Casa unifamiliar");
+            if (v === "adosado") updateField("vivienda", "Adosado / Chalet");
+         }
+         if (parsed.consumoMensual) {
+            const c = Number(parsed.consumoMensual);
+            let range = "";
+            if (c < 250) range = "Menos de 60 EUR";
+            else if (c < 550) range = "60-120 EUR";
+            else if (c < 900) range = "120-200 EUR";
+            else range = "Mas de 200 EUR";
+            updateField("consumoMensual", range);
+         }
+       } catch (e) {}
+    }
+  }, [municipio]);
+
   const location = provincia ?? municipio;
   const electricityPrice = Math.max(0.05, precioLuzEurKwh ?? 0.22);
 
@@ -63,9 +104,17 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
 
   const leadValue = useMemo(() => {
     if (!form.vivienda || monthlyConsumptionKwh <= 0) return null;
-      return calculateSolarLeadValue({
+    
+    // Safety check for housing type mapping
+    let hType = form.vivienda;
+    if (hType.includes("Piso")) hType = "piso";
+    else if (hType.includes("Adosado")) hType = "adosado";
+    else if (hType.includes("Casa")) hType = "unifamiliar";
+    else hType = "empresa";
+
+    return calculateSolarLeadValue({
       monthlyConsumptionKwh,
-      housingType: form.vivienda as HousingType,
+      housingType: hType as HousingType,
       location,
       electricityPriceEurKwh: electricityPrice,
       hasInsterestInBatteries: form.bateria.includes("Sí") || form.bateria.includes("Tal vez")
@@ -77,6 +126,12 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
   const updateField = (key: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setError(null);
+    
+    // Persist basic prefs to sessionStorage for cross-page persistence
+    if (key === "vivienda" || key === "consumoMensual") {
+      const current = JSON.parse(sessionStorage.getItem("lastLeadPrefs") || "{}");
+      sessionStorage.setItem("lastLeadPrefs", JSON.stringify({ ...current, [key]: value }));
+    }
   };
 
   const trackStepEvent = (action: "next" | "submit") => {
@@ -170,7 +225,9 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
       const tipoMap: Record<string, string> = {
         "Piso": "piso",
         "Casa unifamiliar": "unifamiliar",
+        "Adosado / Chalet": "adosado",
         "Comunidad de vecinos": "empresa",
+        "Empresa / Negocio": "empresa",
         "Local comercial": "empresa",
       };
 
@@ -185,7 +242,8 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
           consumo_mensual: form.consumoMensual,
           tejado: form.tejado,
           bateria: form.bateria,
-          municipio: municipio,
+          municipio: (form as any).municipio || municipio,
+          municipio_slug: (form as any).municipio_slug || "",
           provincia: form.provincia || provincia || "",
           codigo_postal: form.codigoPostal,
         }),
@@ -211,7 +269,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Solicitud recibida</p>
         <h3 className="mt-1 text-xl font-semibold text-slate-900">Tu estudio gratuito ya esta en marcha</h3>
         <p className="mt-2 text-slate-700">
-          En menos de 24 horas, un asesor local de {municipio} te contactara con ahorro estimado, numero de placas
+          En menos de 24 horas, un asesor local de {(form as any).municipio || municipio} te contactara con ahorro estimado, numero de placas
           recomendado y posibles ayudas activas.
         </p>
         {leadValue ? (
@@ -243,7 +301,7 @@ export function LeadCaptureForm({ municipio, provincia, precioLuzEurKwh }: LeadC
       {step === 1 && (
         <fieldset className="mt-4 space-y-2">
           <legend className="mb-2 text-sm font-medium text-slate-800">1) Que tipo de vivienda tienes?</legend>
-          {["Piso", "Casa unifamiliar", "Comunidad de vecinos", "Local comercial"].map((item) => (
+          {["Casa unifamiliar", "Adosado / Chalet", "Piso", "Empresa / Negocio"].map((item) => (
             <label key={item} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-3">
               <input
                 type="radio"

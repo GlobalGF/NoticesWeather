@@ -1,4 +1,4 @@
-export type HousingType = "Piso" | "Casa unifamiliar" | "Comunidad de vecinos" | "Local comercial";
+export type HousingType = "piso" | "adosado" | "unifamiliar" | "empresa";
 
 export type LeadValueInput = {
   monthlyConsumptionKwh: number;
@@ -22,10 +22,10 @@ export type LeadValueOutput = {
 };
 
 const HOUSING_FACTOR: Record<HousingType, number> = {
-  "Casa unifamiliar": 1.0,
-  "Local comercial": 0.95,
-  "Comunidad de vecinos": 0.85,
-  Piso: 0.75
+  "unifamiliar": 1.0,
+  "adosado": 0.95,
+  "empresa": 0.9,
+  "piso": 0.75
 };
 
 const LOCATION_FACTOR_BY_REGION: Record<string, number> = {

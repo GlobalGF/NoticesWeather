@@ -53,15 +53,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const provName = muniRow?.provincia || provincia.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
     const year = new Date().getFullYear();
 
-    // Force clean canonical slugs
+    // Canonical segments (passive logic: metadata uses clean slugs, page handles redirect)
     const dbCcaaSlug = muniRow ? normalizeCcaaSlug(muniRow.comunidad_autonoma) : comunidad;
     const dbProvSlug = muniRow ? slugify(muniRow.provincia) : provincia;
     const dbMuniSlug = muniRow ? cleanMunicipalitySlug(muniRow.slug, dbProvSlug) : municipio;
-
-    // Canonical Redirect
-    if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
-        permanentRedirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
-    }
 
     return buildMetadata({
         title: `Subvenciones Placas Solares en ${muniName} ${year} · Ayudas e IBI`,

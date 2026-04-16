@@ -35,15 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getRadiationPageData(parsedComunidad, parsedProvincia, parsedMunicipio);
   if (!data || !data.municipality) return {};
 
-  // Forzar canónica en metadata
+  // Canonical logic: metadata uses clean database slugs, page component handles the redirect
   const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
   const dbProvSlug = slugify(data.municipality.provincia);
   const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
-
-  // Canonical Redirect: If any slug segment is non-canonical, redirect immediately
-  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
-      permanentRedirect(`/radiacion-solar/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`);
-  }
 
   return radiationMetadata(dbCcaaSlug, dbProvSlug, dbMuniSlug, data.municipality.municipio);
 }

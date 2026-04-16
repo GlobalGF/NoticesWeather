@@ -33,16 +33,9 @@ const CANONICAL_CCAA_SLUGS: Record<string, string> = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { provincia, comunidad } = params;
-
-    // Canonical Redirect for CCAA synonym
-    const canonicalCcaa = CANONICAL_CCAA_SLUGS[comunidad];
-    if (canonicalCcaa && canonicalCcaa !== comunidad) {
-        permanentRedirect(`/subvenciones-solares/${canonicalCcaa}/${provincia}`);
-    }
-
     const supabase = await createSupabaseServerClient();
 
-    // Self-healing: Check if 'provincia' is actually a 'municipio' to redirect to 3-level route
+    // Check if 'provincia' is actually a 'municipio' for canonical path
     const { data: muniData } = await supabase
         .from("municipios_energia")
         .select("slug, provincia, comunidad_autonoma")
@@ -50,18 +43,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .limit(1)
         .maybeSingle();
 
+    // Canonical segments (for metadata canonical tag, not for redirecting here)
+    const canonicalCcaa = CANONICAL_CCAA_SLUGS[comunidad] || comunidad;
+    let canonicalProv = provincia;
+    let canonicalMuni = "";
+
     if (muniData) {
         const m = muniData as any;
-        const cSlug = getCanonicalSlug(slugify(m.comunidad_autonoma));
-        const pSlug = slugify(m.provincia);
-        permanentRedirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+        canonicalProv = slugify(m.provincia);
+        canonicalMuni = m.slug;
     }
+
+    const metadataPath = canonicalMuni 
+        ? `/subvenciones-solares/${canonicalCcaa}/${canonicalProv}/${canonicalMuni}`
+        : `/subvenciones-solares/${canonicalCcaa}/${provincia}`;
 
     const provName = provincia.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     return buildMetadata({
         title: `Ayudas placas solares en ${provName}`,
         description: `Consulta las subvenciones autonómicas y las bonificaciones de IBI e ICIO disponibles en cada municipio de ${provName}. Datos actualizados ${new Date().getFullYear()}.`,
-        pathname: `/subvenciones-solares/${comunidad}/${provincia}`,
+        pathname: metadataPath,
     });
 }
 

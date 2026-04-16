@@ -171,7 +171,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const insertedId = inserted.id;
 
 
-    /* -- 1. Send Telegram Alert (Native, no n8n) -- */
+    /* -- 1. Send Telegram Alert (Awaiting for reliability in serverless) -- */
     const telegramHeader = isDuplicate ? "⚠️ <b>Lead REPETIDO (24h)</b>" : "🔆 <b>Nuevo Lead Solar</b>";
     const telegramText = `
 ${telegramHeader}
@@ -190,48 +190,53 @@ ${telegramHeader}
 <i>Fuente: ${escapeHtml(referer || "directo")}</i>
     `.trim();
 
-    sendTelegramMessage(telegramText)
-        .then(res => {
-            if (res.success) console.log(`[api/leads] Telegram alert sent for lead ${insertedId}${isDuplicate ? ' (DUPLICATE)' : ''}`);
-            else console.error(`[api/leads] Telegram alert failed for lead ${insertedId}:`, JSON.stringify(res.error));
-        })
-        .catch(err => console.error(`[api/leads] Telegram fatal error for lead ${insertedId}:`, err));
+    try {
+        const tgRes = await sendTelegramMessage(telegramText);
+        if (tgRes.success) {
+            console.info(`[api/leads] Telegram alert sent for lead ${insertedId}`);
+        } else {
+            console.error(`[api/leads] Telegram alert failed for lead ${insertedId}:`, tgRes.error);
+        }
+    } catch (tgErr) {
+        console.error(`[api/leads] Telegram fatal error for lead ${insertedId}:`, tgErr);
+    }
 
-    /* -- Send email notification (non-blocking) -- */
+    /* -- 2. Send email notification (Awaiting for reliability) -- */
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
-        const resend = new Resend(resendKey);
-        const subjectPrefix = isDuplicate ? "[REPETIDO] " : "";
+        try {
+            const resend = new Resend(resendKey);
+            const subjectPrefix = isDuplicate ? "[REPETIDO] " : "";
 
-        resend.emails.send({
-            from: "SolaryEco Leads <onboarding@resend.dev>",
-            to: LEAD_NOTIFY_EMAIL,
-            subject: `${subjectPrefix}🔆 Nuevo lead solar: ${nombre.trim()} — ${municipio} (${provincia})`,
-            text: [
-                isDuplicate ? "SISTEMA: Este lead ya ha sido enviado en las últimas 24h." : "Nuevo lead recibido en SolaryEco",
-                ``,
-                `ID: ${insertedId}`,
-                `Nombre: ${nombre.trim()}`,
-                `Teléfono: ${telefono}`,
-                `Email: ${email || "—"}`,
-                `Código Postal: ${codigo_postal || "—"}`,
-                `Dirección: ${direccion || "—"}`,
-                `Municipio: ${municipio}`,
-                `Provincia: ${provincia}`,
-                `Tipo vivienda: ${tipo ?? "—"}`,
-                `Consumo anual: ${consumo ? consumo + " kWh" : "—"}`,
-                `Consumo mensual: ${consumoMensual || "—"}`,
-                `Tipo Tejado: ${tejado || "—"}`,
-                `Interés Baterías: ${bateria || "—"}`,
-                ``,
-                `Fuente: ${referer || "directo"}`,
-                `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,
-            ].filter(Boolean).join("\n"),
-        }).then(res => {
-            console.log(`[api/leads] Resend email attempt for lead ${insertedId}:`, res);
-        }).catch((err) => {
-            console.warn("[api/leads] Email notification failed:", err?.message ?? err);
-        });
+            const emailRes = await resend.emails.send({
+                from: "SolaryEco Leads <onboarding@resend.dev>",
+                to: LEAD_NOTIFY_EMAIL,
+                subject: `${subjectPrefix}🔆 Nuevo lead solar: ${nombre.trim()} — ${municipio} (${provincia})`,
+                text: [
+                    isDuplicate ? "SISTEMA: Este lead ya ha sido enviado en las últimas 24h." : "Nuevo lead recibido en SolaryEco",
+                    ``,
+                    `ID: ${insertedId}`,
+                    `Nombre: ${nombre.trim()}`,
+                    `Teléfono: ${telefono}`,
+                    `Email: ${email || "—"}`,
+                    `Código Postal: ${codigo_postal || "—"}`,
+                    `Dirección: ${direccion || "—"}`,
+                    `Municipio: ${municipio}`,
+                    `Provincia: ${provincia}`,
+                    `Tipo vivienda: ${tipo ?? "—"}`,
+                    `Consumo anual: ${consumo ? consumo + " kWh" : "—"}`,
+                    `Consumo mensual: ${consumoMensual || "—"}`,
+                    `Tipo Tejado: ${tejado || "—"}`,
+                    `Interés Baterías: ${bateria || "—"}`,
+                    ``,
+                    `Fuente: ${referer || "directo"}`,
+                    `Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`,
+                ].filter(Boolean).join("\n"),
+            });
+            console.info(`[api/leads] Resend email attempt for lead ${insertedId}:`, emailRes);
+        } catch (emailErr: any) {
+            console.warn("[api/leads] Email notification failed:", emailErr?.message ?? emailErr);
+        }
     }
 
     return NextResponse.json({ ok: true, id: insertedId, deduplicated: isDuplicate }, { status: 200 });

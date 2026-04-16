@@ -125,14 +125,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const provName = cleanLocationName(data.provincia || "");
         const locationLabel = (muniName.toLowerCase() === provName.toLowerCase()) ? muniName : `${muniName} (${provName})`;
         
-        // Use clean slug for canonical even if hit from dirty slug
+        // Canonical logic: metadata uses cleanSlug, page component handles the redirect
         const dbProvSlug = slugify(data.provincia || "");
         const cleanSlug = cleanMunicipalitySlug(data.slug, dbProvSlug);
-        
-        // Canonical Redirect: If the hit slug is 'dirty' (contains province or old format), redirect to clean version
-        if (slug !== cleanSlug) {
-            permanentRedirect(`/placas-solares/${cleanSlug}`);
-        }
 
         // SENIOR SEO TITLE: Transactional, Concise & Deduplicated
         const title = `Placas Solares en ${locationLabel} · Guía ${year}`;
