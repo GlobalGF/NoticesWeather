@@ -79,5 +79,5 @@ export default async function UrbanRegulationPage({ params }: Props) {
   const data = await getUrbanRegulationPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedNorma);
   if (!data) notFound();
 
-  return <SeoLandingTemplate {...data} />;
+  return <SeoLandingTemplate {...data} municipioName={data.municipality.municipio} />;
 }

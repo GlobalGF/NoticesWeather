@@ -43,6 +43,7 @@ import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { ServerSeoBlock } from "@/components/ui/ServerSeoBlock";
 import { PricingBreakdownTable } from "@/components/ui/PricingBreakdownTable";
 import { CalculatorMunicipalitySwitcher } from "@/components/ui/CalculatorMunicipalitySwitcher";
+import { FrankEnergyBanner } from "@/components/ui/FrankEnergyBanner";
 
 export const revalidate = cachePolicy.page.solarCity;
 export const dynamicParams = true;
@@ -342,6 +343,13 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 precioMedioLuz={precioLuz}
                             />
 
+                            {/* Mobile-only Frank Energy Banner */}
+                            <div className="lg:hidden">
+                                <FrankEnergyBanner 
+                                    municipio={cleanLocationName(municipio.municipio)} 
+                                />
+                            </div>
+
                             {/* Pricing Breakdown — directly answers "cuánto cuesta" */}
                             <PricingBreakdownTable
                                 municipio={municipio.municipio}
@@ -553,6 +561,14 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                             </div>
 
                             {/* Hook Lead Form into sidebar */}
+                            {/* Desktop-only Frank Energy Banner */}
+                            <div className="hidden lg:block">
+                                <FrankEnergyBanner 
+                                    municipio={cleanLocationName(municipio.municipio)} 
+                                    className="mb-6"
+                                />
+                            </div>
+
                             <div className="sticky top-6">
                                 <LeadForm
                                     municipio={cleanLocationName(municipio.municipio)}

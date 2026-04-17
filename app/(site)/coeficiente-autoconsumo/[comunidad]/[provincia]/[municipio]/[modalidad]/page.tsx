@@ -81,7 +81,7 @@ export default async function SharedCoefficientPage({ params }: Props) {
 
   return (
     <>
-      <SeoLandingTemplate {...data} />
+      <SeoLandingTemplate {...data} municipioName={data.municipality.municipio} />
       <section className="card mt-6">
         <h2 className="text-xl font-semibold">Calculadora de coeficiente de reparto</h2>
         <h3 className="mt-1 text-lg font-semibold text-slate-800">Optimiza el reparto para comunidad energetica</h3>

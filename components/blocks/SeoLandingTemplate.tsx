@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SolarStats } from "@/components/ui/SolarStats";
+import { FrankEnergyBanner } from "@/components/ui/FrankEnergyBanner";
 
 type Props = {
   title: string;
@@ -8,6 +9,7 @@ type Props = {
   links?: string[];
   schema?: unknown;
   municipioSlug?: string;
+  municipioName?: string;
   showSolarStats?: boolean;
 };
 
@@ -18,6 +20,7 @@ export function SeoLandingTemplate({
   links = [],
   schema,
   municipioSlug,
+  municipioName,
   showSolarStats = false
 }: Props) {
   return (
@@ -28,6 +31,12 @@ export function SeoLandingTemplate({
       </section>
 
       {municipioSlug && showSolarStats ? <SolarStats slug={municipioSlug} className="mt-4" title="Metricas solares" /> : null}
+
+      {municipioName && (
+        <div className="mt-6">
+          <FrankEnergyBanner municipio={municipioName} />
+        </div>
+      )}
 
       <section className="grid two">
         {highlights.map((item) => (

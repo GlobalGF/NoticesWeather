@@ -64,6 +64,7 @@ export default async function GenericSolarSlugPage({ params }: Props) {
 
   return (
     <SeoLandingTemplate
+      municipioName={data.municipio}
       title={data.seoTitle ?? `Solucion solar para ${data.municipio}`}
       intro={
         data.seoDescription ??

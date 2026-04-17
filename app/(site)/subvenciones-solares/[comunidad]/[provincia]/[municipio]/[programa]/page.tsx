@@ -94,5 +94,5 @@ export default async function SubsidyPage({ params }: Props) {
       permanentRedirect(`/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}/${parsedPrograma}`);
   }
 
-  return <SeoLandingTemplate {...data} />;
+  return <SeoLandingTemplate {...data} municipioName={data.municipality.municipio} />;
 }

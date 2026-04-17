@@ -16,6 +16,7 @@ import { LeadForm } from "@/components/ui/LeadForm";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
 import { getProvinceHubs } from "@/lib/data/solar";
 import { ProvinceHubLinks } from "@/components/ui/ProvinceHubLinks";
+import { FrankEnergyBanner } from "@/components/ui/FrankEnergyBanner";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -302,6 +303,11 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                             <div className="p-5">
                                 <PrecioLuzWidget initialPrecio={precioHoy} />
                             </div>
+
+                            {/* Mobile-only Frank Energy Banner */}
+                            <div className="lg:hidden mt-6">
+                                <FrankEnergyBanner municipio={m.municipio} />
+                            </div>
                         </div>
 
                         {/* Historical table */}
@@ -443,6 +449,11 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
 
                     {/* Right column (1/3) */}
                     <div className="space-y-6">
+
+                        {/* Desktop-only Frank Energy Banner */}
+                        <div className="hidden lg:block">
+                            <FrankEnergyBanner municipio={m.municipio} />
+                        </div>
 
                         {/* Solar data for this municipality */}
                         <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
