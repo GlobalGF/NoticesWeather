@@ -25,11 +25,13 @@ export async function getSubsidyPageData(
   // Fallback to CCAA regional subsidy if specific one doesn't exist
   if (!subsidy) {
     const supabase = await createSupabaseServerClient();
-    const { data: ccaaData } = await supabase
+    const { data: ccaaDataRaw } = await supabase
       .from("subvenciones_solares_ccaa_es")
       .select("*")
       .ilike("comunidad_autonoma", municipality.comunidadAutonoma)
       .maybeSingle();
+
+    const ccaaData = ccaaDataRaw as any;
 
     if (ccaaData) {
       subsidy = {
