@@ -78,8 +78,8 @@ export default async function GenericSolarSlugPage({ params }: Props) {
         { label: "Tecnologia", value: data.tecnologiaSolar }
       ]}
       links={[
-        `/placas-solares/${slugify(data.municipio)}`,
-        `/baterias-solares/${slugify(data.municipio)}`
+        { href: `/placas-solares/${slugify(data.municipio)}`, label: `Placas solares en ${data.municipio}` },
+        { href: `/baterias-solares/${slugify(data.municipio)}`, label: `Baterías solares en ${data.municipio}` }
       ]}
     />
   );

@@ -25,6 +25,7 @@ export async function getSubsidyPageData(
   const copy = mapSubsidyCopy(municipality, subsidy);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipio,
+    municipioName: municipality.municipio,
     provincia: municipality.provincia,
     comunidadAutonoma: municipality.comunidadAutonoma
   });

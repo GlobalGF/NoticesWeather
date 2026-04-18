@@ -20,6 +20,7 @@ export async function getRadiationPageData(comunidad: string, provincia: string,
   const copy = mapRadiationCopy(municipality, radiation);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipio,
+    municipioName: municipality.municipio,
     provincia: municipality.provincia,
     comunidadAutonoma: municipality.comunidadAutonoma
   });

@@ -25,6 +25,7 @@ export async function getSharedCoefficientPageData(
   const copy = mapSharedCoefficientCopy(municipality, coefficient);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipio,
+    municipioName: municipality.municipio,
     provincia: municipality.provincia,
     comunidadAutonoma: municipality.comunidadAutonoma
   });

@@ -10,7 +10,10 @@ export async function getInverterEvPageData(inversor: string, cargador: string, 
 
   return {
     ...copy,
-    links: [`/baterias-solares/${tarifa}/4000-5500`, "/placas-solares/madrid"],
+    links: [
+      { href: `/baterias-solares/${tarifa}/4000-5500`, label: "Mejores baterías solares" },
+      { href: "/placas-solares/madrid", label: "Empresas de placas solares" }
+    ],
     schema: buildServiceSchema(copy.title, "Espana", copy.intro),
     compatibility
   };

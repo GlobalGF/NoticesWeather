@@ -11,8 +11,8 @@ export function subsidyMetadata(
   programName: string
 ) {
   return buildMetadata({
-    title: `Subvención solar ${YEAR} en ${municipalityName}: ${programName} — Importe y requisitos`,
-    description: `Todo sobre el programa ${programName} para instalaciones solares en ${municipalityName}: importes, porcentajes subvencionables y cómo solicitarlo.`,
+    title: `Subvenciones Placas Solares en ${municipalityName} ${YEAR}: Ahorra hasta un 70%`,
+    description: `Solicita las ayudas del programa ${programName} para placas solares en ${municipalityName}. Consulta requisitos, importes y ahorra hasta un 70% en tu instalación de autoconsumo.`,
     pathname: `/subvenciones-solares/${comunidad}/${provincia}/${municipio}/${programa}`
   });
 }

@@ -15,6 +15,7 @@ export async function getIbiPageData(municipio: string) {
   const copy = mapIbiCopy(municipality, ibi.percentage, ibi.years);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipality.slug,
+    municipioName: municipality.name,
     provincia: municipality.province,
     comunidadAutonoma: municipality.autonomousCommunity
   });

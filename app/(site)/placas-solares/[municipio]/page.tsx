@@ -131,12 +131,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const cleanSlug = cleanMunicipalitySlug(data.slug, dbProvSlug);
 
         // SENIOR SEO TITLE: Transactional, Concise & Deduplicated
-        const title = `Placas Solares en ${locationLabel} · Guía ${year}`;
-        const description = `Instala paneles solares en ${locationLabel}: ${fmt(data.horas_sol)} h de sol, ahorro de ${fmtEur(data.ahorro_estimado)}/año${data.bonificacion_ibi ? ` y ${data.bonificacion_ibi}% bonificación IBI` : ""}. Rentabilidad y presupuestos.`;
+        const title = `Instalación de Placas Solares en ${locationLabel}: Pide 3 Presupuestos Gratis`;
+        const description = `Empresas de placas solares en ${locationLabel} certificadas. Ahorra hasta un 70% con las ayudas de ${year}. h de sol: ${fmt(data.horas_sol)}, ahorro: ${fmtEur(data.ahorro_estimado)}/año. ¡Pide presupuestos gratis!`;
 
         return buildMetadata({
             title,
-            description,
+            description: description.slice(0, 160),
             pathname: `/placas-solares/${cleanSlug}`,
         });
     } catch (error) {

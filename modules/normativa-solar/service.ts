@@ -25,6 +25,7 @@ export async function getUrbanRegulationPageData(
   const copy = mapUrbanRegulationCopy(municipality, regulation);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipio,
+    municipioName: municipality.municipio,
     provincia: municipality.provincia,
     comunidadAutonoma: municipality.comunidadAutonoma
   });

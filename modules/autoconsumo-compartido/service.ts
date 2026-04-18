@@ -10,6 +10,7 @@ export async function getSharedSelfConsumptionPageData(municipio: string) {
   const copy = mapSharedSelfConsumptionCopy(municipality);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipality.slug,
+    municipioName: municipality.name,
     provincia: municipality.province,
     comunidadAutonoma: municipality.autonomousCommunity
   });
