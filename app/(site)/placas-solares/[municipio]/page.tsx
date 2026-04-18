@@ -359,6 +359,8 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 precioInstalacionMedio={municipio.precio_instalacion_medio_eur}
                                 precioInstalacionMax={municipio.precio_instalacion_max_eur}
                                 bonificacionIbi={municipio.bonificacion_ibi}
+                                bonificacionIbiDuracion={municipio.bonificacion_ibi_duracion}
+                                bonificacionIcio={municipio.bonificacion_icio}
                                 irradiacionSolar={municipio.irradiacion_solar}
                                 horasSol={municipio.horas_sol}
                                 precioLuz={precioLuz}
@@ -397,6 +399,10 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 comunidadSlug={slugify(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
                                 provinciaSlug={slugify(municipio.provincia || "sevilla")}
                                 bonificacionIbi={municipio.bonificacion_ibi}
+                                bonificacionIbiDuracion={municipio.bonificacion_ibi_duracion}
+                                bonificacionIbiCondiciones={municipio.bonificacion_ibi_condiciones}
+                                bonificacionIcio={municipio.bonificacion_icio}
+                                bonificacionIae={municipio.bonificacion_iae}
                                 nearbyItems={nearbyItems}
                             />
 

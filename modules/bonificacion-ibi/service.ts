@@ -1,29 +1,26 @@
-import { getIbiByMunicipalitySlug } from "@/data/repositories/ibi.repo";
-import { getMunicipalityBySlug } from "@/data/repositories/municipalities.repo";
+import { getMunicipioEnergiaBySlug } from "@/data/repositories/municipios-energia.repo";
 import { buildAutomatedInternalLinks } from "@/lib/seo/internal-linking";
 import { buildServiceSchema } from "@/lib/seo/schema-org";
 import { mapIbiCopy } from "@/modules/bonificacion-ibi/mapper";
 
 export async function getIbiPageData(municipio: string) {
-  const [municipality, ibi] = await Promise.all([
-    getMunicipalityBySlug(municipio),
-    getIbiByMunicipalitySlug(municipio)
-  ]);
+  const municipality = await getMunicipioEnergiaBySlug(municipio);
 
-  if (!municipality || !ibi) return null;
+  if (!municipality) return null;
 
-  const copy = mapIbiCopy(municipality, ibi.percentage, ibi.years);
+  const copy = mapIbiCopy(municipality);
   const links = await buildAutomatedInternalLinks({
     municipioSlug: municipality.slug,
-    municipioName: municipality.name,
-    provincia: municipality.province,
-    comunidadAutonoma: municipality.autonomousCommunity
+    municipioName: municipality.municipio,
+    provincia: municipality.provincia,
+    comunidadAutonoma: municipality.comunidadAutonoma,
+    currentModule: "ibi"
   });
 
   return {
     ...copy,
     links,
-    schema: buildServiceSchema(copy.title, municipality.name, copy.intro),
+    schema: buildServiceSchema(`${copy.header.titlePrefix} ${copy.header.titleHighlight}`, municipality.municipio, copy.header.description),
     municipality
   };
 }

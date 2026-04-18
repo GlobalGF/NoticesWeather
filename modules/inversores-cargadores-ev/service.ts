@@ -14,7 +14,7 @@ export async function getInverterEvPageData(inversor: string, cargador: string, 
       { href: `/baterias-solares/${tarifa}/4000-5500`, label: "Mejores baterías solares" },
       { href: "/placas-solares/madrid", label: "Empresas de placas solares" }
     ],
-    schema: buildServiceSchema(copy.title, "Espana", copy.intro),
+    schema: buildServiceSchema(`${copy.header.titlePrefix} ${copy.header.titleHighlight}`, "España", copy.header.description),
     compatibility
   };
 }

@@ -27,7 +27,8 @@
     "esios:generate:sql": "python scripts/python/esios_to_sql.py",
     "compatibilidad:generate:sql": "python scripts/python/compatibility_csv_to_sql.py",
     "generate:seo": "tsx scripts/generate-seo-openai.ts",
-    "sync:bonificaciones": "tsx scripts/sync-bonificaciones.ts"
+    "sync:bonificaciones": "tsx scripts/sync-bonificaciones.ts",
+    "bonificaciones:scrape": "python scripts/python/scrape_bonificaciones_municipales.py"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

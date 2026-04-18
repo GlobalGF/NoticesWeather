@@ -1,5 +1,7 @@
 import { type MunicipioPageData } from "@/lib/data/types";
 import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
+import { generateDynamicText } from "@/lib/pseo/spintax";
+import { parseMarkdown } from "@/lib/utils/text";
 
 type SubsidiesSeoBlockProps = {
   municipio: string;
@@ -8,6 +10,11 @@ type SubsidiesSeoBlockProps = {
   comunidadSlug: string;
   provinciaSlug: string;
   bonificacionIbi?: number | null;
+  bonificacionIbiDuracion?: number | null;
+  bonificacionIbiCondiciones?: string | null;
+  bonificacionIcio?: number | null;
+  bonificacionIcioCondiciones?: string | null;
+  bonificacionIae?: number | null;
   nearbyItems?: {
     municipio: string;
     slug: string;
@@ -23,9 +30,6 @@ function getStringHash(str: string): number {
   return Math.abs(hash);
 }
 
-import { generateDynamicText } from "@/lib/pseo/spintax";
-import { parseMarkdown } from "@/lib/utils/text";
-
 export function SubsidiesSeoBlock({
   municipio,
   provincia,
@@ -33,6 +37,11 @@ export function SubsidiesSeoBlock({
   comunidadSlug,
   provinciaSlug,
   bonificacionIbi,
+  bonificacionIbiDuracion,
+  bonificacionIbiCondiciones,
+  bonificacionIcio,
+  bonificacionIcioCondiciones,
+  bonificacionIae,
   nearbyItems = [],
 }: SubsidiesSeoBlockProps) {
   const hash = getStringHash(slug);
@@ -78,7 +87,7 @@ export function SubsidiesSeoBlock({
                   Ibi al <span className="text-yellow-300">-{ibiValue}%</span> en {municipio}
                 </p>
                 <p className="text-emerald-50/70 text-sm mt-1 font-medium italic">
-                  *Cifra verificada según la ordenanza fiscal vigente
+                  *Cifra verificada según ordenanza municipal {bonificacionIbiDuracion ? `(${bonificacionIbiDuracion} años)` : ''}
                 </p>
               </div>
             </div>
@@ -110,31 +119,60 @@ export function SubsidiesSeoBlock({
         </div>
 
         <div className="p-8 md:p-10">
-          <div className="grid sm:grid-cols-2 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* IBI Box */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-emerald-100">
+            <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-emerald-100">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-              <div className="flex items-center gap-4 mb-6 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-xl shadow-inner">
+              <div className="flex items-center gap-4 mb-4 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-lg shadow-inner">
                   %
                 </div>
-                <h3 className="font-black text-slate-900 text-xl tracking-tight">Recibo del IBI</h3>
+                <h3 className="font-black text-slate-900 text-lg tracking-tight">Recibo del IBI</h3>
               </div>
-              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium">
+              <div className="text-slate-600 text-sm leading-relaxed relative z-10 font-medium">
                 {parseMarkdown(selectedIbi)}
+                {bonificacionIbiCondiciones && (
+                  <p className="mt-3 text-[11px] text-slate-400 italic leading-tight">
+                    * {bonificacionIbiCondiciones}
+                  </p>
+                )}
               </div>
             </div>
 
+            {/* ICIO / IAE Box */}
+            {(bonificacionIcio || bonificacionIae) && (
+              <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-amber-100">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
+                <div className="flex items-center gap-4 mb-4 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-black text-lg shadow-inner">
+                    🏢
+                  </div>
+                  <h3 className="font-black text-slate-900 text-lg tracking-tight">ICIO e IAE</h3>
+                </div>
+                <div className="text-slate-600 text-sm leading-relaxed relative z-10 font-medium">
+                  {bonificacionIcio && (
+                    <p className="mb-2">El ayuntamiento aplica una bonificación del **{bonificacionIcio}%** en el ICIO (Impuesto sobre Construcciones).</p>
+                  )}
+                  {bonificacionIae && (
+                    <p>Para empresas, existe una reducción del **{bonificacionIae}%** en el IAE por transicion energética.</p>
+                  )}
+                  {bonificacionIcioCondiciones && (
+                    <p className="mt-3 text-[11px] text-slate-400 italic leading-tight">* {bonificacionIcioCondiciones}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* IRPF Box */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-blue-100">
+            <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all hover:border-blue-100 sm:col-span-2 lg:col-span-1">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></div>
-              <div className="flex items-center gap-4 mb-6 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xl shadow-inner">
+              <div className="flex items-center gap-4 mb-4 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-lg shadow-inner">
                   📄
                 </div>
-                <h3 className="font-black text-slate-900 text-xl tracking-tight">Deducción IRPF</h3>
+                <h3 className="font-black text-slate-900 text-lg tracking-tight">Deducción IRPF</h3>
               </div>
-              <div className="text-slate-600 text-base leading-relaxed relative z-10 font-medium">
+              <div className="text-slate-600 text-sm leading-relaxed relative z-10 font-medium">
                 {parseMarkdown(selectedIrpf)}
               </div>
             </div>

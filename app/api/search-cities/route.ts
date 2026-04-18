@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -27,20 +27,15 @@ export async function GET(request: Request) {
 
     const results = ((data as any[]) ?? []).map((row) => {
         // Build the URL specifically for subsidies
-        const ccaaSlug = slugify(row.comunidad_autonoma);
+        const ccaaSlug = normalizeCcaaSlug(row.comunidad_autonoma);
         const provSlug = slugify(row.provincia);
-        const muniSlug = row.slug;
-        
-        // Handle Ceuta and Melilla exceptions
-        const routeCcaa = (ccaaSlug === "ceuta" || ccaaSlug === "melilla") ? `${ccaaSlug}-${ccaaSlug}` : ccaaSlug;
-        const routeProv = (provSlug === "ceuta" || provSlug === "melilla") ? `${provSlug}-${provSlug}` : provSlug;
-        // The slug in table is already uniquely created (like ceuta-ceuta)
+        const muniSlug = cleanMunicipalitySlug(row.slug, provSlug);
 
         return {
-            id: muniSlug,
+            id: row.slug,
             name: row.municipio,
             subtitle: `${row.provincia}, ${row.comunidad_autonoma}`,
-            url: `/subvenciones-solares/${routeCcaa}/${routeProv}/${muniSlug}`
+            url: `/subvenciones-solares/${ccaaSlug}/${provSlug}/${muniSlug}`
         };
     });
 

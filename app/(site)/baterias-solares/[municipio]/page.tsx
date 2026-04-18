@@ -35,6 +35,9 @@ type MunicipioRow = {
     irradiacion_solar: number | null;
     ahorro_estimado: number | null;
     bonificacion_ibi: number | null;
+    bonificacion_ibi_duracion: number | null;
+    bonificacion_ibi_condiciones: string | null;
+    bonificacion_icio: number | null;
     subvencion_autoconsumo: number | null;
     precio_medio_luz: number | null;
     precio_instalacion_min_eur: number | null;

@@ -25,6 +25,7 @@ export function normalizeCcaaSlug(ccaa: string): string {
   if (name.includes("murcia")) return "region-de-murcia";
   if (name.includes("navarra")) return "comunidad-foral-navarra";
   if (name.includes("asturias")) return "principado-de-asturias";
+  if (name.includes("catalunya") || name.includes("cataluña") || name.includes("cataluna")) return "cataluna";
   
   return slugify(ccaa);
 }

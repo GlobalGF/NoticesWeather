@@ -19,6 +19,12 @@ export type MunicipioEnergia = {
   irradiacionSolar: number;
   precioMedioLuz: number;
   slug: string;
+  bonificacionIbiDuracion?: number | null;
+  bonificacionIcioCondiciones?: string | null;
+  bonificacionIbiCondiciones?: string | null;
+  bonificacionIae?: number | null;
+  bonificacionIaeDuracion?: number | null;
+  bonificacionIaeCondiciones?: string | null;
 };
 
 export type MunicipioEnergiaGeoPath = {
@@ -47,6 +53,12 @@ type MunicipioEnergiaRow = {
   irradiacion_solar: number;
   precio_medio_luz: number;
   slug: string;
+  bonificacion_ibi_duracion?: number | null;
+  bonificacion_icio_condiciones?: string | null;
+  bonificacion_ibi_condiciones?: string | null;
+  bonificacion_iae?: number | null;
+  bonificacion_iae_duracion?: number | null;
+  bonificacion_iae_condiciones?: string | null;
 };
 
 const fallbackRows: MunicipioEnergia[] = [
@@ -62,7 +74,7 @@ const fallbackRows: MunicipioEnergia[] = [
     subvencionAutoconsumo: 1800,
     irradiacionSolar: 1650,
     precioMedioLuz: 0.22,
-    slug: "madrid"
+    slug: "madrid-madrid"
   }
 ];
 
@@ -79,7 +91,13 @@ function mapRow(row: MunicipioEnergiaRow): MunicipioEnergia {
     subvencionAutoconsumo: row.subvencion_autoconsumo,
     irradiacionSolar: row.irradiacion_solar,
     precioMedioLuz: row.precio_medio_luz,
-    slug: row.slug
+    slug: row.slug,
+    bonificacionIbiDuracion: row.bonificacion_ibi_duracion,
+    bonificacionIcioCondiciones: row.bonificacion_icio_condiciones,
+    bonificacionIbiCondiciones: row.bonificacion_ibi_condiciones,
+    bonificacionIae: row.bonificacion_iae,
+    bonificacionIaeDuracion: row.bonificacion_iae_duracion,
+    bonificacionIaeCondiciones: row.bonificacion_iae_condiciones
   };
 }
 
@@ -91,30 +109,61 @@ export const getMunicipioEnergiaBySlug = cache(async (slug: string): Promise<Mun
       }
 
       const supabase = await createSupabaseServerClient();
+      const COLS = "municipio,provincia,comunidad_autonoma,habitantes,horas_sol,ahorro_estimado,bonificacion_ibi,bonificacion_ibi_duracion,bonificacion_ibi_condiciones,bonificacion_icio,bonificacion_icio_condiciones,bonificacion_iae,bonificacion_iae_duracion,bonificacion_iae_condiciones,subvencion_autoconsumo,irradiacion_solar,precio_medio_luz,slug";
 
-      const { data, error } = await supabase
+      // 1. Try EXACT slug match first
+      const { data: exactData, error: exactError } = await supabase
         .from("municipios_energia")
-        .select(
-          "municipio,provincia,comunidad_autonoma,habitantes,horas_sol,ahorro_estimado,bonificacion_ibi,bonificacion_icio,subvencion_autoconsumo,irradiacion_solar,precio_medio_luz,slug"
-        )
+        .select(COLS)
         .eq("slug", slug)
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        console.error("[Supabase] municipios_energia query error", {
-          slug,
-          code: error.code,
-          message: error.message
-        });
-        return null;
+      if (exactError) {
+        console.error("[Supabase] municipios_energia exact query error", { slug, code: exactError.code });
       }
 
-      if (!data) {
-        return null;
+      if (exactData) {
+        return mapRow(exactData as MunicipioEnergiaRow);
       }
 
-      return mapRow(data as MunicipioEnergiaRow);
+      // 2. Try slug-as-prefix pattern if exact match fails
+      const { data: prefixRows, error: prefixError } = await supabase
+        .from("municipios_energia")
+        .select(COLS)
+        .ilike("slug", `${slug}-%`)
+        .limit(5);
+
+      if (prefixError) {
+        console.error("[Supabase] municipios_energia prefix query error", { slug, code: prefixError.code });
+      }
+
+      if (prefixRows && prefixRows.length > 0) {
+        const best = (prefixRows as MunicipioEnergiaRow[]).find(d => d.slug.startsWith(slug + "-")) || prefixRows[0];
+        if (best) return mapRow(best);
+      }
+
+      // 3. Strict fuzzy search
+      if (slug.includes("-")) {
+        const parts = slug.split("-").filter(p => p.length > 2);
+        if (parts.length > 0) {
+          const longestPart = parts.reduce((a, b) => a.length >= b.length ? a : b);
+          const { data: fuzzyRows } = await supabase
+            .from("municipios_energia")
+            .select(COLS)
+            .ilike("slug", `%${longestPart}%`)
+            .limit(20);
+
+          if (fuzzyRows && fuzzyRows.length > 0) {
+            const strictMatch = (fuzzyRows as MunicipioEnergiaRow[]).find(d => 
+              parts.every(p => d.slug.includes(p))
+            );
+            if (strictMatch) return mapRow(strictMatch);
+          }
+        }
+      }
+
+      return null;
     },
     [`municipios-energia:${slug}`],
     {

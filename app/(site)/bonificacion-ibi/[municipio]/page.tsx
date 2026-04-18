@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     pathname: `/bonificacion-ibi/${municipio}`,
     noIndex: true
   });
-  return ibiMetadata(parsed, data.municipality.name);
+  return ibiMetadata(parsed, data.municipality.municipio);
 }
 
 export default async function IbiMunicipioPage({ params }: Props) {
@@ -50,5 +50,5 @@ export default async function IbiMunicipioPage({ params }: Props) {
   if (!parsed) notFound();
   const data = await getIbiPageData(parsed);
   if (!data) notFound();
-  return <SeoLandingTemplate {...data} municipioName={data.municipality.name} municipioSlug={parsed} showSolarStats />;
+  return <SeoLandingTemplate {...data} municipioName={data.municipality.municipio} municipioSlug={parsed} />;
 }

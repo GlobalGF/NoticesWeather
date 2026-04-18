@@ -18,7 +18,7 @@ export async function getSharedSelfConsumptionPageData(municipio: string) {
   return {
     ...copy,
     links,
-    schema: buildServiceSchema(copy.title, municipality.name, copy.intro),
+    schema: buildServiceSchema(copy.header.titleHighlight, municipality.name, copy.header.description),
     municipality
   };
 }

@@ -31,6 +31,26 @@ const CANONICAL_CCAA_SLUGS: Record<string, string> = {
   "castilla-leon": "castilla-y-leon",
 };
 
+const CANONICAL_PROVINCE_SLUGS: Record<string, string> = {
+    "a-coruna": "coruna-a",
+    "coruna": "coruna-a",
+    "orense": "ourense",
+    "vizcaya": "bizkaia",
+    "guipuzcoa": "gipuzkoa",
+    "alava": "araba-alava",
+    "alicante": "alicante-alacant",
+    "castellon": "castellon-castello",
+    "valencia-provincia": "valencia-valencia",
+};
+
+const PROVINCE_DISPLAY_NAMES: Record<string, string> = {
+    "Coruña, A": "A Coruña",
+    "Alicante/Alacant": "Alicante",
+    "Castellón/Castelló": "Castellón",
+    "Valencia/València": "Valencia",
+    "Araba/Álava": "Álava",
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { provincia, comunidad } = params;
     const supabase = await createSupabaseServerClient();
@@ -68,12 +88,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const CCAA_NAME_MAP: Record<string, string> = {
     "andalucia": "Andalucía", "aragon": "Aragón", "asturias": "Asturias",
-    "illes-balears": "Islas Baleares", "canarias": "Canarias", "cantabria": "Cantabria",
-    "castilla-y-leon": "Castilla y León", "castilla-leon": "Castilla y León", "castilla-la-mancha": "Castilla-La Mancha",
-    "catalunya": "Cataluña", "comunitat-valenciana": "Comunidad Valenciana",
-    "extremadura": "Extremadura", "galicia": "Galicia", "madrid": "Comunidad de Madrid",
-    "region-de-murcia": "Región de Murcia", "navarra": "Navarra",
-    "pais-vasco": "País Vasco", "la-rioja": "La Rioja", "ceuta": "Ceuta", "melilla": "Melilla",
+    "principado-de-asturias": "Asturias",
+    "illes-balears": "Islas Baleares", "islas-baleares": "Islas Baleares",
+    "canarias": "Canarias", "cantabria": "Cantabria",
+    "castilla-y-leon": "Castilla y León", "castilla-leon": "Castilla y León",
+    "castilla-la-mancha": "Castilla-La Mancha",
+    "cataluna": "Cataluña", "catalunya": "Cataluña",
+    "comunitat-valenciana": "Comunidad Valenciana", "valencia": "Comunidad Valenciana",
+    "extremadura": "Extremadura", "galicia": "Galicia",
+    "comunidad-madrid": "Comunidad de Madrid", "madrid": "Comunidad de Madrid",
+    "region-de-murcia": "Región de Murcia", "murcia": "Región de Murcia",
+    "comunidad-foral-navarra": "Navarra", "navarra": "Navarra",
+    "pais-vasco": "País Vasco", "euskadi": "País Vasco",
+    "la-rioja": "La Rioja", "ceuta": "Ceuta", "melilla": "Melilla",
 };
 
 export default async function SubvencionesSolaresProvinciaPage({ params }: Props) {
@@ -87,43 +114,73 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
 
     const supabase = await createSupabaseServerClient();
 
-    // Self-healing Redirect: Check if 'provincia' is actually a 'municipio'
-    const { data: routeMuni } = await supabase
+    // First: Check if 'provincia' is a valid province name (prevents redirect loop
+    // when province and municipality share the same slug, e.g. "barcelona")
+    const provSearch = provincia.replace(/-/g, " ");
+    const { data: provCheckRaw } = await supabase
         .from("municipios_energia")
-        .select("slug, provincia, comunidad_autonoma")
-        .eq("slug", provincia)
+        .select("provincia")
+        .ilike("provincia", `%${provSearch}%`)
         .limit(1)
         .maybeSingle();
 
-    if (routeMuni) {
-        const m = routeMuni as any;
-        const cSlug = getCanonicalSlug(slugify(m.comunidad_autonoma));
-        const pSlug = slugify(m.provincia);
-        permanentRedirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+    const isValidProvince = !!(provCheckRaw as any)?.provincia;
+
+    // Self-healing Redirect: ONLY check if 'provincia' is a municipio 
+    // when it's NOT a valid province name (avoids barcelona→barcelona loop)
+    if (!isValidProvince) {
+        const { data: routeMuni } = await supabase
+            .from("municipios_energia")
+            .select("slug, provincia, comunidad_autonoma")
+            .eq("slug", provincia)
+            .limit(1)
+            .maybeSingle();
+
+        if (routeMuni) {
+            const m = routeMuni as any;
+            const cSlug = getCanonicalSlug(slugify(m.comunidad_autonoma));
+            const pSlug = slugify(m.provincia);
+            permanentRedirect(`/subvenciones-solares/${cSlug}/${pSlug}/${m.slug}`);
+        }
     }
 
-    // ── URL Validation: Ensure province belongs to the CCAA ──
-    const searchPattern = provincia.replace(/-/g, " ").replace(/[aeiou]/gi, "_");
-    const { data: provValidDataRaw } = await supabase
+    // ── URL Validation: Robust Accent-Insensitive Matching ──
+    const searchSlug = CANONICAL_PROVINCE_SLUGS[provincia] || provincia;
+    
+    const { data: allProvincesData } = await supabase
         .from("municipios_energia")
-        .select("comunidad_autonoma, provincia")
-        .or(`provincia.ilike.%${searchPattern}%, slug.ilike.%-${provincia}`)
-        .limit(1)
-        .maybeSingle();
+        .select("provincia, comunidad_autonoma");
 
-    const provValidData = provValidDataRaw as any;
-    if (!provValidData || !provValidData.comunidad_autonoma || !provValidData.provincia) {
+    // Get unique provinces and their slugs
+    const provincesMap = new Map<string, { name: string, ccaa: string }>();
+    (allProvincesData as any[] || []).forEach(r => {
+        if (!r.provincia) return;
+        const slug = slugify(r.provincia);
+        if (!provincesMap.has(slug)) {
+            provincesMap.set(slug, { name: r.provincia, ccaa: r.comunidad_autonoma });
+        }
+    });
+
+    const provSearchSlug = slugify(searchSlug); 
+    const matchedProv = provincesMap.get(provSearchSlug) || provincesMap.get(provSearch) || provincesMap.get(provincia);
+
+    if (!matchedProv) {
         notFound();
     }
 
-    const realCcaaSlug = slugify(provValidData.comunidad_autonoma);
+    const provValidData = {
+        provincia: matchedProv.name,
+        comunidad_autonoma: matchedProv.ccaa
+    };
+
+    const realCcaaSlug = getCanonicalSlug(slugify(provValidData.comunidad_autonoma));
 
     // Si la CCAA real no coincide con la URL (ej. catalunya/madrid), redirigimos a la correcta (madrid/madrid)
-    if (realCcaaSlug !== slugify(comunidad)) {
+    if (realCcaaSlug !== slugify(comunidad) && realCcaaSlug !== CANONICAL_CCAA_SLUGS[slugify(comunidad)]) {
         redirect(`/subvenciones-solares/${realCcaaSlug}/${slugify(provValidData.provincia)}`);
     }
 
-    const provName = provValidData.provincia;
+    const provName = PROVINCE_DISPLAY_NAMES[provValidData.provincia] || provValidData.provincia;
     const ccaaName = CCAA_NAME_MAP[comunidad] || provValidData.comunidad_autonoma || comunidad.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
     // Fetch CCAA subsidy data to show in the province page
@@ -140,11 +197,10 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
     const fechaFin = (ccaaRows as any)?.fecha_fin ?? null;
 
     // Fetch province-level stats (radiation, sun hours) from municipios
-    const searchProvPattern = provName.split(" ")[0].replace(/[aeiou]/gi, "_");
     const { data: statsRows } = await supabase
         .from("municipios_energia")
         .select("municipio, slug, irradiacion_solar, horas_sol, bonificacion_ibi")
-        .ilike("provincia", `%${searchProvPattern}%`)
+        .ilike("provincia", provName)
         .limit(1000);
 
     const statsArr = (statsRows as any[]) ?? [];
@@ -220,11 +276,11 @@ export default async function SubvencionesSolaresProvinciaPage({ params }: Props
                             <span className="text-blue-400 text-xs font-semibold tracking-wide uppercase">Provincia · {ccaaName}</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
-                            Subvenciones solares en <span className="text-blue-400">{provName}</span>
+                            Subvenciones y <span className="text-emerald-400">Bonificación IBI</span> en <span className="text-blue-400">{provName}</span>
                         </h1>
                         <p className="text-slate-400 text-base leading-relaxed">
                             Ayudas del programa de {ccaaName} disponibles en los municipios de {provName}.
-                            Selecciona tu localidad para ver las bonificaciones de IBI e ICIO específicas de tu ayuntamiento.
+                            Páginas personalizadas con las **bonificaciones de IBI e ICIO** exactas de cada ayuntamiento.
                         </p>
 
                         {/* KPI data pills */}

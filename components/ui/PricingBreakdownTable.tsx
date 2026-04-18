@@ -11,6 +11,8 @@ type Props = {
   precioInstalacionMedio: number | null;
   precioInstalacionMax: number | null;
   bonificacionIbi: number | null;
+  bonificacionIbiDuracion?: number | null;
+  bonificacionIcio?: number | null;
   irradiacionSolar: number | null;
   horasSol: number | null;
   precioLuz: number;
@@ -34,7 +36,7 @@ type SystemSize = {
   panels: number;
   roofM2: number;
   idealFor: string;
-  wpMultiplier: number; // Curve factor (smaller = more expensive per watt)
+  wpMultiplier: number; 
 };
 
 const SYSTEM_SIZES: SystemSize[] = [
@@ -43,14 +45,14 @@ const SYSTEM_SIZES: SystemSize[] = [
   { label: "Premium", kWp: 8, panels: 19, roofM2: 38, idealFor: "Chalet con alto consumo, piscina o coche eléctrico (>500 kWh/mes)", wpMultiplier: 0.9 },
 ];
 
-/* ── Content Banks (Spintax) ────────────────────────────────────── */
-
 export function PricingBreakdownTable({
   municipio,
   provincia,
   eurPorWatio,
   precioInstalacionMedio,
   bonificacionIbi,
+  bonificacionIbiDuracion,
+  bonificacionIcio,
   irradiacionSolar,
   horasSol,
   precioLuz,
@@ -60,11 +62,12 @@ export function PricingBreakdownTable({
   const provClean = cleanName(provincia);
   const yearNow = new Date().getFullYear();
   
-  // DRIVING LOGIC: Derive real price per watt
   const dbEurWp = eurPorWatio || (precioInstalacionMedio ? precioInstalacionMedio / 5000 : null);
   const baseEurWp = dbEurWp || 1.45; 
   
   const ibi = bonificacionIbi ?? 0;
+  const ibiYrs = bonificacionIbiDuracion || 3;
+  const icio = bonificacionIcio ?? 0;
   const irrad = Number(irradiacionSolar ?? FALLBACK_ES.irradiacion_kwh_m2);
   const horas = Number(horasSol ?? FALLBACK_ES.horas_sol);
 
@@ -84,16 +87,18 @@ export function PricingBreakdownTable({
   const introText = generateDynamicText(introSpintax, `${slug}-price-intro`, vars);
   const footerText = generateDynamicText(footerSpintax, `${slug}-price-footer`, vars);
 
-  // Calculate data for each system size using the Pricing Curve
   const rows = SYSTEM_SIZES.map((sys) => {
     const specificEurWp = baseEurWp * sys.wpMultiplier;
     const costeBruto = Math.round(sys.kWp * specificEurWp * 1000);
-    const deduccionIrpf = Math.round(Math.min(costeBruto * 0.20, 5000)); // Estimated state-wide deduction
+    const deduccionIrpf = Math.round(Math.min(costeBruto * 0.20, 5000)); 
+    
+    // Financial logic updated with real duration and ICIO
     const ahorroIbiAnual = ibi > 0 ? Math.round(costeBruto * 0.008 * (ibi / 100)) : 0; 
-    const ahorroIbiTotal = ahorroIbiAnual * 3; // Estimated typical duration
-    const costeNeto = costeBruto - deduccionIrpf - ahorroIbiTotal;
+    const ahorroIbiTotal = ahorroIbiAnual * ibiYrs; 
+    const ahorroIcio = icio > 0 ? Math.round(costeBruto * 0.03 * (icio / 100)) : 0; // Assuming ICIO base is ~3% of budget
+    
+    const costeNeto = costeBruto - deduccionIrpf - ahorroIbiTotal - ahorroIcio;
 
-    // Production & Savings estimate
     const peakSunH = horas / 365;
     const produccionAnual = Math.round(sys.kWp * peakSunH * 0.80 * 365);
     const autoconsumoRate = sys.kWp <= 3 ? 0.55 : sys.kWp <= 5 ? 0.65 : 0.70;
@@ -110,6 +115,7 @@ export function PricingBreakdownTable({
       costeNeto,
       deduccionIrpf,
       ahorroIbiTotal,
+      ahorroIcio,
       produccionAnual,
       ahorroAnual,
       paybackNeto,
@@ -119,7 +125,6 @@ export function PricingBreakdownTable({
 
   return (
     <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5">
         <div className="flex items-center gap-2 mb-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-blue-400 text-xs">
@@ -135,7 +140,6 @@ export function PricingBreakdownTable({
         </div>
       </div>
 
-      {/* Pricing Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left" role="table" aria-label={`Tabla de precios solares en ${muniClean}`}>
           <thead>
@@ -181,7 +185,7 @@ export function PricingBreakdownTable({
                 </td>
                 <td className="py-4 px-4 text-right hidden sm:table-cell">
                   <p className="font-bold text-emerald-700 tabular-nums">{fmt(row.costeNeto)} €</p>
-                  <p className="text-[10px] text-emerald-600">inc. deducción e IBI</p>
+                  <p className="text-[10px] text-emerald-600">inc. deducción, IBI e ICIO</p>
                 </td>
                 <td className="py-4 px-4 text-right">
                   <p className="font-bold text-blue-700 tabular-nums">{fmt(row.ahorroAnual)} €</p>
@@ -203,7 +207,6 @@ export function PricingBreakdownTable({
         </table>
       </div>
 
-      {/* Spintax Footer Info */}
       <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Idoneidad del sistema</h3>
         <p className="text-xs text-slate-600 leading-relaxed">
@@ -211,7 +214,6 @@ export function PricingBreakdownTable({
         </p>
       </div>
 
-      {/* Source & Methods */}
       <div className="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-[10px] text-slate-400 leading-tight space-y-1">
           <p>Coste base: {fmt(baseEurWp, 2)} €/Wp · Radiación: {fmt(irrad)} kWh/m² · PVGIS 5.2 (Joint Research Centre).</p>

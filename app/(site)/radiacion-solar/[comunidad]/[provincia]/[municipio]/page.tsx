@@ -79,7 +79,6 @@ export default async function RadiationPage({ params }: Props) {
         {...data} 
         municipioSlug={parsedMunicipio} 
         municipioName={data.municipality.municipio}
-        showSolarStats 
       />
       <section className="card mt-6">
         <h2 className="text-xl font-semibold">Estimador PVGIS</h2>

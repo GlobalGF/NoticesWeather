@@ -34,6 +34,9 @@ type MunicipioRow = {
     irradiacion_solar: number | null;
     ahorro_estimado: number | null;
     bonificacion_ibi: number | null;
+    bonificacion_ibi_duracion: number | null;
+    bonificacion_ibi_condiciones: string | null;
+    bonificacion_icio: number | null;
     subvencion_autoconsumo: number | null;
     precio_medio_luz: number | null;
     precio_instalacion_min_eur: number | null;
@@ -481,7 +484,7 @@ export default async function PrecioLuzMunicipioPage({ params }: Props) {
                                 />
                             </div>
                             <div className="px-5 pb-4">
-                                <DataRow label="Bonificación IBI" value={nd(m.bonificacion_ibi, "%")} note="al instalar autoconsumo" />
+                                <DataRow label="Bonificación IBI" value={nd(m.bonificacion_ibi, "%")} note={m.bonificacion_ibi_duracion ? `durante ${m.bonificacion_ibi_duracion} años` : "al instalar autoconsumo"} />
                                 <DataRow label="Subvención autonómica" value={nd(m.subvencion_autoconsumo, "%")} />
                                 <DataRow label="Ahorro en factura de la luz" value={nd(ahorroAnual, " €")} note="instalación 4 kWp" />
                                 <DataRow label="Retorno de inversión" value={payback ? `${payback} años` : "—"} />

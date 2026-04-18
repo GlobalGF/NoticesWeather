@@ -24,12 +24,17 @@ export type ConsumptionBand = {
   maxKwh: number;
 };
 
+export type SolarSubsidyStatus = "ABIERTA" | "CERRADA" | "PROXIMAMENTE" | "AGOTADA";
+
 export type SolarSubsidy = {
   municipalitySlug: string;
   programSlug: string;
   programName: string;
   amountEur: number;
   sourceUrl: string | null;
+  status?: SolarSubsidyStatus;
+  finPlazo?: string | null; // ISO date string
+  bdnsId?: string | null;
 };
 
 export type UrbanRegulation = {

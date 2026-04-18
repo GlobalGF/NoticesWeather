@@ -1,5 +1,6 @@
 import { LeadCaptureForm } from "@/components/ui/LeadCaptureForm";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
+import { getMunicipioBySlug } from "@/lib/data/solar";
 
 export const metadata = buildMetadata({
   title: "Presupuesto de placas solares",
@@ -8,16 +9,32 @@ export const metadata = buildMetadata({
   noIndex: true,
 });
 
-export default function PresupuestoSolarPage() {
+type Props = {
+  searchParams: { m?: string };
+};
+
+export default async function PresupuestoSolarPage({ searchParams }: Props) {
+  const slug = searchParams.m;
+  let municipioName = "España";
+  let provincia = "";
+
+  if (slug) {
+    const data = await getMunicipioBySlug(slug);
+    if (data) {
+      municipioName = data.municipio;
+      provincia = data.provincia;
+    }
+  }
+
   return (
     <main className="bg-slate-50 min-h-screen py-16">
       <div className="mx-auto max-w-4xl px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">
-            Consigue 3 Presupuestos <br className="hidden md:block" /> de Instaladores Verificados
+            Consigue 3 Presupuestos <br className="hidden md:block" /> {municipioName !== "España" ? `en ${municipioName}` : "de Instaladores Verificados"}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Analizamos tu caso y te conectamos con las mejores <span font-bold>empresas de placas solares</span> en tu provincia. Ahorra tiempo y dinero comparando ofertas reales.
+            Analizamos tu caso y te conectamos con las mejores <span font-bold>empresas de placas solares</span> {provincia ? `en ${provincia}` : "en tu provincia"}. Ahorra tiempo y dinero comparando ofertas reales.
           </p>
         </div>
 
@@ -26,7 +43,7 @@ export default function PresupuestoSolarPage() {
         <div className="grid lg:grid-cols-3 gap-12 items-start">
           {/* Form Side */}
           <div className="lg:col-span-2">
-            <LeadCaptureForm municipio="España" />
+            <LeadCaptureForm municipio={municipioName} provincia={provincia} />
           </div>
 
           {/* Trust Side */}

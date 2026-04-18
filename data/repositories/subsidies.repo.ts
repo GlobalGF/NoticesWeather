@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import type { SolarSubsidy } from "@/data/types";
+import type { SolarSubsidy, SolarSubsidyStatus } from "@/data/types";
 import { cachePolicy } from "@/lib/cache/policy";
 import { cacheTags } from "@/lib/cache/tags";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
@@ -11,6 +11,9 @@ type SubsidyRow = {
   program_name: string;
   amount_eur: number;
   source_url: string | null;
+  status?: string | null;
+  fin_plazo?: string | null;
+  bdns_id?: string | null;
 };
 
 const fallbackPrograms = ["nextgen-autoconsumo", "subvencion-autonomica"];
@@ -20,7 +23,9 @@ const fallbackSubsidy: SolarSubsidy = {
   programSlug: "nextgen-autoconsumo",
   programName: "Programa NextGen Autoconsumo",
   amountEur: 1800,
-  sourceUrl: null
+  sourceUrl: null,
+  status: "ABIERTA" as SolarSubsidyStatus,
+  finPlazo: "2026-12-31"
 };
 
 export async function getTopSubsidyProgramSlugs(limit: number): Promise<string[]> {
@@ -54,17 +59,61 @@ export async function getSubsidyByMunicipalityAndProgram(
     return { ...fallbackSubsidy, municipalitySlug, programSlug };
   }
 
+    const cached = unstable_cache(
+      async () => {
+        const supabase = await createSupabaseServerClient();
+        const { data, error } = await supabase
+          .from("solar_subsidies")
+          .select("municipality_slug,program_slug,program_name,amount_eur,source_url,status,fin_plazo,bdns_id")
+          .eq("municipality_slug", municipalitySlug)
+          .eq("program_slug", programSlug)
+          .maybeSingle();
+
+        if (error || !data) return null;
+        const row = data as SubsidyRow;
+
+        return {
+          municipalitySlug: row.municipality_slug,
+          programSlug: row.program_slug,
+          programName: row.program_name,
+          amountEur: row.amount_eur,
+          sourceUrl: row.source_url,
+          status: (row.status as SolarSubsidyStatus) || undefined,
+          finPlazo: row.fin_plazo,
+          bdnsId: row.bdns_id
+        };
+      },
+      [`subsidies:${municipalitySlug}:${programSlug}`],
+      {
+        revalidate: cachePolicy.data.subsidy,
+        tags: [cacheTags.subsidies, cacheTags.subsidy(municipalitySlug, programSlug)]
+      }
+    );
+
+    return cached();
+
+}
+
+export async function getActiveSubsidyByMunicipality(
+  municipalitySlug: string
+): Promise<SolarSubsidy | null> {
+  if (!hasSupabaseEnv()) {
+    return { ...fallbackSubsidy, municipalitySlug };
+  }
+
   const cached = unstable_cache(
     async () => {
       const supabase = await createSupabaseServerClient();
       const { data, error } = await supabase
         .from("solar_subsidies")
-        .select("municipality_slug,program_slug,program_name,amount_eur,source_url")
+        .select("municipality_slug,program_slug,program_name,amount_eur,source_url,status,fin_plazo,bdns_id")
         .eq("municipality_slug", municipalitySlug)
-        .eq("program_slug", programSlug)
+        .order("status", { ascending: true }) // ABIERTA comes before CERRADA
+        .order("amount_eur", { ascending: false }) // higher amount first
+        .limit(1)
         .maybeSingle();
 
-      if (error || !data) return null;
+      if (error || !data) return { ...fallbackSubsidy, municipalitySlug };
       const row = data as SubsidyRow;
 
       return {
@@ -72,13 +121,16 @@ export async function getSubsidyByMunicipalityAndProgram(
         programSlug: row.program_slug,
         programName: row.program_name,
         amountEur: row.amount_eur,
-        sourceUrl: row.source_url
+        sourceUrl: row.source_url,
+        status: (row.status as SolarSubsidyStatus) || undefined,
+        finPlazo: row.fin_plazo,
+        bdnsId: row.bdns_id
       };
     },
-    [`subsidies:${municipalitySlug}:${programSlug}`],
+    [`subsidies:active:${municipalitySlug}`],
     {
       revalidate: cachePolicy.data.subsidy,
-      tags: [cacheTags.subsidies, cacheTags.subsidy(municipalitySlug, programSlug)]
+      tags: [cacheTags.subsidies]
     }
   );
 

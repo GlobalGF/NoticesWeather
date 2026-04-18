@@ -1,5 +1,5 @@
 import { getNearbyMunicipiosEnergiaByProvince } from "@/data/repositories/municipios-energia.repo";
-import { slugify } from "@/lib/utils/slug";
+import { slugify, normalizeCcaaSlug, cleanMunicipalitySlug } from "@/lib/utils/slug";
 
 type InternalLinkContext = {
   municipioSlug: string;
@@ -9,6 +9,7 @@ type InternalLinkContext = {
   tarifa?: string;       
   consumo?: string;      
   nearbyLimit?: number;
+  currentModule?: "subvenciones" | "placas" | "precio-luz" | "ibi" | "radiacion" | "normativa" | "coeficiente" | "ev";
 };
 
 export type InternalLink = {
@@ -17,13 +18,6 @@ export type InternalLink = {
   isNearby?: boolean;
 };
 
-function buildBatteryUrl(tarifa?: string, consumo?: string): string {
-  if (tarifa && consumo) {
-    return `/baterias-solares/${tarifa}/${consumo}`;
-  }
-  return `/baterias-solares`;
-}
-
 function withGeoPath(
   path: string,
   provincia?: string,
@@ -31,7 +25,7 @@ function withGeoPath(
   municipioSlug?: string
 ): string | null {
   if (!provincia || !comunidadAutonoma || !municipioSlug) return null;
-  const comunidadSlug = slugify(comunidadAutonoma);
+  const comunidadSlug = normalizeCcaaSlug(comunidadAutonoma);
   const provinciaSlug = slugify(provincia);
   return `${path}/${comunidadSlug}/${provinciaSlug}/${municipioSlug}`;
 }
@@ -49,44 +43,18 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
   const nearbyLimit = Math.max(1, Math.min(context.nearbyLimit ?? 5, 10));
   const mName = context.municipioName || context.municipioSlug;
 
-  const geoPath = (base: string) => withGeoPath(
-    base,
-    context.provincia,
-    context.comunidadAutonoma,
-    context.municipioSlug
-  );
-
-  const subPath = geoPath("/subvenciones-solares");
-  const radPath = geoPath("/radiacion-solar");
-
   // Links for the SAME municipality (The Silo Cluster)
+  // Standardize these to deep paths if possible
   const clusterLinks: InternalLink[] = [
-    { href: `/placas-solares/${context.municipioSlug}`, label: `Instalación de placas solares en ${mName}` },
-    { href: `/precio-luz/${context.municipioSlug}`, label: `Precio de la luz hoy en ${mName}` },
-    { href: `/bonificacion-ibi/${context.municipioSlug}`, label: `Bonificación del IBI en ${mName}` },
-    { href: `/autoconsumo-compartido/${context.municipioSlug}`, label: `Autoconsumo compartido en ${mName}` },
+    { 
+      href: withGeoPath("/placas-solares", context.provincia, context.comunidadAutonoma, context.municipioSlug) || `/placas-solares/${context.municipioSlug}`, 
+      label: `Instalación de placas solares en ${mName}` 
+    },
+    { 
+      href: `/precio-luz/${context.municipioSlug}`, // Precio luz stays shallow for now as per current routing
+      label: `Precio de la luz hoy en ${mName}` 
+    },
   ];
-
-  if (subPath) {
-    clusterLinks.push({ href: subPath, label: `Subvenciones para autoconsumo en ${mName}` });
-  }
-  
-  if (radPath) {
-    clusterLinks.push({ href: radPath, label: `Radiación solar y producción en ${mName}` });
-  }
-
-  // Cross-silo specific links
-  const normPath = geoPath("/normativa-solar");
-  if (normPath) {
-    clusterLinks.push({ href: `${normPath}/autoconsumo-residencial`, label: `Normativa solar en ${mName}` });
-  }
-
-  const coefPath = geoPath("/coeficiente-autoconsumo");
-  if (coefPath) {
-    clusterLinks.push({ href: `${coefPath}/reparto-fijo`, label: `Coeficientes de reparto en ${mName}` });
-  }
-
-  clusterLinks.push({ href: `/baterias-solares/${context.municipioSlug}`, label: `Baterías solares en ${mName}` });
 
   if (!context.provincia) {
     return uniqueLinks(clusterLinks);
@@ -99,11 +67,28 @@ export async function buildAutomatedInternalLinks(context: InternalLinkContext):
     nearbyLimit
   );
 
-  const nearbyLinks = nearby.map((m) => ({
-    href: `/placas-solares/${m.slug}`,
-    label: `Placas solares en ${m.municipio}`,
-    isNearby: true
-  }));
+  const nearbyLinks: InternalLink[] = nearby.map((m) => {
+    const provSlug = slugify(m.provincia || "");
+    const cleanSlug = cleanMunicipalitySlug(m.slug, provSlug);
+    
+    let href = `/placas-solares/${m.slug}`;
+    let label = `Placas solares en ${m.municipio}`;
+
+    // If on subvenciones, link to subvenciones for neighbors too (SEO optimization)
+    if (context.currentModule === "subvenciones" && m.comunidadAutonoma && m.provincia) {
+      const gPath = withGeoPath("/subvenciones-solares", m.provincia, m.comunidadAutonoma, cleanSlug);
+      if (gPath) {
+        href = gPath;
+        label = `Ayudas y subvenciones en ${m.municipio}`;
+      }
+    }
+
+    return {
+      href,
+      label,
+      isNearby: true
+    };
+  });
 
   return uniqueLinks([...clusterLinks, ...nearbyLinks]);
 }

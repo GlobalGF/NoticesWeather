@@ -33,7 +33,7 @@ export async function getSharedCoefficientPageData(
   return {
     ...copy,
     links,
-    schema: buildServiceSchema(copy.title, municipality.municipio, copy.intro),
+    schema: buildServiceSchema(`${copy.header.titlePrefix} ${copy.header.titleHighlight}`, municipality.municipio, copy.header.description),
     municipality,
     coefficient
   };
