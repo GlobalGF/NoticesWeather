@@ -56,13 +56,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dbProvSlug = slugify(data.municipality.provincia);
   const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
 
-  return subsidyMetadata(
-    dbCcaaSlug,
-    dbProvSlug,
-    dbMuniSlug,
-    data.municipality.municipio,
-    data.subsidy.programName
-  );
+  return buildMetadata({
+    title: data.title,
+    description: data.intro.length > 160 ? data.intro.substring(0, 157) + "..." : data.intro,
+    pathname: `/subvenciones-solares/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}`
+  });
 }
 
 export default async function SubsidyPage({ params }: Props) {

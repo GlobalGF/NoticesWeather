@@ -35,11 +35,32 @@ export function normalizeCcaaSlug(ccaa: string): string {
  * e.g. "salamanca-salamanca" -> "salamanca"
  */
 export function cleanMunicipalitySlug(muniSlug: string, provSlug: string): string {
-  // Aggressively remove province suffix if it matches the current province
-  // e.g. "salamanca-salamanca" -> "salamanca", "piera-barcelona" -> "piera"
-  if (muniSlug.endsWith(`-${provSlug}`)) {
-    const base = muniSlug.slice(0, -(provSlug.length + 1));
-    if (base.length > 0) return base;
+  const PROV_SYNONYMS: Record<string, string[]> = {
+    "balears-illes": ["illes-balears", "baleares", "illes-balears-balears-illes"],
+    "coruna-a": ["a-coruna", "coruna"],
+    "ourense": ["orense"],
+    "girona": ["gerona"],
+    "bizkaia": ["vizcaya"],
+    "gipuzkoa": ["guipuzcoa"],
+    "araba-alava": ["alava", "araba"],
+    "valencia-valencia": ["valencia"],
+    "alicante-alacant": ["alicante", "alacant"],
+    "castellon-castello": ["castellon", "castello"]
+  };
+
+  const synonyms = PROV_SYNONYMS[provSlug] || [];
+  const targets = [provSlug, ...synonyms];
+
+  for (const target of targets) {
+    if (muniSlug.endsWith(`-${target}`)) {
+      const base = muniSlug.slice(0, -(target.length + 1));
+      if (base.length > 0) return base;
+    }
+    if (muniSlug.startsWith(`${target}-`)) {
+      const base = muniSlug.slice(target.length + 1);
+      if (base.length > 0) return base;
+    }
   }
+
   return muniSlug;
 }

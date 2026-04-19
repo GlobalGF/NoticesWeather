@@ -7,10 +7,10 @@ export const revalidate = cachePolicy.sitemap.index;
 
 // CCAA slugs — one sitemap per autonomous community
 const CCAA_SLUGS = [
-  "andalucia", "aragon", "asturias", "illes-balears", "canarias",
-  "cantabria", "castilla-la-mancha", "castilla-y-leon", "catalunya",
+  "andalucia", "aragon", "principado-de-asturias", "illes-balears", "canarias",
+  "cantabria", "castilla-la-mancha", "castilla-y-leon", "cataluna",
   "comunitat-valenciana", "extremadura", "galicia", "la-rioja",
-  "madrid", "region-de-murcia", "navarra", "pais-vasco",
+  "comunidad-madrid", "region-de-murcia", "comunidad-foral-navarra", "pais-vasco",
   "ceuta", "melilla"
 ];
 
