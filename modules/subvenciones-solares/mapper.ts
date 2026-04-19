@@ -19,11 +19,31 @@ function processContent(template: string, tokens: Record<string, string>): strin
   return content;
 }
 
+// Simple string hash for deterministic "randomness"
+function getSeed(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+// Deterministic shuffle
+function shuffleArray<T>(array: T[], seed: number): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = (seed + i) % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSubsidy) {
   const muni = municipality.municipio;
   const prov = municipality.provincia;
   const ccaa = municipality.comunidadAutonoma;
   const prog = subsidy.programName;
+  const seed = getSeed(muni);
   
   // 1. DATA WITH ROBUST FALLBACKS
   const subPct = (subsidy as any).percentage || 50;
@@ -33,23 +53,22 @@ export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSub
   const radValue = municipality.irradiacionSolar || 1700;
   const rad = radValue.toLocaleString("es-ES", { minimumFractionDigits: 1 });
   
-  // Prices and Savings (Using 7200€ as a realistic 5kWp baseline)
+  // Prices and Savings
   const priceEst = 7200;
   const annualProd = hSol * 5.0; // Assuming a 5kWp installation
   const annualSavingsEur = Math.round(annualProd * 0.18); // Conservative 0.18€/kWh savings
   const co2SavedKg = Math.round(annualProd * 0.4);
   
   // Payback calculation
-  // (Price - Subsidy - ICIO_Benefit - IBI_Benefit_Total) / AnnualSavings
   const subsidyAmount = subsidy.amountEur || (priceEst * (subPct / 100));
-  const icioBenefit = 300 * (icioPct / 100); // 300€ baseline ICIO taxes
-  const ibiBenefitAnnual = 500 * (ibiPct / 100); // 500€ baseline IBI
+  const icioBenefit = 300 * (icioPct / 100);
+  const ibiBenefitAnnual = 500 * (ibiPct / 100);
   const ibiYears = municipality.bonificacionIbiDuracion || 3;
-  const totalIncentives = subsidyAmount + icioBenefit + (ibiBenefitAnnual * ibiYears) + (priceEst * 0.4); // 40% IRPF baseline
+  const totalIncentives = subsidyAmount + icioBenefit + (ibiBenefitAnnual * ibiYears) + (priceEst * 0.4); 
   
-  const netCost = Math.max(priceEst * 0.2, priceEst - totalIncentives); // Floor at 20% cost
+  const netCost = Math.max(priceEst * 0.2, priceEst - totalIncentives);
   let paybackYears = Math.round(netCost / annualSavingsEur);
-  paybackYears = Math.max(3, Math.min(paybackYears, 8)); // Realistic range
+  paybackYears = Math.max(3, Math.min(paybackYears, 8));
 
   const totalSavingPct = Math.min(85, subPct + (ibiPct / 5) + icioPct / 20);
 
@@ -69,15 +88,50 @@ export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSub
     PAYBACK_YEARS: paybackYears.toString(),
     ANNUAL_SAVINGS: annualSavingsEur.toLocaleString("es-ES"),
     PRICE_ESTIMATE: priceEst.toLocaleString("es-ES"),
+    AÑO: "2026",
+    LOCALIZACION: muni.toLowerCase() === prov.toLowerCase() ? muni : `${muni} (${prov})`
   };
 
+  // 3. DYNAMIC STRUCTURE SELECTION
+  const titleTemplates = SUBVENCIONES_SPINTAX.municipio_titles;
+  const selectedTitleTemplate = titleTemplates[seed % titleTemplates.length];
+
+  const allSections = [
+    {
+      id: 1,
+      title: `Marco Legal y Régimen de Autoconsumo (RD 244/2019)`,
+      content: processContent(SUBVENCIONES_SPINTAX.marco_legal, tokens)
+    },
+    {
+      id: 2,
+      title: `Guía Técnica de Deducciones en el IRPF`,
+      content: processContent(SUBVENCIONES_SPINTAX.irpf_guia_detallada, tokens)
+    },
+    {
+      id: 3,
+      title: `Roadmap Administrativo para conseguir las ayudas`,
+      content: processContent(SUBVENCIONES_SPINTAX.pasos_detallados, tokens)
+    },
+    {
+      id: 4,
+      title: `Análisis de Bonificaciones Locales en ${muni}`,
+      content: processContent(SUBVENCIONES_SPINTAX.bonificaciones_locales_detalladas, tokens)
+    }
+  ];
+
+  // Dynamic shuffle of sections based on municipality name
+  const shuffledSections = shuffleArray(allSections, seed);
+
+  // Selection of 3 unique FAQs from the pool
+  const selectedFaqs = shuffleArray(SUBVENCIONES_SPINTAX.faqs_pool, seed + 1).slice(0, 4);
+
   return {
-    title: `Subvenciones y Bonificación IBI en ${muni} 2026: Guía Autoconsumo [Ahorra hasta ${totalSavingPct}%]`,
+    title: processContent(selectedTitleTemplate, tokens),
     intro: processContent(SUBVENCIONES_SPINTAX.municipio_intro, tokens),
     header: {
       breadcrumb: `SUBVENCIONES / ${municipality.provincia.toUpperCase()} / ${muni.toUpperCase()}`,
-      label: `GUÍA DE AUTOCONSUMO PROFESIONAL · 2026`,
-      titlePrefix: `Subvenciones y Ayudas para`,
+      label: `GUÍA PROFESIONAL · 2026`,
+      titlePrefix: `Ayudas y Subvenciones para`,
       titleHighlight: `Placas Solares en ${muni}`,
       description: processContent(SUBVENCIONES_SPINTAX.bonificaciones_detalladas, tokens),
     },
@@ -88,68 +142,47 @@ export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSub
       savings: `${annualSavingsEur.toLocaleString("es-ES")}€ / año`
     },
     incentivesCard: {
-      title: `PERFIL DE AHORRO: ${muni.toUpperCase()}`,
+      title: `ESTADÍSTICAS EN ${muni.toUpperCase()}`,
       rows: [
         {
-          label0: `SUBVENCIÓN ${ccaa.toUpperCase()}`,
-          label1: "Fondo perdido (Next Gen / Regional)",
+          label0: `AYUDA ${ccaa.toUpperCase()}`,
+          label1: "Subvención directa regional",
           value: `${subPct}%`
         },
         {
-          label0: "BONIFICACIÓN IBI LOCAL",
+          label0: "IBI BONIFICADO",
           label1: `Ahorro durante ${ibiYears} años`,
           value: `${ibiPct}%`
         },
         {
-          label0: "DESCUENTO ICIO TASAS",
-          label1: "Ahorro en trámites de obra",
+          label0: "ICIO DESCONTADO",
+          label1: "Ahorro en trámites",
           value: `${icioPct}%`
-        },
-        {
-          label0: "DEDUCCIÓN IRPF ESTATAL",
-          label1: "Mejora de eficiencia energética",
-          value: `40%*`
         }
       ],
-      cta: `SOLICITAR ESTUDIO EN ${muni.toUpperCase()}`
+      cta: `ESTUDIO SOLAR EN ${muni.toUpperCase()}`
     },
     mainContent: {
       status: {
-        title: `Análisis Técnico de Rentabilidad en ${muni}`,
+        title: `Rentabilidad del Autoconsumo en ${muni}`,
         desc: processContent(SUBVENCIONES_SPINTAX.municipio_rentabilidad, tokens),
-        highlight: `Impacto Ambiental: Al instalar paneles en ${muni}, ahorrarás la emisión de ${tokens.CO2_SAVED} toneladas de CO2 al año. ${processContent(SUBVENCIONES_SPINTAX.impacto_ambiental, tokens)}`
+        highlight: `Sostenibilidad local: Al instalar placas en ${muni}, estarás ahorrando la emisión de ${tokens.CO2_SAVED} toneladas de gases contaminantes anualmente.`
       }
     },
-    sections: [
-      {
-        id: 1,
-        title: `1. Marco Legal y Régimen de Autoconsumo (RD 244/2019)`,
-        content: processContent(SUBVENCIONES_SPINTAX.marco_legal, tokens)
-      },
-      {
-        id: 2,
-        title: `2. Guía Detallada de Deducciones en el IRPF`,
-        content: processContent(SUBVENCIONES_SPINTAX.irpf_guia_detallada, tokens)
-      },
-      {
-        id: 3,
-        title: `3. Roadmap Administrativo: Pasos para el éxito`,
-        content: processContent(SUBVENCIONES_SPINTAX.pasos_detallados, tokens)
-      }
-    ],
-    faqs: SUBVENCIONES_SPINTAX.faqs_expertos.map(f => ({
+    sections: shuffledSections,
+    faqs: selectedFaqs.map(f => ({
       question: processContent(f.q, tokens),
       answer: processContent(f.a, tokens)
     })),
     sidebarAudit: {
-      badge: "GIGAVATIOS DE EXPERIENCIA",
-      title: "Gestionamos tus Ayudas",
-      desc: `No te pierdas en la burocracia de ${ccaa}. Nuestros expertos en ${prov} tramitan el programa ${prog} y las deducciones de ${muni} por ti.`,
-      cta: "SOLICITAR TRAMITACIÓN"
+      badge: "TRAMITACIÓN 100% GESTIONADA",
+      title: "¿Te ayudamos?",
+      desc: `Expertos en ${prov} se encargan de registrar tu solicitud del programa [PROGRAMA] para tu vivienda en ${muni}.`,
+      cta: "SOLICITAR INFO"
     },
     simulation: {
-      title: `Calculadora de Ahorro para ${muni}`,
-      desc: `Visualiza el retorno de inversión exacto para un sistema de autoconsumo en tu tejado de ${muni}.`
+      title: `Calculadora Solar ${muni}`,
+      desc: `Comprueba el ahorro exacto para tu tejado en ${muni} de forma gratuita.`
     },
     municipioSlug: municipality.slug
   };
