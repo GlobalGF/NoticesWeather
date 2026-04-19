@@ -116,6 +116,11 @@ export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSub
       id: 4,
       title: `Análisis de Bonificaciones Locales en ${muni}`,
       content: processContent(SUBVENCIONES_SPINTAX.bonificaciones_locales_detalladas, tokens)
+    },
+    {
+      id: 5,
+      title: `Subvenciones Autonómicas en ${ccaa}: Programa ${prog}`,
+      content: processContent(SUBVENCIONES_SPINTAX.ayudas_ccaa_detalladas, tokens)
     }
   ];
 

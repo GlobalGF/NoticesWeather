@@ -1,6 +1,7 @@
 /**
  * Plantillas Spintax para SEO Programático de Subvenciones Solares.
  * Optimizadas para evitar Duplicidad (Thin Content) con x10 variantes estructurales.
+ * Todas las secciones han sido expandidas para ofrecer contenido profesional de >500 palabras por página.
  */
 export const SUBVENCIONES_SPINTAX = {
 
@@ -58,14 +59,50 @@ export const SUBVENCIONES_SPINTAX = {
     }
   ],
 
-  // Mantener las de CCAA y Provincia por compatibilidad
+  // ═══════════════════════════════════════════════════════
+  // SECCIÓN LARGA: AYUDAS AUTONÓMICAS (RE-EXPANDIDA)
+  // ═══════════════════════════════════════════════════════
+  ayudas_ccaa_detalladas: `{Las subvenciones para placas solares en [CCAA] se articulan principalmente a través de fondos europeos gestionados por la administración regional.|El marco de ayudas fotovoltaicas en la comunidad de [CCAA] ofrece un impulso definitivo para la transición energética en viviendas.} {Aunque los famosos fondos Next Generation han marcado un hito en las instalaciones solares, la región de [CCAA] sigue promoviendo el autoconsumo mediante el programa [PROGRAMA].|La estrategia de eficiencia energética de [CCAA] para este 2026 se centra en facilitar que los paneles solares sean accesibles para todos los ciudadanos.}
+
+{En términos técnicos, estas subvenciones para instalaciones solares en [MUNICIPIO] cubren una parte sustancial de la inversión inicial.|Para los propietarios en [MUNICIPIO], estas ayudas para placas solares representan un ahorro directo en la factura de compra.} {El porcentaje de ayuda suele situarse en el [PCT]%, aunque en casos de municipios en riesgo de despoblación o colectividades específicas, este incentivo fotovoltaico puede ser incluso superior.|Gracias a la gestión de [CCAA], el programa [PROGRAMA] permite amortizar la instalación de paneles en tiempo récord, a menudo reduciendo el periodo de recuperación de la inversión a menos de 5 años.}
+
+{Es fundamental entender que estas subvenciones de placas solares en [CCAA] son de concurrencia simple, lo que significa que se otorgan por orden de llegada hasta agotar presupuesto.|Los expertos en energía solar de [PROVINCIA] advierten que la agilidad en la solicitud es clave para asegurar la reserva de fondos para tus paneles.} {Una vez aprobada la fase inicial de la subvención fotovoltaica en [MUNICIPIO], se dispone de un plazo de ejecución para finalizar el proyecto técnico de los paneles solares.|Tras la resolución positiva de [CCAA], la empresa instaladora procede al montaje y posterior legalización ante la Dirección General de Energía para liberar el pago de la ayuda.}`,
+
+  // ═══════════════════════════════════════════════════════
+  // SECCIÓN LARGA: BONIFICACIONES LOCALES (IBI/ICIO) (RE-EXPANDIDA)
+  // ═══════════════════════════════════════════════════════
+  bonificaciones_locales_detalladas: `{El Ayuntamiento de [MUNICIPIO] juega un papel crucial en la rentabilidad de las instalaciones solares mediante las bonificaciones del IBI y el ICIO.|Los incentivos municipales en [MUNICIPIO] para placas solares son, a menudo, el factor que decanta la balanza hacia un ahorro masivo inmediato.} {Mientras que las subvenciones autonómicas son un pago único, las bonificaciones locales en impuestos como el IBI son un beneficio sostenido en el tiempo para tu vivienda en [MUNICIPIO].|La deducción en el Impuesto sobre Bienes Inmuebles en [MUNICIPIO] por eficiencia energética es una de las herramientas más potentes para cualquier propietario que instale paneles solares.}
+
+{En el caso específico de [MUNICIPIO], la bonificación del IBI puede alcanzar el [BONIF_IBI]% durante varios años.|Si nos centramos en las ordenanzas fiscales de [MUNICIPIO], el ahorro en el IBI por poner placas solares supone una reducción directa de los costes fijos de la vivienda.} {Este incentivo en [MUNICIPIO] suele aplicarse durante un periodo de 3 a 5 años, lo que acumulado puede cubrir hasta el 20% del coste total de los paneles solares.|Para una vivienda estándar en [PROVINCIA], esta ayuda local en el IBI se traduce en cientos de euros de ahorro anual extra que se suman a la producción de energía solar gratuita.}
+
+{Complementariamente, el ICIO (Impuesto sobre Construcciones, Instalaciones y Obras) en [MUNICIPIO] suele estar bonificado en un 95% para proyectos fotovoltaicos.|No debemos olvidar el ICIO, ya que en la mayoría de localidades de [PROVINCIA] y concretamente en [MUNICIPIO], se aplican descuentos máximos para fomentar las energías renovables.} {Al solicitar la licencia de obra o declaración responsable para tus placas solares en [MUNICIPIO], este descuento reduce drásticamente las tasas municipales asociadas a la instalación.|Este ahorro en el ICIO en [MUNICIPIO] es el primer beneficio económico que percibe el usuario al iniciar su camino hacia el autoconsumo solar.}`,
+
+  // ═══════════════════════════════════════════════════════
+  // SECCIÓN LARGA: DEDUCCIONES IRPF (RE-EXPANDIDA)
+  // ═══════════════════════════════════════════════════════
+  irpf_guia_detallada: `{La joya de la corona para el ahorro fiscal en instalaciones solares en [MUNICIPIO] es la deducción por eficiencia energética en el IRPF.|Muchos usuarios desconocen que pueden recuperar gran parte de su inversión en paneles solares de la vivienda mediante la declaración de la renta.} {Esta medida estatal, aplicable en toda la provincia de [PROVINCIA], permite desgravarse hasta el 20%, 40% o incluso 60% del coste de las placas solares.|El incentivo fiscal del IRPF es compatible con las subvenciones autonómicas de [CCAA] y las bonificaciones de IBI de [MUNICIPIO], permitiendo un ahorro acumulado sin precedentes.}
+
+{Para acceder al 20% de deducción en [PROVINCIA], la instalación solar debe reducir al menos un 7% la demanda de calefacción y refrigeración.|En el escenario más común para viviendas en [MUNICIPIO], una reducción del 30% en el consumo de energía primaria no renovable permite saltar al 40% de deducción en el IRPF.} {Esto se acredita mediante certificados de eficiencia energética (CEE) antes y después de instalar las placas solares.|Es vital que tu empresa instaladora en [MUNICIPIO] coordine estas certificaciones técnicas para que Hacienda valide la mejora de eficiencia de tus paneles.}
+
+{En casos de rehabilitaciones energéticas integrales en comunidades de propietarios de [MUNICIPIO], la deducción puede ascender al 60%.|Si vives en un edificio en [MUNICIPIO] y realizáis una instalación fotovoltaica colectiva, el ahorro fiscal en el IRPF alcanza su máximo exponente.} {Teniendo en cuenta que el coste de vida y la energía en [PROVINCIA] sigue subiendo, esta vía fiscal hace que los paneles solares sean la inversión financiera más segura actualmente en [MUNICIPIO].|Sumando el 40% de IRPF al [PCT]% de subvención de [CCAA], el coste neto de tus placas solares en [MUNICIPIO] se reduce al mínimo posible.}`,
+
+  // ═══════════════════════════════════════════════════════
+  // SECCIÓN: PASOS Y REQUISITOS (Roadmap) (RE-EXPANDIDA)
+  // ═══════════════════════════════════════════════════════
+  pasos_detallados: `{El camino para legalizar y cobrar las subvenciones de placas solares en [MUNICIPIO] sigue una ruta administrativa clara pero exigente.|Si quieres evitar la denegación de ayudas para tus paneles solares en [MUNICIPIO], es fundamental seguir estos pasos técnicos ordenadamente.}
+
+{Paso 1: Memoria Técnica y Solicitud Previa. En [CCAA], es obligatorio registrar la intención de ayuda antes del inicio de la instalación solar.|Todo comienza con un estudio de viabilidad en tu tejado de [MUNICIPIO]. Sin el registro inicial ante [CCAA], se pierde el derecho al programa [PROGRAMA].}
+
+{Paso 2: Instalación y Legalización. Una empresa autorizada de [PROVINCIA] debe realizar el montaje fotovoltaico siguiendo el Reglamento Electrotécnico de Baja Tensión.|Tras la aprobación de la subvención, los ingenieros instalan los paneles en tu vivienda de [MUNICIPIO] y emiten el certificado de instalación ( boletín eléctrico). El expediente se eleva a la comunidad de [CCAA] para su registro oficial.}
+
+{Paso 3: Justificación de la Subvención Fotovoltaica. Se presentan las facturas y el justificante de pago bancario que acredite la inversión solar in [MUNICIPIO].|Una vez los paneles solares están produciendo energía en tu vivienda, se remite toda la documentación a [CCAA], incluyendo fotos de la instalación solar y pegatinas de publicidad de los fondos europeos si fuera necesario.}`,
+
+  // Mantener las de CCAA y Provincia por compatibilidad técnica (pero con algo de contenido)
   ccaa_intro_alta: `{En [CCAA]|En la comunidad de [CCAA]}, las {subvenciones para placas solares|ayudas fotovoltaicas|instalaciones de paneles solares} {son de las más rentables de España|tienen una eficiencia económica máxima}. El programa [PROGRAMA] {para autoconsumo solar en vivienda|para instalaciones fotovoltaicas residenciales} {cubre hasta el [PCT]%|financia el [PCT]%|subvenciona el [PCT]%} del {coste de las placas|presupuesto de la instalación}.`,
-  provincia_intro: `{La provincia de [PROVINCIA]|[PROVINCIA]} {se beneficia del marco de subvenciones para placas solares de [CCAA]|está incluida en el plan de instalaciones fotovoltaicas de [CCAA]}.`,
-  requisitos: `Es obligatorio {presentar la solicitud de ayuda antes de instalar los paneles solares|registrar el expediente antes de comenzar la obra}.`,
-  pasos_detallados: `{Paso 1: Memoria Técnica. Paso 2: Instalación. Paso 3: Justificación y Cobro de la ayuda solar en [MUNICIPIO].}`,
-  irpf_guia_detallada: `Puedes desgravarte hasta el 40% o 60% en el IRPF por mejorar la eficiencia energética en [MUNICIPIO] con paneles solares.`,
-  ayudas_ccaa_detalladas: `Las ayudas en [CCAA] se gestionan por orden de llegada hasta agotar fondos europeos.`,
-  bonificaciones_locales_detalladas: `Ahorra en el IBI de [MUNICIPIO] durante varios años al instalar energía solar residencial.`,
-  provincia_solar: `La provincia de [PROVINCIA] tiene una irradiación excelente para el autoconsumo de [RADIACION] kWh/m2.`,
-  provincia_solar_fallback: `El sol en [PROVINCIA] garantiza la rentabilidad de las placas solares en cualquier municipio.`
+  ccaa_intro_media: `{El programa de ayudas en [CCAA] ofrece incentivos moderados para el autoconsumo.|La comunidad de [CCAA] mantiene una línea de subvenciones del [PCT]% para placas solares.} {Aunque la cuantía es inferior a otras convocatorias, sumando el IRPF y las bonificaciones municipales de cada ayuntamiento, el ahorro en [CCAA] sigue siendo muy atractivo.|Gracias al programa [PROGRAMA], los propietarios en Los propietarios en de [CCAA] pueden recuperar una parte significativa de su inversión fotovoltaica.}`,
+  ccaa_intro_fiscal: `{Actualmente en [CCAA], la rentabilidad solar se apoya principalmente en incentivos fiscales y deducciones de IRPF.|A falta de subvenciones directas masivas en [CCAA], el marco de ahorro se centra en las bonificaciones locales de IBI e ICIO.} {No obstante, el recurso solar en de [CCAA] es tan potente que la instalación de paneles se amortiza rápidamente incluso sin ayudas directas.|Te aconsejamos consultar los incentivos de cada municipio dentro de [CCAA], ya que las ayudas locales suelen compensar la ausencia de fondos autonómicos.}`,
+  provincia_intro: `{La provincia de [PROVINCIA]|[PROVINCIA]} {se beneficia del marco de subvenciones para placas solares de [CCAA]|está incluida en el plan de instalaciones fotovoltaicas de [CCAA]}. {Las ayudas del programa [PROGRAMA] están disponibles para todos los residentes de la zona.}`,
+  requisitos: `Es obligatorio {presentar la solicitud de ayuda antes de instalar los paneles solares|registrar el expediente antes de comenzar la obra en tu vivienda de [MUNICIPIO]|tramitar el incentivo necesariamente antes de realizar el pago a la empresa instaladora}.`,
+  provincia_solar: `La provincia de [PROVINCIA] tiene una irradiación excelente para el autoconsumo de [RADIACION] kWh/m2, lo que garantiza una producción constante de energía limpia.`,
+  provincia_solar_fallback: `El sol en [PROVINCIA] garantiza la rentabilidad de las placas solares en cualquier municipio, permitiendo amortizar la inversión en pocos años.`
 };

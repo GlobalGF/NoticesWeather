@@ -1,7 +1,7 @@
 import { getMunicipioEnergiaBySlug } from "@/data/repositories/municipios-energia.repo";
 import { getActiveSubsidyByMunicipality } from "@/data/repositories/subsidies.repo";
 import { buildAutomatedInternalLinks } from "@/lib/seo/internal-linking";
-import { buildServiceSchema } from "@/lib/seo/schema-org";
+import { buildServiceSchema, buildFaqSchema } from "@/lib/seo/schema-org";
 import { slugify, normalizeCcaaSlug } from "@/lib/utils/slug";
 import { mapSubsidyCopy } from "@/modules/subvenciones-solares/mapper";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -63,7 +63,10 @@ export async function getSubsidyPageData(
   return {
     ...copy,
     links,
-    schema: buildServiceSchema(copy.title, municipality.municipio, copy.intro),
+    schema: [
+      buildServiceSchema(copy.title, municipality.municipio, copy.intro),
+      buildFaqSchema(copy.faqs.map(f => ({ question: f.question, answer: f.answer })))
+    ],
     municipality,
     subsidy,
     subsidyStatus: subsidy.status,
