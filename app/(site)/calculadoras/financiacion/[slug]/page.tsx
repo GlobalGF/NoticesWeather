@@ -152,6 +152,9 @@ export default async function FinanciacionMunicipioPage({ params }: Props) {
            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-8">
               {parseMarkdown(`¿Por qué financiar tu **economía** energética en ${municipio}?`)}
            </h2>
+           <p className="text-sm text-slate-500 font-semibold border-l-2 border-emerald-500 pl-3 italic mb-6">
+             Estudio de financiación solar y préstamos para la instalación de placas solares en {municipio}, calculando las cuotas mensuales y la rentabilidad del autoconsumo.
+           </p>
            <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-6">
                  <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">

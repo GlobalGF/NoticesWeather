@@ -3,6 +3,9 @@ import type { MunicipioEnergia } from "@/data/repositories/municipios-energia.re
 
 export function mapRadiationCopy(municipality: MunicipioEnergia, radiation: RadiationProfile) {
   return {
+    provinciaName: municipality.provincia,
+    comunidadName: municipality.comunidadAutonoma,
+    seoIntro: `Estudio técnico completo de la radiación solar, irradiación anual, producción estimada y horas de sol para la instalación de placas solares en ${municipality.municipio}.`,
     header: {
       breadcrumb: `Estudio Solar / Irradiación / ${municipality.municipio}`,
       label: "Potencial Fotovoltaico",
@@ -37,12 +40,26 @@ export function mapRadiationCopy(municipality: MunicipioEnergia, radiation: Radi
         id: 1,
         title: "Optimización del Ángulo",
         content: `Para captar la máxima energía en ${municipality.municipio}, recomendamos una inclinación de ${radiation.optimalTiltDeg} grados hacia el sur. Esto garantiza que durante los meses de invierno, cuando el sol está más bajo, la producción siga siendo competitiva.`
+      },
+      {
+        id: 2,
+        title: "Irradiación Global Horizontal (GHI) y Producción Anual",
+        content: `La irradiación global horizontal en ${municipality.municipio} permite calcular con exactitud la producción anual esperada para un sistema fotovoltaico estándar. Los valores medios indican que cada kilovatio pico (kWp) instalado es capaz de producir entre 1.400 y 1.600 kWh anuales, dependiendo de las sombras locales y la eficiencia de los inversores solares utilizados.`
+      },
+      {
+        id: 3,
+        title: "Influencia del Clima y Nubosidad Local",
+        content: `A diferencia de otras regiones del norte de Europa, el clima en la provincia de ${municipality.provincia} cuenta con un porcentaje mínimo de días completamente nublados al año. Esto permite que los paneles solares operen en su rango de rendimiento óptimo la mayor parte del tiempo, aprovechando también la radiación difusa en los días parcialmente cubiertos.`
       }
     ],
     faqs: [
       {
         question: "¿Afecta la temperatura a la producción?",
         answer: "Sí, aunque parezca contraintuitivo, los paneles pierden eficiencia con el calor extremo. Sin embargo, la alta radiación de la zona compensa sobradamente este efecto."
+      },
+      {
+        question: "¿Cómo influye la orientación del tejado?",
+        answer: "La orientación ideal es hacia el sur para maximizar la captación de radiación solar durante todo el año, aunque las orientaciones este y oeste también son muy viables."
       }
     ],
     simulation: {

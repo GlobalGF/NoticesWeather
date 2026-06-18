@@ -18,9 +18,8 @@ export async function getSharedCoefficientPageData(
 
   if (!municipality || !coefficient) return null;
 
-  if (slugify(municipality.comunidadAutonoma) !== comunidad || slugify(municipality.provincia) !== provincia) {
-    return null;
-  }
+  // CCAA/province canonicalization is handled by the page component via permanentRedirect.
+  // Do NOT return null for non-canonical URL slugs here.
 
   const copy = mapSharedCoefficientCopy(municipality, coefficient);
   const links = await buildAutomatedInternalLinks({

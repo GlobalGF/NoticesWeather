@@ -12,7 +12,7 @@ import { cachePolicy } from "@/lib/cache/policy";
 import { getSitemapChunkUrls, getSitemapPageCount, toSitemapXml } from "@/lib/seo/sitemap-builder";
 import { BASE_URL } from "@/lib/seo/seo-config";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { cleanMunicipalitySlug, slugify } from "@/lib/utils/slug";
+import { cleanMunicipalitySlug, slugify, getComunidadSynonyms, normalizeCcaaSlug } from "@/lib/utils/slug";
 
 export const revalidate = cachePolicy.sitemap.chunk;
 export const dynamic = "force-dynamic";
@@ -56,12 +56,13 @@ export async function GET(_request: NextRequest, context?: Params) {
 
 async function generateRegionalSitemap(comunidad: string) {
     const supabase = createSupabaseAdminClient();
+    const synonyms = getComunidadSynonyms(comunidad);
     
     // We prioritize published entries from the queue for regional drip-feeding
     const { data: items, error } = await supabase
         .from("publish_queue")
         .select("slug, published_at, provincia")
-        .eq("comunidad", comunidad)
+        .in("comunidad", synonyms)
         .eq("status", "published")
         .order("priority_score", { ascending: false })
         .limit(30000);
@@ -111,7 +112,7 @@ async function generateSubvencionesSitemap() {
         .limit(20000);
 
     const urls = (items || []).map((item: any) => {
-        const cSlug = item.comunidad;
+        const cSlug = normalizeCcaaSlug(item.comunidad);
         const pSlug = slugify(item.provincia || "");
         const cleanMuni = cleanMunicipalitySlug(item.slug, pSlug);
         const loc = `${BASE_URL}/subvenciones-solares/${cSlug}/${pSlug}/${cleanMuni}`;

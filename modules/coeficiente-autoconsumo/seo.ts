@@ -8,7 +8,7 @@ export function sharedCoefficientMetadata(
   municipalityName: string
 ) {
   return buildMetadata({
-    title: `Coeficiente de autoconsumo compartido en ${municipalityName}`,
+    title: `Coeficiente de Autoconsumo Compartido en ${municipalityName}`,
     description: `Valores orientativos de reparto para autoconsumo compartido en ${municipalityName} (${modalidad}).`,
     pathname: `/coeficiente-autoconsumo/${comunidad}/${provincia}/${municipio}/${modalidad}`
   });

@@ -64,3 +64,23 @@ export function cleanMunicipalitySlug(muniSlug: string, provSlug: string): strin
 
   return muniSlug;
 }
+
+/**
+ * Returns all possible slug synonyms for a given CCAA.
+ */
+export function getComunidadSynonyms(comunidadSlug: string): string[] {
+  const norm = normalizeCcaaSlug(comunidadSlug);
+  const mapping: Record<string, string[]> = {
+    "comunidad-madrid": ["comunidad-madrid", "comunidad-de-madrid", "madrid"],
+    "cataluna": ["cataluna", "cataluña", "catalunya"],
+    "comunitat-valenciana": ["comunitat-valenciana", "comunidad-valenciana", "valencia"],
+    "castilla-y-leon": ["castilla-y-leon", "castilla-leon"],
+    "castilla-la-mancha": ["castilla-la-mancha", "castilla-mancha"],
+    "illes-balears": ["illes-balears", "illes-balears-balears-illes", "islas-baleares", "baleares"],
+    "principado-de-asturias": ["principado-de-asturias", "asturias"],
+    "region-de-murcia": ["region-de-murcia", "murcia"],
+    "comunidad-foral-navarra": ["comunidad-foral-navarra", "navarra"],
+    "pais-vasco": ["pais-vasco", "euskadi"],
+  };
+  return mapping[norm] || [norm, comunidadSlug];
+}

@@ -17,7 +17,8 @@ export async function getSubsidyPageData(
   const dbProvSlug = slugify(municipality.provincia);
   const dbCcaaSlug = normalizeCcaaSlug(municipality.comunidadAutonoma);
 
-  if (dbCcaaSlug !== comunidad || dbProvSlug !== provincia) return null;
+  // Allow the page component to handle canonical redirects — do NOT 404 here
+  // for non-canonical CCAA/province slugs (e.g. 'madrid' vs 'comunidad-madrid')
 
   // Attempt to fetch specific municipal subsidy
   let subsidy = await getActiveSubsidyByMunicipality(municipio);

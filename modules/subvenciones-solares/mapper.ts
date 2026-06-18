@@ -133,6 +133,9 @@ export function mapSubsidyCopy(municipality: MunicipioEnergia, subsidy: SolarSub
   return {
     title: processContent(selectedTitleTemplate, tokens),
     intro: processContent(SUBVENCIONES_SPINTAX.municipio_intro, tokens),
+    provinciaName: prov,
+    comunidadName: ccaa,
+    seoIntro: `Estudio técnico detallado sobre la instalación de placas solares, ayudas públicas, subvenciones y bonificaciones fiscales para el autoconsumo fotovoltaico en ${muni} (${prov}).`,
     header: {
       breadcrumb: `SUBVENCIONES / ${municipality.provincia.toUpperCase()} / ${muni.toUpperCase()}`,
       label: `GUÍA PROFESIONAL · 2026`,

@@ -181,9 +181,7 @@ export function SubsidiesSeoBlock({
           <div className="mt-10 text-center space-y-6">
             {(() => {
               const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
-              // Avoid redundant triple paths if slugs are identical
-              const pathParts = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i);
-              const path = pathParts.length > 0 ? pathParts.join('/') : cleanMainSlug;
+              const path = `${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`;
               
               return (
                 <a

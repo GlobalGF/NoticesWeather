@@ -4,7 +4,7 @@ const YEAR = new Date().getFullYear();
 
 export function ibiMetadata(slug: string, municipalityName: string) {
   return buildMetadata({
-    title: `Bonificación IBI ${YEAR} por placas solares en ${municipalityName} — Porcentaje y requisitos`,
+    title: `Bonificación IBI ${YEAR} por Placas Solares en ${municipalityName}`,
     description: `Guía completa de la bonificación del IBI por instalar energía solar en ${municipalityName}: porcentaje, años de duración y cómo solicitarla.`,
     pathname: `/bonificacion-ibi/${slug}`
   });

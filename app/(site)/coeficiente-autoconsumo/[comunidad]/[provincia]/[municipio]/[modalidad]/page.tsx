@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
@@ -8,6 +8,7 @@ import { getTopCoefficientModes } from "@/data/repositories/shared-coefficients.
 import { cachePolicy } from "@/lib/cache/policy";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 import { sharedCoefficientMetadata } from "@/modules/coeficiente-autoconsumo/seo";
 import { getSharedCoefficientPageData } from "@/modules/coeficiente-autoconsumo/service";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
@@ -59,10 +60,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     noIndex: true
   });
 
+  // Use canonical slugs for metadata
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
   return sharedCoefficientMetadata(
-    parsedComunidad,
-    parsedProvincia,
-    parsedMunicipio,
+    dbCcaaSlug,
+    dbProvSlug,
+    dbMuniSlug,
     parsedModalidad,
     data.municipality.municipio
   );
@@ -78,6 +84,15 @@ export default async function SharedCoefficientPage({ params }: Props) {
 
   const data = await getSharedCoefficientPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedModalidad);
   if (!data) notFound();
+
+  // Redirect to canonical URL
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
+  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+    permanentRedirect(`/coeficiente-autoconsumo/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}/${modalidad}`);
+  }
 
   return (
     <>

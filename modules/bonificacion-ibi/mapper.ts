@@ -6,6 +6,9 @@ export function mapIbiCopy(municipality: MunicipioEnergia) {
   const conditions = municipality.bonificacionIbiCondiciones;
 
   return {
+    provinciaName: municipality.provincia,
+    comunidadName: municipality.comunidadAutonoma,
+    seoIntro: `Guía completa sobre el porcentaje de descuento, plazos y requisitos de la bonificación del IBI por instalar placas solares y paneles fotovoltaicos en el municipio de ${municipality.municipio}.`,
     header: {
       breadcrumb: `Subvenciones / IBI / ${municipality.municipio}`,
       label: "Impuestos Municipales",
@@ -40,12 +43,26 @@ export function mapIbiCopy(municipality: MunicipioEnergia) {
         id: 1,
         title: "¿Cómo solicitarla?",
         content: `Para beneficiarte de esta rebaja en ${municipality.municipio}, es imprescindible presentar la solicitud antes de que finalice el año fiscal de la instalación. Necesitarás el certificado de fin de obra y la resolución de industria.`
+      },
+      {
+        id: 2,
+        title: "Requisitos Técnicos y Plazos de Solicitud",
+        content: `El plazo para solicitar la bonificación del IBI por placas solares en ${municipality.municipio} suele ser de seis meses a un año desde la fecha de finalización y legalización de la obra. El solicitante debe aportar el justificante del pago de la tasa municipal de obras, la declaración responsable o licencia, y un certificado técnico oficial de la instalación fotovoltaica que demuestre la homologación de los paneles instalados.`
+      },
+      {
+        id: 3,
+        title: "Compatibilidad con el ICIO y Deducciones del IRPF",
+        content: `Esta bonificación del IBI es complementaria al descuento en el Impuesto de Construcciones, Instalaciones y Obras (ICIO), que en la provincia de ${municipality.provincia} puede llegar al 95% del total del impuesto. Además, el propietario de la vivienda puede solicitar la deducción estatal en la declaración del IRPF, acumulando múltiples capas de ahorro fiscal que reducen el coste neto de la instalación solar a una fracción del precio de tarifa.`
       }
     ],
     faqs: [
       {
         question: "¿Es compatible con el ICIO?",
         answer: "Sí, la mayoría de los ayuntamientos permiten sumar la bonificación del IBI al descuento en el impuesto de construcciones (ICIO)."
+      },
+      {
+        question: "¿Qué pasa si vendo la casa durante la bonificación?",
+        answer: "La bonificación del IBI está ligada al inmueble y su catastro en el ayuntamiento, por lo que el nuevo propietario se seguirá beneficiando del descuento restante durante los años de vigencia establecidos."
       }
     ],
     simulation: {

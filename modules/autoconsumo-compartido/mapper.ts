@@ -2,6 +2,9 @@ import type { Municipality } from "@/data/types";
 
 export function mapSharedSelfConsumptionCopy(municipality: Municipality) {
   return {
+    provinciaName: municipality.province,
+    comunidadName: municipality.autonomousCommunity,
+    seoIntro: `Guía detallada sobre la instalación de proyectos de autoconsumo compartido, coeficientes de reparto, normativa de comunidades de propietarios y ahorro en ${municipality.name}.`,
     header: {
       breadcrumb: `Proyectos / Autoconsumo Compartido / ${municipality.name}`,
       label: "Energía Comunitaria",
@@ -36,12 +39,26 @@ export function mapSharedSelfConsumptionCopy(municipality: Municipality) {
         id: 1,
         title: "Beneficios para Pymes y Vecinos",
         content: `Compartir los gastos de instalación y mantenimiento reduce drásticamente el tiempo de amortización. Además, el autoconsumo compartido en ${municipality.name} permite aprovechar superficies que de otro modo quedarían infrautilizadas.`
+      },
+      {
+        id: 2,
+        title: "Reparto de Costes y Coeficientes Dinámicos Horarios",
+        content: `El reparto de la electricidad autogenerada en una comunidad de vecinos o parque empresarial en la provincia de ${municipality.province} se realiza mediante coeficientes (fijos o dinámicos). Gracias a la digitalización del mercado, los coeficientes dinámicos permiten optimizar el reparto asignando la energía sobrante a aquellos vecinos que tengan un mayor consumo en cada hora específica del día.`
+      },
+      {
+        id: 3,
+        title: "Requisitos de Aprobación en la Junta de Propietarios",
+        content: `Para llevar a cabo una instalación de autoconsumo colectivo sobre una zona común en ${municipality.name}, la Ley de Propiedad Horizontal exige el voto favorable de la mayoría simple de los propietarios que participen activamente del proyecto, facilitando enormemente el acuerdo comunitario en beneficio de todos los adheridos.`
       }
     ],
     faqs: [
       {
         question: "¿Qué es el coeficiente dinámico?",
         answer: "Es un modelo que permite repartir la energía generada según el consumo real de cada participante en cada momento, maximizando el aprovechamiento."
+      },
+      {
+        question: "¿A qué distancia máxima se pueden conectar?",
+        answer: "La distancia máxima entre la instalación de generación y los puntos de consumo asociados es de 2.000 metros (2 km) según la normativa de autoconsumo compartido vigente en España."
       }
     ],
     simulation: {

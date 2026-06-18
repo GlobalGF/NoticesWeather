@@ -36,10 +36,7 @@ export default async function PlacasMunicipioGeoPage({ params }: Props) {
   const data = await getMunicipioEnergiaBySlug(municipio);
   if (!data) notFound();
 
-  // Prevent indexing malformed geo combinations and keep one canonical URL.
-  if (slugify(data.comunidadAutonoma) !== comunidad || slugify(data.provincia) !== provincia) {
-    notFound();
-  }
+  // Always redirect to the flat canonical URL — no need to validate geo combination
 
   redirect(`/placas-solares/${data.slug}`);
 }

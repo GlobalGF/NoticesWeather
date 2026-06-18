@@ -125,7 +125,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ccaaName = rows.length > 0 ? rows[0].comunidad_autonoma : (CCAA_NAME_MAP[parsed] || parsed.replace(/-/g, " "));
   const percentages = rows.map((r) => r.subvencion_porcentaje).filter((v): v is number => typeof v === "number");
   const maxPct = percentages.length ? Math.max(...percentages) : 40;
-  const title = `Ayudas placas solares en ${ccaaName}`;
+  const title = `Subvenciones y Ayudas para Placas Solares en ${ccaaName} 2026`;
   const description = rows.length > 0
     ? `Programa vigente en ${ccaaName}: hasta ${maxPct}% de subvención. Guía completa para solicitar correctamente la ayuda fotovoltaica.`
     : `Ayudas y deducciones fiscales para instalar placas solares en ${ccaaName}. Requisitos, procedimiento y bonificaciones IBI e ICIO.`;

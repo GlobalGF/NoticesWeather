@@ -19,7 +19,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LiveUpdateTime } from "@/components/ui/LiveUpdateTime";
 import { AntiCommercialWarning } from "@/components/ui/AntiCommercialWarning";
 import { SiloNavigation } from "@/components/ui/SiloNavigation";
-import { slugify, cleanMunicipalitySlug } from "@/lib/utils/slug";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 import Fallback from "@/components/solar/Fallback";
 import dynamic from "next/dynamic";
 
@@ -396,7 +396,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia || ""}
                                 slug={slug}
-                                comunidadSlug={slugify(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
+                                comunidadSlug={normalizeCcaaSlug(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
                                 provinciaSlug={slugify(municipio.provincia || "sevilla")}
                                 bonificacionIbi={municipio.bonificacion_ibi}
                                 bonificacionIbiDuracion={municipio.bonificacion_ibi_duracion}
@@ -503,7 +503,7 @@ export default async function PlacasSolaresMunicipioPage({ params }: Props) {
                                 municipio={municipio.municipio}
                                 provincia={municipio.provincia}
                                 slug={slug}
-                                comunidadSlug={slugify(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
+                                comunidadSlug={normalizeCcaaSlug(municipio.comunidad_autonoma ?? municipio.provincia ?? "andalucia")}
                                 provinciaSlug={slugify(municipio.provincia || "sevilla")}
                                 nearbyCities={allProvinceItems.filter(m => m.slug !== slug)}
                             />

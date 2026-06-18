@@ -92,6 +92,9 @@ export function BatterySeoBlock({
         <h2 className="text-2xl md:text-3xl font-black mb-8 tracking-tight">¿Compensa la batería solar en {municipio}?</h2>
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-6">
+            <p className="text-sm text-slate-500 font-semibold border-l-2 border-blue-500 pl-3 italic">
+              Estudio técnico sobre la instalación de baterías solares de litio y acumuladores fotovoltaicos en el municipio de {municipio} para conseguir la máxima autonomía y ahorro energético.
+            </p>
             <p className="text-slate-600 leading-relaxed font-medium text-base md:text-lg">
               {parseMarkdown(intro)}
             </p>

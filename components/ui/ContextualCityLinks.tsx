@@ -128,7 +128,7 @@ export function ContextualCityLinks({
           {/* Ensure current city slug is also cleaned to point to canonical version */}
           {(() => {
             const cleanMainSlug = cleanMunicipalitySlug(slug, provinciaSlug);
-            const subPath = [comunidadSlug, provinciaSlug, cleanMainSlug].filter((p, i, self) => self.indexOf(p) === i).join('/');
+            const subPath = `${comunidadSlug}/${provinciaSlug}/${cleanMainSlug}`;
             return (
               <ul className="space-y-2">
                 <li>
@@ -177,12 +177,12 @@ export function ContextualCityLinks({
                 </li>
                 <li>
                   <Link
-                    href={`/subvenciones-solares/${subPath}`}
+                    href={`/baterias-solares/${cleanMainSlug}`}
                     className="group flex items-center gap-2 p-2.5 rounded-lg border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors"
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">📋</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded bg-teal-100 text-teal-600 text-xs shrink-0">🔋</span>
                     <span className="text-sm text-slate-700 group-hover:text-teal-700 font-medium">
-                      Informe de subvenciones en {muniClean} ({cleanName(provincia)})
+                      Baterías solares y almacenamiento en {muniClean}
                     </span>
                   </Link>
                 </li>

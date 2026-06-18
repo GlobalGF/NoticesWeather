@@ -13,9 +13,8 @@ export async function getRadiationPageData(comunidad: string, provincia: string,
 
   if (!municipality || !radiation) return null;
 
-  if (slugify(municipality.comunidadAutonoma) !== comunidad || slugify(municipality.provincia) !== provincia) {
-    return null;
-  }
+  // CCAA/province canonicalization is handled by the page component via permanentRedirect.
+  // Do NOT return null for non-canonical URL slugs here.
 
   const copy = mapRadiationCopy(municipality, radiation);
   const links = await buildAutomatedInternalLinks({

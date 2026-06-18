@@ -3,6 +3,9 @@ import type { MunicipioEnergia } from "@/data/repositories/municipios-energia.re
 
 export function mapUrbanRegulationCopy(municipality: MunicipioEnergia, regulation: UrbanRegulation) {
   return {
+    provinciaName: municipality.provincia,
+    comunidadName: municipality.comunidadAutonoma,
+    seoIntro: `Información oficial sobre la normativa de autoconsumo solar, trámites de urbanismo, licencias de obra y declaración responsable para placas solares en ${municipality.municipio}.`,
     header: {
       breadcrumb: `Normativa / Urbanismo / ${municipality.municipio}`,
       label: "Marco Jurídico",
@@ -37,12 +40,26 @@ export function mapUrbanRegulationCopy(municipality: MunicipioEnergia, regulatio
         id: 1,
         title: "Requisitos para la Bonificación",
         content: `Para no perder el derecho a las bonificaciones locales, es fundamental que el proyecto cumpla con los estándares técnicos de ${municipality.municipio}. Asegúrate de que tu instalador disponga de los certificados de homologación necesarios.`
+      },
+      {
+        id: 2,
+        title: "Declaración Responsable frente a Licencia de Obra Mayor",
+        content: `De acuerdo con la legislación vigente en ${municipality.municipio}, la mayoría de las instalaciones solares fotovoltaicas residenciales sobre cubierta no requieren una licencia de obra mayor previa. En su lugar, el promotor o la empresa instaladora debe tramitar una declaración responsable acompañada de una memoria técnica de diseño, lo que acorta los tiempos de inicio a escasos días.`
+      },
+      {
+        id: 3,
+        title: "Condiciones de Integración Estética y Patrimonio Histórico",
+        content: `En zonas de especial protección patrimonial o cascos históricos en la provincia de ${municipality.provincia}, el ayuntamiento puede exigir que los paneles solares mantengan una disposición coplanar con la cubierta, evitando el uso de soportes con inclinación excesiva que alteren el paisaje urbano o la estética tradicional protegida.`
       }
     ],
     faqs: [
       {
         question: "¿Puedo instalar placas en suelo urbano?",
         answer: "Sí, la mayoría de normativas en ${municipality.provincia} permiten la instalación tanto en cubiertas como en estructuras auxiliares dentro de la parcela, siempre que se respete la estética urbana."
+      },
+      {
+        question: "¿Qué es el código técnico de la edificación (CTE)?",
+        answer: "Es la normativa marco en España que regula los estándares de seguridad estructural, habitabilidad y eficiencia energética que deben cumplir las edificaciones, afectando a la instalación de paneles."
       }
     ],
     simulation: {

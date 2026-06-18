@@ -214,7 +214,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
         highlights: ["Cielo limpio", "Sol castellano"]
     },
     "pontevedra": {
-        backgroundUrl: "https://images.unsplash.com/photo-1574360533513-33bc71536b15?auto=format&fit=crop&q=80&w=1200",
+        backgroundUrl: "https://images.unsplash.com/photo-1563968743333-044cef800494?auto=format&fit=crop&q=80&w=1200",
         description: "Rías Baixas con un potencial solar creciente y clima atlántico suave.",
         highlights: ["Rías Baixas", "Sol oceánico"]
     },
@@ -285,7 +285,7 @@ export const PROVINCES_METADATA: Record<string, ProvinceMetadata> = {
 };
 
 export const DEFAULT_PROVINCE_METADATA: ProvinceMetadata = {
-    backgroundUrl: "https://images.unsplash.com/photo-150939136634b-614bb32e050b?auto=format&fit=crop&q=80&w=800",
+    backgroundUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80&w=800",
     description: "Descubre la rentabilidad de las baterías solares en tu zona.",
     highlights: ["Energía 100% renovable", "Ahorro mensual"]
 };

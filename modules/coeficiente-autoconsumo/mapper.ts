@@ -6,6 +6,9 @@ export function mapSharedCoefficientCopy(
   coefficient: SharedSelfConsumptionCoefficient
 ) {
   return {
+    provinciaName: municipality.provincia,
+    comunidadName: municipality.comunidadAutonoma,
+    seoIntro: `Estudio y cálculo del coeficiente de autoconsumo compartido en ${municipality.municipio} para la distribución justa de la energía generada colectivamente.`,
     header: {
       breadcrumb: `Autoconsumo / Coeficientes / ${municipality.municipio}`,
       label: "Reparto de Energía",
@@ -40,12 +43,26 @@ export function mapSharedCoefficientCopy(
         id: 1,
         title: "Diferencia entre Fijo y Dinámico",
         content: `En ${municipality.municipio}, puedes optar por coeficientes fijos (siempre el mismo reparto) o dinámicos (cambian según el consumo horario). Esta última opción es ideal para maximizar el aprovechamiento de la energía solar en polígonos industriales o edificios con horarios dispares.`
+      },
+      {
+        id: 2,
+        title: "Importancia de los Coeficientes de Reparto Beta y Alfa",
+        content: `El coeficiente de reparto, expresado técnicamente como 'beta' en los acuerdos de autoconsumo compartido en ${municipality.municipio}, define el porcentaje de la potencia nominal de generación fotovoltaica que se asigna a cada consumidor asociado. Un cálculo preciso basado en curvas horarias reales de demanda minimiza los excedentes no aprovechados y acorta el periodo de amortización de la instalación común.`
+      },
+      {
+        id: 3,
+        title: "Registro de Acuerdos de Reparto ante la Distribuidora Eléctrica",
+        content: `Una vez firmado el acuerdo de autoconsumo colectivo por todos los vecinos en la provincia de ${municipality.provincia}, este debe registrarse formalmente ante la empresa distribuidora de la zona. Dicho documento incluye el listado de CUPS de consumo y generación, especificando los coeficientes individuales para que las comercializadoras apliquen correctamente las compensaciones en la factura.`
       }
     ],
     faqs: [
       {
         question: "¿Se puede cambiar el coeficiente una vez pactado?",
         answer: "Sí, la normativa permite modificar los acuerdos de reparto, aunque requiere la firma de todos los participantes y la comunicación a la distribuidora."
+      },
+      {
+        question: "¿Qué pasa si un vecino consume menos de lo asignado?",
+        answer: "La energía no consumida por un vecino puede verterse a la red y compensarse económicamente bajo su propia tarifa, o bien perderse si se supera el límite de compensación simplificada."
       }
     ],
     simulation: {

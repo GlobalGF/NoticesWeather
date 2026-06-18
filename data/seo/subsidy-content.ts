@@ -6,14 +6,14 @@
 export const SUBVENCIONES_SPINTAX = {
 
   municipio_titles: [
-    `Subvenciones Placas Solares en [LOCALIZACION] 2026: IBI y Ayudas`,
-    `¿Cómo conseguir el [PCT]% para Placas Solares en [LOCALIZACION]?`,
-    `Ahorro Real: Placas Solares en [LOCALIZACION] [AÑO]`,
-    `Subvenciones y Ayudas IBI en [LOCALIZACION]: Guía Autoconsumo`,
-    `Deducción IRPF y Ayudas Placas Solares en [LOCALIZACION]`,
-    `Paga [PCT]% menos por tus Placas Solares en [LOCALIZACION]`,
-    `Guía 2026: Subvenciones para Paneles Solares en [LOCALIZACION]`,
-    `Evita 404: Subvenciones y Bonificación IBI en [LOCALIZACION]`
+    `Subvenciones Placas Solares en [LOCALIZACION] ([AÑO])`,
+    `Ayudas y Subvenciones para Placas Solares en [LOCALIZACION]`,
+    `Ahorro en Placas Solares en [LOCALIZACION]: Guía [AÑO]`,
+    `Bonificaciones y Subvenciones de Placas Solares en [LOCALIZACION]`,
+    `Deducción IRPF y Ayudas para Placas Solares en [LOCALIZACION]`,
+    `Autoconsumo y Subvenciones Placas Solares en [LOCALIZACION]`,
+    `Guía de Subvenciones para Paneles Solares en [LOCALIZACION]`,
+    `Subvenciones de Autoconsumo Solar en [LOCALIZACION] [AÑO]`
   ],
 
   municipio_intro: `{¿Buscas empresas de instalaciones solares en [MUNICIPIO]?|¿Te has planteado instalar placas solares en tu vivienda de [MUNICIPIO]?|¿Estás valorando el autoconsumo fotovoltaico en [MUNICIPIO]?|¿Quieres saber qué subvenciones para paneles solares hay en [MUNICIPIO]?|Instalar placas solares en [MUNICIPIO] es ahora más barato que nunca.|Si vives en [MUNICIPIO] y quieres reducir tu factura de la luz con energía solar, esto te interesa.|La transición energética ha llegado con fuerza a los hogares de [MUNICIPIO].|Muchos vecinos de [MUNICIPIO] ya están aprovechando los tejados para generar su propia energía.}

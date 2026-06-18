@@ -49,6 +49,8 @@ type Props = {
   schema?: unknown;
   municipioSlug?: string;
   municipioName?: string;
+  provinciaName?: string;
+  seoIntro?: string;
   subsidyStatus?: SolarSubsidyStatus;
   subsidyDeadline?: string | null;
   bdnsId?: string | null;
@@ -68,6 +70,8 @@ export function SeoLandingTemplate({
   schema,
   municipioSlug,
   municipioName,
+  provinciaName,
+  seoIntro,
   subsidyStatus,
   subsidyDeadline,
   bdnsId,
@@ -107,6 +111,12 @@ export function SeoLandingTemplate({
               <p className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-2xl">
                 {header.description}
               </p>
+
+              {seoIntro && (
+                <p className="text-sm text-slate-300 mt-4 leading-relaxed max-w-2xl border-l-2 border-[#2dd4bf] pl-3 italic">
+                  {seoIntro}
+                </p>
+              )}
             </div>
 
             {/* Right Card - Incentives */}
@@ -183,6 +193,23 @@ export function SeoLandingTemplate({
                   <p className="text-lg text-slate-500 leading-relaxed">{s.content}</p>
                 </section>
               ))}
+
+              {municipioName && (
+                <section className="border-t border-slate-200 pt-12 max-w-2xl px-4 space-y-6">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Guía de Autoconsumo Solar e Instalación</h2>
+                  <div className="text-slate-500 text-sm leading-relaxed space-y-4 font-medium">
+                    <p>
+                      La instalación de placas solares en {municipioName} representa una oportunidad excepcional para los propietarios de viviendas y empresas locales. El autoconsumo fotovoltaico permite generar electricidad limpia y gratuita durante las horas de sol, reduciendo significativamente la dependencia de la red eléctrica general y amortizando la inversión en pocos años.
+                    </p>
+                    <p>
+                      Además de las ayudas y subvenciones directas disponibles en la provincia de {provinciaName || "su localidad"}, existen deducciones estatales en el IRPF de hasta el 40% por la mejora de la eficiencia energética de la vivienda habitual. Para acogerse a esta deducción, es obligatorio obtener un certificado de eficiencia energética previo a las obras y otro posterior que demuestre una reducción de al menos el 30% en el consumo de energía primaria no renovable.
+                    </p>
+                    <p>
+                      El Real Decreto 244/2019 regula las condiciones administrativas, técnicas y económicas del autoconsumo en España, permitiendo tanto la modalidad individual como el autoconsumo colectivo (compartido). Bajo esta normativa, los usuarios pueden acogerse a la compensación simplificada de excedentes, donde la comercializadora eléctrica descuenta en la factura mensual el valor de la energía vertida a la red que no ha sido consumida en el momento de su generación.
+                    </p>
+                  </div>
+                </section>
+              )}
             </div>
           </div>
 

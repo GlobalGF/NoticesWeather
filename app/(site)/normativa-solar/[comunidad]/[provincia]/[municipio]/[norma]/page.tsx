@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo/metadata-builder";
 import { SeoLandingTemplate } from "@/components/blocks/SeoLandingTemplate";
@@ -7,6 +7,7 @@ import { getTopUrbanRuleSlugs } from "@/data/repositories/urban-regulations.repo
 import { cachePolicy } from "@/lib/cache/policy";
 import { getStaticPrebuildBudget } from "@/lib/pseo/static-budget";
 import { tryParseSlug } from "@/lib/utils/params";
+import { slugify, cleanMunicipalitySlug, normalizeCcaaSlug } from "@/lib/utils/slug";
 import { urbanRegulationMetadata } from "@/modules/normativa-solar/seo";
 import { getUrbanRegulationPageData } from "@/modules/normativa-solar/service";
 import { safeGenerateStaticParams } from "@/lib/pseo/safe-static-params";
@@ -58,10 +59,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     noIndex: true
   });
 
+  // Use canonical slugs for metadata
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
   return urbanRegulationMetadata(
-    parsedComunidad,
-    parsedProvincia,
-    parsedMunicipio,
+    dbCcaaSlug,
+    dbProvSlug,
+    dbMuniSlug,
     parsedNorma,
     data.municipality.municipio,
     data.regulation.title
@@ -79,5 +85,15 @@ export default async function UrbanRegulationPage({ params }: Props) {
   const data = await getUrbanRegulationPageData(parsedComunidad, parsedProvincia, parsedMunicipio, parsedNorma);
   if (!data) notFound();
 
+  // Redirect to canonical URL
+  const dbCcaaSlug = normalizeCcaaSlug(data.municipality.comunidadAutonoma);
+  const dbProvSlug = slugify(data.municipality.provincia);
+  const dbMuniSlug = cleanMunicipalitySlug(data.municipality.slug, dbProvSlug);
+
+  if (comunidad !== dbCcaaSlug || provincia !== dbProvSlug || municipio !== dbMuniSlug) {
+    permanentRedirect(`/normativa-solar/${dbCcaaSlug}/${dbProvSlug}/${dbMuniSlug}/${norma}`);
+  }
+
   return <SeoLandingTemplate {...data} municipioName={data.municipality.municipio} />;
 }
+
